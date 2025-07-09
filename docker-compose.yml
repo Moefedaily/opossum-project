@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  app:
+    build: ./backend
+    container_name: opossum-app
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${APP_ENV:-dev}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-opossum}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres123}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_URLS=${CORS_URLS:-http://localhost:3000}
+      - JWT_SECRET=${JWT_SECRET:-rKkTeex9w6EG9q4A4AGkpvgoz2DwP0wM6KhRWAK7fHw=}
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - opossum-network
+
+  db:
+    image: postgres:14-alpine
+    container_name: opossum-db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres123}
+      - POSTGRES_DB=${DB_NAME:-opossum}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - opossum-network
+
+networks:
+  opossum-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

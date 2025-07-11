@@ -204,55 +204,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void verifyUser(String token) {
-        log.info("Verifying user with token: {}", token);
-
-        User user = userRepository.findByVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
-
-        user.setIsVerified(true);
-        user.setVerificationToken(null); // Clear the token
-        userRepository.save(user);
-
-        log.info("User verified successfully: {}", user.getUsername());
-    }
-
-    @Override
-    public void generatePasswordResetToken(String email) {
-        log.info("Generating password reset token for email: {}", email);
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-
-        user.setResetPasswordToken(UUID.randomUUID().toString());
-        user.setResetPasswordExpires(LocalDateTime.now().plusHours(1)); // Token expires in 1 hour
-        userRepository.save(user);
-
-        log.info("Password reset token generated for user: {}", user.getUsername());
-        // TODO: Send email with reset token
-    }
-
-    @Override
-    public void resetPassword(String token, String newPassword) {
-        log.info("Resetting password with token: {}", token);
-
-        User user = userRepository.findByResetPasswordToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
-
-        // Check if token has expired
-        if (user.getResetPasswordExpires().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Reset token has expired");
-        }
-
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        user.setResetPasswordToken(null);
-        user.setResetPasswordExpires(null);
-        userRepository.save(user);
-
-        log.info("Password reset successfully for user: {}", user.getUsername());
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<UserDto> getActiveUsers() {
         log.debug("Fetching active users");

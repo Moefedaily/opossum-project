@@ -42,13 +42,6 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
-    // Verification operations
-    void verifyUser(String token);
-
-    void generatePasswordResetToken(String email);
-
-    void resetPassword(String token, String newPassword);
-
     // Search operations
     List<UserDto> getActiveUsers();
 

@@ -189,56 +189,6 @@ public class UserController {
         }
     }
 
-    @PostMapping("/verify")
-    @Operation(summary = "Verify user email", description = "Verifies user email with verification token")
-    public ResponseEntity<?> verifyUser(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        log.info("Verifying user with token: {}", token);
-
-        try {
-            userService.verifyUser(token);
-            return ResponseEntity.ok(Map.of("message", "User verified successfully"));
-        } catch (RuntimeException e) {
-            log.error("Error verifying user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/password-reset-request")
-    @Operation(summary = "Request password reset", description = "Generates password reset token for email")
-    public ResponseEntity<?> requestPasswordReset(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        log.info("Password reset requested for email: {}", email);
-
-        try {
-            userService.generatePasswordResetToken(email);
-            return ResponseEntity.ok(Map.of("message", "Password reset token sent to email"));
-        } catch (RuntimeException e) {
-            log.error("Error requesting password reset: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/password-reset")
-    @Operation(summary = "Reset password", description = "Resets password using reset token")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String newPassword = request.get("newPassword");
-
-        log.info("Password reset attempt with token: {}", token);
-
-        try {
-            userService.resetPassword(token, newPassword);
-            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
-        } catch (RuntimeException e) {
-            log.error("Error resetting password: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
     @GetMapping("/stats")
     @Operation(summary = "Get user statistics", description = "Returns user count statistics")
     public ResponseEntity<Map<String, Long>> getUserStats() {

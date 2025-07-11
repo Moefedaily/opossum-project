@@ -1,7 +1,7 @@
 package com.opossum.controller;
 
-import com.opossum.dto.CreateUserRequest;
 import com.opossum.dto.UserDto;
+import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

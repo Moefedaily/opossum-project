@@ -1,4 +1,6 @@
-package com.opossum.dto;
+package com.opossum.dto.auth;
+
+import com.opossum.dto.UserDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

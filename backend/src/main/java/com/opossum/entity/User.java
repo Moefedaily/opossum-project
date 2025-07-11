@@ -100,6 +100,6 @@ public class User {
     }
 
     public boolean isEnabled() {
-        return isActive && isVerified;
+        return isActive;
     }
 }

@@ -21,7 +21,7 @@ public interface UserService {
 
     Optional<UserDto> getUserByEmail(String email);
 
-    Optional<User> findUserForAuthentication(String login); // For login - checks username OR email
+    Optional<User> findUserForAuthentication(String login);
 
     // Update operations
     UserDto updateUser(Long id, UserDto userDto);

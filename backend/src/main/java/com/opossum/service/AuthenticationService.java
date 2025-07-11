@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,9 +32,11 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final UserMapper userMapper;
+    private final EmailService emailService; // Add email service
 
     // Register new user
-    public AuthenticationResponse register(RegisterRequest request) {
+    // Register new user (no JWT tokens until verified)
+    public Map<String, String> register(RegisterRequest request) {
         log.info("Registering new user: {}", request.getUsername());
 
         // Check if username already exists
@@ -62,22 +65,23 @@ public class AuthenticationService {
         User savedUser = userRepository.save(user);
         log.info("User registered successfully: {}", savedUser.getUsername());
 
-        // Generate JWT tokens
-        UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getUsername());
-        String accessToken = jwtService.generateToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        // Send verification email
+        try {
+            emailService.sendVerificationEmail(
+                    savedUser.getEmail(),
+                    savedUser.getUsername(),
+                    savedUser.getVerificationToken());
+            log.info("Verification email sent to: {}", savedUser.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send verification email: {}", e.getMessage());
+            userRepository.delete(savedUser);
+            throw new RuntimeException("Failed to send verification email. Please try again.");
+        }
 
-        // Update last login
-        savedUser.setLastLogin(LocalDateTime.now());
-        userRepository.save(savedUser);
-
-        // Return authentication response
-        return new AuthenticationResponse(
-                accessToken,
-                refreshToken,
-                "Bearer",
-                jwtService.getExpirationTime(),
-                userMapper.toDto(savedUser));
+        // Return success message instead of JWT tokens
+        return Map.of(
+                "message", "Registration successful! Please check your email to verify your account.",
+                "email", savedUser.getEmail());
     }
 
     // Authenticate user login
@@ -176,6 +180,76 @@ public class AuthenticationService {
         userRepository.save(user);
 
         log.info("Email verified successfully for user: {}", user.getUsername());
+    }
+
+    // Resend verification email
+    public void resendVerificationEmail(String email) {
+        log.info("Resending verification email to: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        if (user.getIsVerified()) {
+            throw new RuntimeException("Email is already verified");
+        }
+
+        // Generate new verification token
+        user.setVerificationToken(UUID.randomUUID().toString());
+        userRepository.save(user);
+
+        // Send verification email
+        emailService.sendVerificationEmail(
+                user.getEmail(),
+                user.getUsername(),
+                user.getVerificationToken());
+
+        log.info("Verification email resent to: {}", email);
+    }
+
+    // Forgot password - send reset email
+    public void forgotPassword(String email) {
+        log.info("Password reset requested for email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Generate reset token and expiration (1 hour from now)
+        String resetToken = UUID.randomUUID().toString();
+        LocalDateTime resetExpires = LocalDateTime.now().plusHours(1);
+
+        user.setResetPasswordToken(resetToken);
+        user.setResetPasswordExpires(resetExpires);
+        userRepository.save(user);
+
+        // Send reset email
+        emailService.sendPasswordResetEmail(
+                user.getEmail(),
+                user.getUsername(),
+                resetToken);
+
+        log.info("Password reset email sent to: {}", email);
+    }
+
+    // Reset password using token
+    public void resetPassword(String token, String newPassword) {
+        log.info("Resetting password with token: {}", token);
+
+        User user = userRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        // Check if token has expired
+        if (user.getResetPasswordExpires() == null ||
+                LocalDateTime.now().isAfter(user.getResetPasswordExpires())) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        // Update password and clear reset token
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpires(null);
+        userRepository.save(user);
+
+        log.info("Password reset successfully for user: {}", user.getUsername());
     }
 
     // Logout user (in a real app, you might blacklist the token)

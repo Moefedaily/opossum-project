@@ -36,7 +36,7 @@ public class AuthController {
         log.info("Registration request for username: {}", request.getUsername());
 
         try {
-            AuthenticationResponse response = authenticationService.register(request);
+            Map<String, String> response = authenticationService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             log.error("Registration failed: {}", e.getMessage());
@@ -108,12 +108,10 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/verify-email")
+    @GetMapping("/verify-email")
     @Operation(summary = "Verify email", description = "Verifies user email using verification token")
-    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
         log.info("Email verification request with token: {}", token);
-
         try {
             authenticationService.verifyEmail(token);
             return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
@@ -172,6 +170,65 @@ public class AuthController {
                     "user", user));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("valid", false));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            // Validate password confirmation
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Passwords do not match"));
+            }
+
+            authenticationService.resetPassword(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Password reset successfully"));
+        } catch (Exception e) {
+            log.error("Error resetting password: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend verification email", description = "Resends email verification to user")
+    public ResponseEntity<?> resendVerificationEmail(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Email is required"));
+            }
+
+            authenticationService.resendVerificationEmail(email);
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Verification email sent successfully"));
+        } catch (Exception e) {
+            log.error("Error resending verification email: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Forgot password", description = "Sends password reset email to user")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Email is required"));
+            }
+
+            authenticationService.forgotPassword(email);
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Password reset email sent successfully"));
+        } catch (Exception e) {
+            log.error("Error sending password reset email: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }

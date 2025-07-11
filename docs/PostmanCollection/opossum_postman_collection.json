@@ -487,10 +487,28 @@
       ]
     },
     {
-      "name": "📢 Announcements (Future - Issue #5)",
+      "name": "📢 Announcements",
       "item": [
         {
-          "name": "Create Announcement",
+          "name": "Create Announcement (Lost Item)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Auto-extract announcement ID for future requests",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('announcement_id', response.id);",
+                  "    console.log('✅ Lost item announcement created! ID:', response.id);",
+                  "    console.log('📋 Title:', response.title);",
+                  "} else {",
+                  "    console.log('❌ Failed to create announcement:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -505,14 +523,40 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Lost iPhone\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station\",\n    \"type\": \"LOST\",\n    \"category\": \"Electronics\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Gare de Lyon, Paris\",\n    \"incidentDate\": \"2025-07-11T10:30:00\"\n}"
+              "raw": "{\n    \"title\": \"Lost DoDo's iPhone\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers.\",\n    \"type\": \"LOST\",\n    \"category\": \"Electronics\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Gare de Lyon, Paris\",\n    \"incidentDate\": \"2025-07-11T10:30:00\",\n    \"contactInfo\": \"Please call me if you find it!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Create new lost/found announcement."
+            "description": "Create new lost item announcement."
+          }
+        },
+        {
+          "name": "Create Announcement (Found Item)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Found Black Wallet\",\n    \"description\": \"Found a black leather wallet with credit cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"Personal Items\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Rue de la République, Lyon\",\n    \"incidentDate\": \"2025-07-11T14:15:00\",\n    \"contactInfo\": \"Contact NoNo to claim your wallet\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Create new found item announcement."
           }
         },
         {
@@ -520,25 +564,75 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/announcements?type=LOST&status=ACTIVE",
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Get all active announcements without filters."
+          }
+        },
+        {
+          "name": "Get Announcements with Filters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?type=LOST&status=ACTIVE&category=Electronics",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"],
               "query": [
                 {
                   "key": "type",
-                  "value": "LOST"
+                  "value": "LOST",
+                  "description": "Filter by LOST or FOUND"
                 },
                 {
                   "key": "status",
-                  "value": "ACTIVE"
+                  "value": "ACTIVE",
+                  "description": "Filter by ACTIVE, RESOLVED, ARCHIVED"
+                },
+                {
+                  "key": "category",
+                  "value": "Electronics",
+                  "description": "Filter by category"
                 }
               ]
             },
-            "description": "Get announcements with filtering options."
+            "description": "Get announcements with type, status, and category filters."
+          }
+        },
+        {
+          "name": "Search Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?search=iPhone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "iPhone",
+                  "description": "Search in title and description"
+                }
+              ]
+            },
+            "description": "Search announcements by text in title and description."
           }
         },
         {
           "name": "Get Announcement by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}"]
+            },
+            "description": "Get specific announcement details by ID."
+          }
+        },
+        {
+          "name": "Get My Announcements",
           "request": {
             "method": "GET",
             "header": [
@@ -548,11 +642,11 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "raw": "{{base_url}}/api/announcements/my",
               "host": ["{{base_url}}"],
-              "path": ["api", "announcements", "{{announcement_id}}"]
+              "path": ["api", "announcements", "my"]
             },
-            "description": "Get specific announcement details."
+            "description": "Get current user's announcements."
           }
         },
         {
@@ -571,14 +665,135 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Found iPhone\",\n    \"description\": \"Found iPhone 14 Pro near train station\",\n    \"status\": \"RESOLVED\"\n}"
+              "raw": "{\n    \"title\": \"Lost DoDo's iPhone - URGENT\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers. URGENT - contains important photos!\",\n    \"category\": \"Electronics\",\n    \"contactInfo\": \"Please call me ASAP if you find it! Reward offered.\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}"]
             },
-            "description": "Update announcement details."
+            "description": "Update announcement details (owner only)."
+          }
+        },
+        {
+          "name": "Update Announcement Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"RESOLVED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}", "status"]
+            },
+            "description": "Update announcement status to ACTIVE, RESOLVED, or ARCHIVED."
+          }
+        },
+        {
+          "name": "Deactivate Announcement",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "announcements",
+                "{{announcement_id}}",
+                "deactivate"
+              ]
+            },
+            "description": "Deactivate announcement (hide from public view)."
+          }
+        },
+        {
+          "name": "Activate Announcement",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "announcements",
+                "{{announcement_id}}",
+                "activate"
+              ]
+            },
+            "description": "Activate announcement (make visible to public)."
+          }
+        },
+        {
+          "name": "Delete Announcement",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}"]
+            },
+            "description": "Delete announcement permanently (owner only)."
+          }
+        },
+        {
+          "name": "Get Recent Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/recent?limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "recent"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Number of recent announcements to get"
+                }
+              ]
+            },
+            "description": "Get most recent announcements."
+          }
+        },
+        {
+          "name": "Get Announcement Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "stats"]
+            },
+            "description": "Get announcement counts and statistics for dashboard."
           }
         }
       ]
@@ -693,7 +908,12 @@
             "url": {
               "raw": "{{base_url}}/api/conversations/{{conversation_id}}/messages",
               "host": ["{{base_url}}"],
-              "path": ["api", "conversations", "{{conversation_id}}", "messages"]
+              "path": [
+                "api",
+                "conversations",
+                "{{conversation_id}}",
+                "messages"
+              ]
             },
             "description": "Get messages in specific conversation."
           }

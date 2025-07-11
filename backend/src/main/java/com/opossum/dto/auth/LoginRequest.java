@@ -1,4 +1,4 @@
-package com.opossum.dto;
+package com.opossum.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

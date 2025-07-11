@@ -1,7 +1,7 @@
 package com.opossum.service;
 
-import com.opossum.dto.CreateUserRequest;
 import com.opossum.dto.UserDto;
+import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.entity.User;
 
 import java.util.List;

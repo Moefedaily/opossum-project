@@ -1,6 +1,11 @@
 package com.opossum.service;
 
 import com.opossum.dto.*;
+import com.opossum.dto.auth.AuthenticationResponse;
+import com.opossum.dto.auth.ChangePasswordRequest;
+import com.opossum.dto.auth.LoginRequest;
+import com.opossum.dto.auth.RefreshTokenRequest;
+import com.opossum.dto.auth.RegisterRequest;
 import com.opossum.entity.User;
 import com.opossum.mapper.UserMapper;
 import com.opossum.repository.UserRepository;
@@ -97,8 +102,8 @@ public class AuthenticationService {
         User user = userDetailsService.getUserEntity(request.getLogin());
 
         // Generate JWT tokens
-        String accessToken = jwtService.generateToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        String accessToken = jwtService.generateToken(userDetails, user.getId());
+        String refreshToken = jwtService.generateRefreshToken(userDetails, user.getId());
 
         // Update last login
         user.setLastLogin(LocalDateTime.now());
@@ -136,8 +141,8 @@ public class AuthenticationService {
         }
 
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(userDetails);
         User user = userDetailsService.getUserEntity(username);
+        String newAccessToken = jwtService.generateToken(userDetails, user.getId());
 
         log.info("Access token refreshed for user: {}", username);
 

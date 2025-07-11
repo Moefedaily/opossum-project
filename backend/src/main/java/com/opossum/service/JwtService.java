@@ -43,8 +43,10 @@ public class JwtService {
     }
 
     // Generate token for user with default claims
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        return buildToken(claims, userDetails, jwtExpiration);
     }
 
     // Generate token with custom claims
@@ -53,8 +55,33 @@ public class JwtService {
     }
 
     // Generate refresh token
-    public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, jwtExpiration * 7); // 7 days expiration for refresh token
+    public String generateRefreshToken(UserDetails userDetails, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        return buildToken(claims, userDetails, jwtExpiration * 7);
+    }
+
+    // Extract user ID from JWT token
+    public Long extractUserId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object userIdClaim = claims.get("userId");
+
+            if (userIdClaim != null) {
+                if (userIdClaim instanceof Integer) {
+                    return ((Integer) userIdClaim).longValue();
+                } else if (userIdClaim instanceof Long) {
+                    return (Long) userIdClaim;
+                } else {
+                    throw new RuntimeException("Invalid userId claim type in token");
+                }
+            } else {
+                throw new RuntimeException("User ID not found in token claims");
+            }
+        } catch (Exception e) {
+            log.error("Error extracting user ID from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid token: cannot extract user ID");
+        }
     }
 
     // Build the actual JWT token

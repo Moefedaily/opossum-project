@@ -3,6 +3,7 @@ package com.opossum.controller;
 import com.opossum.dto.announcement.AnnouncementDto;
 import com.opossum.dto.announcement.CreateAnnouncementRequest;
 import com.opossum.dto.announcement.UpdateAnnouncementRequest;
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
 import com.opossum.service.AnnouncementService;
@@ -63,7 +64,7 @@ public class AnnouncementController {
     public ResponseEntity<?> getAllAnnouncements(
             @Parameter(description = "Filter by announcement type") @RequestParam(required = false) AnnouncementType type,
             @Parameter(description = "Filter by announcement status") @RequestParam(required = false) AnnouncementStatus status,
-            @Parameter(description = "Filter by category") @RequestParam(required = false) String category,
+            @Parameter(description = "Filter by category") @RequestParam(required = false) AnnouncementCategory category,
             @Parameter(description = "Search in title and description") @RequestParam(required = false) String search) {
 
         try {

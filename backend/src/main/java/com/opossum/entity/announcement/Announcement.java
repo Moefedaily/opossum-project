@@ -46,9 +46,10 @@ public class Announcement {
     @NotNull(message = "Announcement status is required")
     private AnnouncementStatus status = AnnouncementStatus.ACTIVE;
 
-    @Column(length = 100)
-    @Size(max = 100, message = "Category must not exceed 100 characters")
-    private String category;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull(message = "Announcement category is required")
+    private AnnouncementCategory category;
 
     // GPS Location fields
     @Column(precision = 10, scale = 8)

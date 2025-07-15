@@ -46,12 +46,8 @@ public class AnnouncementMapper {
             dto.setUserEmail(announcement.getUser().getEmail());
             dto.setUserFullName(announcement.getUser().getFullName());
         }
-
-        // Additional fields
         dto.setContactInfo(announcement.getContactInfo());
         dto.setIsActive(announcement.getIsActive());
-
-        // Utility field
         dto.setLocationDescription(announcement.getLocationDescription());
 
         return dto;
@@ -81,8 +77,6 @@ public class AnnouncementMapper {
 
         // User relationship
         announcement.setUser(user);
-
-        // Additional fields
         announcement.setContactInfo(request.getContactInfo());
         announcement.setIsActive(true);
 

@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "OPOSSUM API Collection",
-    "description": "Complete API collection for OPOSSUM Lost & Found application with authentication, user management, and email verification",
+    "description": "Complete API collection for OPOSSUM Lost & Found application with authentication, user management, email verification, and category system",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "auth": {
     "type": "bearer",
@@ -487,6 +487,43 @@
       ]
     },
     {
+      "name": "🏷️ Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Display available categories for reference",
+                  "if (pm.response.code === 200) {",
+                  "    const categories = pm.response.json();",
+                  "    console.log('✅ Available categories:');",
+                  "    categories.forEach(cat => console.log('  -', cat));",
+                  "    ",
+                  "    // Save first category for testing",
+                  "    if (categories.length > 0) {",
+                  "        pm.environment.set('test_category', categories[0]);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Get all available announcement categories (ELECTRONICS, CLOTHING, BAGS, DOCUMENTS, KEYS, JEWELRY, BOOKS, HOUSEHOLD, VEHICLE, SPORTS, PETS, WALLET, OTHER)."
+          }
+        }
+      ]
+    },
+    {
       "name": "📢 Announcements",
       "item": [
         {
@@ -502,6 +539,7 @@
                   "    pm.environment.set('announcement_id', response.id);",
                   "    console.log('✅ Lost item announcement created! ID:', response.id);",
                   "    console.log('📋 Title:', response.title);",
+                  "    console.log('🏷️ Category:', response.category);",
                   "} else {",
                   "    console.log('❌ Failed to create announcement:', pm.response.text());",
                   "}"
@@ -523,14 +561,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Lost DoDo's iPhone\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers.\",\n    \"type\": \"LOST\",\n    \"category\": \"Electronics\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Gare de Lyon, Paris\",\n    \"incidentDate\": \"2025-07-11T10:30:00\",\n    \"contactInfo\": \"Please call me if you find it!\"\n}"
+              "raw": "{\n    \"title\": \"Lost DoDo's iPhone\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers.\",\n    \"type\": \"LOST\",\n    \"category\": \"ELECTRONICS\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Gare de Lyon, Paris\",\n    \"incidentDate\": \"2025-07-11T10:30:00\",\n    \"contactInfo\": \"Please call me if you find it!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Create new lost item announcement."
+            "description": "Create new lost item announcement with ELECTRONICS category."
           }
         },
         {
@@ -549,14 +587,40 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Found Black Wallet\",\n    \"description\": \"Found a black leather wallet with credit cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"Personal Items\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Rue de la République, Lyon\",\n    \"incidentDate\": \"2025-07-11T14:15:00\",\n    \"contactInfo\": \"Contact NoNo to claim your wallet\"\n}"
+              "raw": "{\n    \"title\": \"Found Black Wallet\",\n    \"description\": \"Found a black leather wallet with credit cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"WALLET\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Rue de la République, Lyon\",\n    \"incidentDate\": \"2025-07-11T14:15:00\",\n    \"contactInfo\": \"Contact NoNo to claim your wallet\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Create new found item announcement."
+            "description": "Create new found item announcement with WALLET category."
+          }
+        },
+        {
+          "name": "Create Announcement (Keys)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Found House Keys\",\n    \"description\": \"Found a set of house keys with a red keychain near the park entrance.\",\n    \"type\": \"FOUND\",\n    \"category\": \"KEYS\",\n    \"latitude\": 45.7644,\n    \"longitude\": 4.8361,\n    \"address\": \"Parc de la Tête d'Or, Lyon\",\n    \"incidentDate\": \"2025-07-12T16:45:00\",\n    \"contactInfo\": \"Keys are at the park information desk\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Create new found item announcement with KEYS category."
           }
         },
         {
@@ -576,7 +640,7 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/announcements?type=LOST&status=ACTIVE&category=Electronics",
+              "raw": "{{base_url}}/api/announcements?type=LOST&status=ACTIVE&category=ELECTRONICS",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"],
               "query": [
@@ -592,12 +656,50 @@
                 },
                 {
                   "key": "category",
-                  "value": "Electronics",
-                  "description": "Filter by category"
+                  "value": "ELECTRONICS",
+                  "description": "Filter by category enum value"
                 }
               ]
             },
-            "description": "Get announcements with type, status, and category filters."
+            "description": "Get announcements with type, status, and category filters using enum values."
+          }
+        },
+        {
+          "name": "Filter by Category - WALLET",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?category=WALLET",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "WALLET",
+                  "description": "Filter by WALLET category"
+                }
+              ]
+            },
+            "description": "Get all announcements in WALLET category."
+          }
+        },
+        {
+          "name": "Filter by Category - KEYS",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?category=KEYS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "KEYS",
+                  "description": "Filter by KEYS category"
+                }
+              ]
+            },
+            "description": "Get all announcements in KEYS category."
           }
         },
         {
@@ -665,14 +767,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Lost DoDo's iPhone - URGENT\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers. URGENT - contains important photos!\",\n    \"category\": \"Electronics\",\n    \"contactInfo\": \"Please call me ASAP if you find it! Reward offered.\"\n}"
+              "raw": "{\n    \"title\": \"Lost DoDo's iPhone - URGENT\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers. URGENT - contains important photos!\",\n    \"category\": \"ELECTRONICS\",\n    \"contactInfo\": \"Please call me ASAP if you find it! Reward offered.\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}"]
             },
-            "description": "Update announcement details (owner only)."
+            "description": "Update announcement details (owner only) with enum category."
           }
         },
         {

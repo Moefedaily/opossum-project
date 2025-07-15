@@ -1,5 +1,6 @@
 package com.opossum.dto.announcement;
 
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
 import lombok.Data;
@@ -15,8 +16,7 @@ public class AnnouncementDto {
     private String description;
     private AnnouncementType type;
     private AnnouncementStatus status;
-    private String category;
-
+    private AnnouncementCategory category;
     // Location fields
     private BigDecimal latitude;
     private BigDecimal longitude;

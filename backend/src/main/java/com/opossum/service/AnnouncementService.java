@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.opossum.dto.announcement.AnnouncementDto;
 import com.opossum.dto.announcement.CreateAnnouncementRequest;
 import com.opossum.dto.announcement.UpdateAnnouncementRequest;
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
 
@@ -26,7 +27,7 @@ public interface AnnouncementService {
 
     List<AnnouncementDto> getAnnouncementsByStatus(AnnouncementStatus status);
 
-    List<AnnouncementDto> getAnnouncementsByCategory(String category);
+    List<AnnouncementDto> getAnnouncementsByCategory(AnnouncementCategory category);
 
     // Update operations
     AnnouncementDto updateAnnouncement(Long id, UpdateAnnouncementRequest request, Long userId);
@@ -45,7 +46,7 @@ public interface AnnouncementService {
 
     List<AnnouncementDto> getAnnouncementsWithFilters(AnnouncementType type,
             AnnouncementStatus status,
-            String category);
+            AnnouncementCategory category);
 
     // Date-based queries
     List<AnnouncementDto> getAnnouncementsByDateRange(LocalDateTime startDate, LocalDateTime endDate);

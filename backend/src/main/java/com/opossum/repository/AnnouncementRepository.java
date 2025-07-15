@@ -1,6 +1,7 @@
 package com.opossum.repository;
 
 import com.opossum.entity.announcement.Announcement;
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
 import com.opossum.entity.User;
@@ -15,7 +16,7 @@ import java.util.List;
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
 
-        // Find by basic properties
+        // Find by properties
         List<Announcement> findByType(AnnouncementType type);
 
         List<Announcement> findByStatus(AnnouncementStatus status);
@@ -30,9 +31,9 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
         List<Announcement> findByUserIdAndStatus(Long userId, AnnouncementStatus status);
 
         // Find by category
-        List<Announcement> findByCategory(String category);
+        List<Announcement> findByCategory(AnnouncementCategory category);
 
-        List<Announcement> findByCategoryAndType(String category, AnnouncementType type);
+        List<Announcement> findByCategoryAndType(AnnouncementCategory category, AnnouncementType type);
 
         // Find by active status
         List<Announcement> findByIsActiveTrue();
@@ -62,7 +63,7 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
                         "ORDER BY a.createdAt DESC")
         List<Announcement> findWithFilters(@Param("type") AnnouncementType type,
                         @Param("status") AnnouncementStatus status,
-                        @Param("category") String category);
+                        @Param("category") AnnouncementCategory category);
 
         // Count methods
         long countByType(AnnouncementType type);

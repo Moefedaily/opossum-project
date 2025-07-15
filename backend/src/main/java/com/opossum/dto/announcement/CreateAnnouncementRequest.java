@@ -8,6 +8,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementType;
 
 @Data
@@ -24,9 +25,8 @@ public class CreateAnnouncementRequest {
     @NotNull(message = "Announcement type is required")
     private AnnouncementType type;
 
-    @Size(max = 100, message = "Category must not exceed 100 characters")
-    private String category;
-
+    @NotNull(message = "Announcement category is required")
+    private AnnouncementCategory category;
     // Location fields
     private BigDecimal latitude;
     private BigDecimal longitude;

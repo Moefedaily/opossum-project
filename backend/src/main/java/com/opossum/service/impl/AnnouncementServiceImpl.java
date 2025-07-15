@@ -4,6 +4,7 @@ import com.opossum.dto.announcement.AnnouncementDto;
 import com.opossum.dto.announcement.CreateAnnouncementRequest;
 import com.opossum.dto.announcement.UpdateAnnouncementRequest;
 import com.opossum.entity.announcement.Announcement;
+import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
 import com.opossum.entity.User;
@@ -90,9 +91,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AnnouncementDto> getAnnouncementsByCategory(String category) {
+    public List<AnnouncementDto> getAnnouncementsByCategory(AnnouncementCategory category) {
         log.debug("Getting announcements by category: {}", category);
-        List<Announcement> announcements = announcementRepository.findByCategoryAndType(category, null);
+        List<Announcement> announcements = announcementRepository.findByCategory(category);
         return announcementMapper.toDtoList(announcements);
     }
 
@@ -206,7 +207,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public List<AnnouncementDto> getAnnouncementsWithFilters(AnnouncementType type,
             AnnouncementStatus status,
-            String category) {
+            AnnouncementCategory category) {
         log.debug("Getting announcements with filters - type: {}, status: {}, category: {}", type, status, category);
         List<Announcement> announcements = announcementRepository.findWithFilters(type, status, category);
         return announcementMapper.toDtoList(announcements);

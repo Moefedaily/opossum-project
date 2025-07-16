@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "OPOSSUM API Collection",
-    "description": "Complete API collection for OPOSSUM Lost & Found application with authentication, user management, email verification, and category system",
+    "description": "API collection for OPOSSUM Lost & Found application",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "version": "2.0.0"
   },
@@ -21,7 +21,6 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Auto-set Authorization header if access_token exists",
           "if (pm.environment.get('access_token')) {",
           "    pm.request.headers.add({",
           "        key: 'Authorization',",
@@ -34,7 +33,7 @@
   ],
   "item": [
     {
-      "name": "🔐 Authentication",
+      "name": "Authentication",
       "item": [
         {
           "name": "Register User",
@@ -43,11 +42,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Extract user info from response for future use",
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    console.log('Registration successful:', response.message);",
-                  "    console.log('Note: User will have USER role by default');",
                   "} else {",
                   "    console.log('Registration failed:', pm.response.text());",
                   "}"
@@ -72,36 +69,29 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
             },
-            "description": "Register a new user account. Email verification required before login. User gets USER role automatically."
+            "description": "Register new user account with email verification"
           }
         },
         {
-          "name": "Login as USER",
+          "name": "Login as User",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Auto-extract tokens and user info from login response",
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
-                  "    ",
-                  "    // Set tokens",
                   "    pm.environment.set('user_access_token', response.accessToken);",
                   "    pm.environment.set('user_refresh_token', response.refreshToken);",
                   "    pm.environment.set('access_token', response.accessToken);",
-                  "    ",
-                  "    // Set user info",
                   "    pm.environment.set('user_id', response.user.id);",
                   "    pm.environment.set('current_username', response.user.username);",
                   "    pm.environment.set('current_email', response.user.email);",
-                  "    ",
-                  "    console.log('✅ Login successful! Tokens and user info saved.');",
+                  "    console.log('Login successful');",
                   "    console.log('User ID:', response.user.id);",
-                  "    console.log('Username:', response.user.username);",
                   "    console.log('Role:', response.user.role);",
                   "} else {",
-                  "    console.log('❌ Login failed:', pm.response.text());",
+                  "    console.log('Login failed:', pm.response.text());",
                   "}"
                 ]
               }
@@ -124,36 +114,29 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login with username/email and password. Returns JWT tokens with role information."
+            "description": "Login with username or email and password"
           }
         },
         {
-          "name": "Login as ADMIN",
+          "name": "Login as Admin",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Auto-extract admin tokens and user info",
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
-                  "    ",
-                  "    // Set admin tokens",
                   "    pm.environment.set('admin_access_token', response.accessToken);",
                   "    pm.environment.set('admin_refresh_token', response.refreshToken);",
                   "    pm.environment.set('access_token', response.accessToken);",
-                  "    ",
-                  "    // Set admin info",
                   "    pm.environment.set('admin_id', response.user.id);",
                   "    pm.environment.set('current_username', response.user.username);",
                   "    pm.environment.set('current_email', response.user.email);",
-                  "    ",
-                  "    console.log('✅ Admin login successful!');",
+                  "    console.log('Admin login successful');",
                   "    console.log('Admin ID:', response.user.id);",
-                  "    console.log('Username:', response.user.username);",
                   "    console.log('Role:', response.user.role);",
                   "} else {",
-                  "    console.log('❌ Admin login failed:', pm.response.text());",
+                  "    console.log('Admin login failed:', pm.response.text());",
                   "}"
                 ]
               }
@@ -169,30 +152,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin123\"\n}"
+              "raw": "{\n    \"login\": \"{{admin_username}}\",\n    \"password\": \"{{admin_password}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login as admin user (assumes admin user exists in database)."
+            "description": "Login as admin user"
           }
         },
         {
-          "name": "Switch to USER Token",
+          "name": "Switch to User Token",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Switch to USER token for testing",
                   "const userToken = pm.environment.get('user_access_token');",
                   "if (userToken) {",
                   "    pm.environment.set('access_token', userToken);",
-                  "    console.log('✅ Switched to USER token');",
+                  "    console.log('Switched to user token');",
                   "} else {",
-                  "    console.log('❌ USER token not found. Please login as USER first.');",
+                  "    console.log('User token not found');",
                   "}"
                 ]
               }
@@ -205,23 +187,22 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "me"]
             },
-            "description": "Switch to USER token and verify current user."
+            "description": "Switch to user token for testing"
           }
         },
         {
-          "name": "Switch to ADMIN Token",
+          "name": "Switch to Admin Token",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Switch to ADMIN token for testing",
                   "const adminToken = pm.environment.get('admin_access_token');",
                   "if (adminToken) {",
                   "    pm.environment.set('access_token', adminToken);",
-                  "    console.log('✅ Switched to ADMIN token');",
+                  "    console.log('Switched to admin token');",
                   "} else {",
-                  "    console.log('❌ ADMIN token not found. Please login as ADMIN first.');",
+                  "    console.log('Admin token not found');",
                   "}"
                 ]
               }
@@ -234,7 +215,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "me"]
             },
-            "description": "Switch to ADMIN token and verify current admin."
+            "description": "Switch to admin token for testing"
           }
         },
         {
@@ -244,13 +225,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Auto-update access token from refresh response",
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
                   "    pm.environment.set('access_token', response.accessToken);",
-                  "    console.log('✅ Token refreshed successfully!');",
+                  "    console.log('Token refreshed successfully');",
                   "} else {",
-                  "    console.log('❌ Token refresh failed:', pm.response.text());",
+                  "    console.log('Token refresh failed:', pm.response.text());",
                   "}"
                 ]
               }
@@ -273,7 +253,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "refresh"]
             },
-            "description": "Refresh access token using refresh token."
+            "description": "Refresh access token"
           }
         },
         {
@@ -291,7 +271,7 @@
                 }
               ]
             },
-            "description": "Verify user email using verification token from email."
+            "description": "Verify user email using verification token"
           }
         },
         {
@@ -313,25 +293,11 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "resend-verification"]
             },
-            "description": "Resend verification email to user."
+            "description": "Resend verification email"
           }
         },
         {
           "name": "Forgot Password",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Note: In real scenario, reset token would come from email",
-                  "if (pm.response.code === 200) {",
-                  "    console.log('✅ Password reset email sent!');",
-                  "    console.log('💡 Check your email for reset token, then use Reset Password endpoint');",
-                  "}"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -349,7 +315,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "forgot-password"]
             },
-            "description": "Send password reset email to user."
+            "description": "Send password reset email"
           }
         },
         {
@@ -364,14 +330,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"newPassword\": \"newnono123\",\n    \"confirmPassword\": \"newnono123\"\n}"
+              "raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"newPassword\": \"newpassword123\",\n    \"confirmPassword\": \"newpassword123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/reset-password",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "reset-password"]
             },
-            "description": "Reset password using reset token from email."
+            "description": "Reset password using token"
           }
         },
         {
@@ -390,14 +356,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"currentPassword\": \"{{test_password}}\",\n    \"newPassword\": \"newnono456\"\n}"
+              "raw": "{\n    \"currentPassword\": \"{{test_password}}\",\n    \"newPassword\": \"newpassword123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/change-password",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "change-password"]
             },
-            "description": "Change password for authenticated user."
+            "description": "Change password for authenticated user"
           }
         },
         {
@@ -415,7 +381,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "me"]
             },
-            "description": "Get current authenticated user information."
+            "description": "Get current user information"
           }
         },
         {
@@ -433,7 +399,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "validate"]
             },
-            "description": "Validate if current JWT token is valid."
+            "description": "Validate current JWT token"
           }
         },
         {
@@ -451,22 +417,21 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "logout"]
             },
-            "description": "Logout current user."
+            "description": "Logout current user"
           }
         }
       ]
     },
     {
-      "name": "🛡️ Security Tests",
+      "name": "Security Tests",
       "item": [
         {
-          "name": "USER tries Admin Endpoint (Should Fail)",
+          "name": "User tries Admin Endpoint",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Ensure using USER token",
                   "const userToken = pm.environment.get('user_access_token');",
                   "if (userToken) {",
                   "    pm.environment.set('access_token', userToken);",
@@ -478,13 +443,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// This should fail with 403",
                   "if (pm.response.code === 403) {",
-                  "    console.log('✅ Security test PASSED - USER correctly denied admin access');",
+                  "    console.log('Test passed - User correctly denied admin access');",
                   "} else if (pm.response.code === 200) {",
-                  "    console.log('❌ Security test FAILED - USER should not access admin endpoints');",
+                  "    console.log('Test failed - User should not access admin endpoints');",
                   "} else {",
-                  "    console.log('🔍 Unexpected response:', pm.response.code, pm.response.text());",
+                  "    console.log('Unexpected response:', pm.response.code);",
                   "}"
                 ]
               }
@@ -503,17 +467,16 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users"]
             },
-            "description": "Security test: USER trying to access admin endpoint (should fail with 403)."
+            "description": "Test user access to admin endpoint"
           }
         },
         {
-          "name": "ADMIN accesses Admin Endpoint (Should Work)",
+          "name": "Admin accesses Admin Endpoint",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Ensure using ADMIN token",
                   "const adminToken = pm.environment.get('admin_access_token');",
                   "if (adminToken) {",
                   "    pm.environment.set('access_token', adminToken);",
@@ -525,14 +488,12 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// This should succeed",
                   "if (pm.response.code === 200) {",
-                  "    console.log('✅ Security test PASSED - ADMIN correctly has admin access');",
+                  "    console.log('Test passed - Admin correctly has admin access');",
                   "    const users = pm.response.json();",
-                  "    console.log('📊 Admin can see', users.length, 'users');",
+                  "    console.log('Admin can see', users.length, 'users');",
                   "} else {",
-                  "    console.log('❌ Security test FAILED - ADMIN should access admin endpoints');",
-                  "    console.log('🔍 Response:', pm.response.code, pm.response.text());",
+                  "    console.log('Test failed - Admin should access admin endpoints');",
                   "}"
                 ]
               }
@@ -551,31 +512,26 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users"]
             },
-            "description": "Security test: ADMIN accessing admin endpoint (should succeed)."
+            "description": "Test admin access to admin endpoint"
           }
         },
         {
-          "name": "No Token Access (Should Fail)",
+          "name": "No Token Access",
           "event": [
             {
               "listen": "prerequest",
               "script": {
-                "exec": [
-                  "// Remove authorization header for this test",
-                  "pm.request.removeHeader('Authorization');"
-                ]
+                "exec": ["pm.request.removeHeader('Authorization');"]
               }
             },
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// This should fail with 401",
                   "if (pm.response.code === 401) {",
-                  "    console.log('✅ Security test PASSED - No token correctly denied access');",
+                  "    console.log('Test passed - No token correctly denied access');",
                   "} else {",
-                  "    console.log('❌ Security test FAILED - Protected endpoint should require auth');",
-                  "    console.log('🔍 Response:', pm.response.code, pm.response.text());",
+                  "    console.log('Test failed - Protected endpoint should require auth');",
                   "}"
                 ]
               }
@@ -588,13 +544,13 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "me"]
             },
-            "description": "Security test: No token accessing protected endpoint (should fail with 401)."
+            "description": "Test protected endpoint without token"
           }
         }
       ]
     },
     {
-      "name": "👥 User Management",
+      "name": "User Management",
       "item": [
         {
           "name": "Get All Users",
@@ -611,11 +567,11 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users"]
             },
-            "description": "Get all users with optional filtering."
+            "description": "Get all users"
           }
         },
         {
-          "name": "Create User (Admin)",
+          "name": "Create User",
           "request": {
             "method": "POST",
             "header": [
@@ -630,32 +586,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"username\": \"bobo\",\n    \"email\": \"bobo@example.com\",\n    \"password\": \"bobo123\",\n    \"firstName\": \"Bobo\",\n    \"lastName\": \"Test\",\n    \"phone\": \"0987654321\"\n}"
+              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"New\",\n    \"lastName\": \"User\",\n    \"phone\": \"0987654321\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/users",
               "host": ["{{base_url}}"],
               "path": ["api", "users"]
             },
-            "description": "Create new user (admin operation)."
+            "description": "Create new user"
           }
         },
         {
           "name": "Get User by ID",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// You can update user_id variable here if needed",
-                  "if (pm.response.code === 200) {",
-                  "    const user = pm.response.json();",
-                  "    console.log('📋 User details:', user.username, user.email);",
-                  "}"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [
@@ -669,7 +611,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users", "{{user_id}}"]
             },
-            "description": "Get specific user by ID."
+            "description": "Get user by ID"
           }
         },
         {
@@ -688,14 +630,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"firstName\": \"DoDoUpdated\",\n    \"lastName\": \"NoNoUpdated\",\n    \"phone\": \"1111111111\"\n}"
+              "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phone\": \"1111111111\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/users/{{user_id}}",
               "host": ["{{base_url}}"],
               "path": ["api", "users", "{{user_id}}"]
             },
-            "description": "Update user information."
+            "description": "Update user information"
           }
         },
         {
@@ -713,7 +655,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users", "{{user_id}}"]
             },
-            "description": "Delete user account."
+            "description": "Delete user"
           }
         },
         {
@@ -731,13 +673,13 @@
               "host": ["{{base_url}}"],
               "path": ["api", "users", "stats"]
             },
-            "description": "Get user statistics and counts."
+            "description": "Get user statistics"
           }
         }
       ]
     },
     {
-      "name": "🏷️ Categories",
+      "name": "Categories",
       "item": [
         {
           "name": "Get All Categories",
@@ -746,13 +688,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Display available categories for reference",
                   "if (pm.response.code === 200) {",
                   "    const categories = pm.response.json();",
-                  "    console.log('✅ Available categories:');",
-                  "    categories.forEach(cat => console.log('  -', cat));",
-                  "    ",
-                  "    // Save first category for testing",
+                  "    console.log('Available categories:', categories);",
                   "    if (categories.length > 0) {",
                   "        pm.environment.set('test_category', categories[0]);",
                   "    }",
@@ -768,30 +706,27 @@
               "host": ["{{base_url}}"],
               "path": ["api", "categories"]
             },
-            "description": "Get all available announcement categories (ELECTRONICS, CLOTHING, BAGS, DOCUMENTS, KEYS, JEWELRY, BOOKS, HOUSEHOLD, VEHICLE, SPORTS, PETS, WALLET, OTHER)."
+            "description": "Get all available categories"
           }
         }
       ]
     },
     {
-      "name": "📢 Announcements",
+      "name": "Announcements",
       "item": [
         {
-          "name": "Create Announcement (Lost Item)",
+          "name": "Create Lost Item",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Auto-extract announcement ID for future requests",
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    pm.environment.set('announcement_id', response.id);",
-                  "    console.log('✅ Lost item announcement created! ID:', response.id);",
-                  "    console.log('📋 Title:', response.title);",
-                  "    console.log('🏷️ Category:', response.category);",
+                  "    console.log('Announcement created with ID:', response.id);",
                   "} else {",
-                  "    console.log('❌ Failed to create announcement:', pm.response.text());",
+                  "    console.log('Failed to create announcement');",
                   "}"
                 ]
               }
@@ -811,18 +746,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Lost DoDo's iPhone\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers.\",\n    \"type\": \"LOST\",\n    \"category\": \"ELECTRONICS\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Gare de Lyon, Paris\",\n    \"incidentDate\": \"2025-07-11T10:30:00\",\n    \"contactInfo\": \"Please call me if you find it!\"\n}"
+              "raw": "{\n    \"title\": \"Lost iPhone\",\n    \"description\": \"Lost my iPhone near the train station. Black case with blue cover.\",\n    \"type\": \"LOST\",\n    \"category\": \"ELECTRONICS\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Train Station Area\",\n    \"incidentDate\": \"2025-07-15T10:30:00\",\n    \"contactInfo\": \"Please contact if found\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Create new lost item announcement with ELECTRONICS category."
+            "description": "Create lost item announcement"
           }
         },
         {
-          "name": "Create Announcement (Found Item)",
+          "name": "Create Found Item",
           "request": {
             "method": "POST",
             "header": [
@@ -837,40 +772,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Found Black Wallet\",\n    \"description\": \"Found a black leather wallet with credit cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"WALLET\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Rue de la République, Lyon\",\n    \"incidentDate\": \"2025-07-11T14:15:00\",\n    \"contactInfo\": \"Contact NoNo to claim your wallet\"\n}"
+              "raw": "{\n    \"title\": \"Found Wallet\",\n    \"description\": \"Found a black leather wallet with cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"WALLET\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Coffee Shop Area\",\n    \"incidentDate\": \"2025-07-15T14:15:00\",\n    \"contactInfo\": \"Contact to claim\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Create new found item announcement with WALLET category."
-          }
-        },
-        {
-          "name": "Create Announcement (Keys)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"title\": \"Found House Keys\",\n    \"description\": \"Found a set of house keys with a red keychain near the park entrance.\",\n    \"type\": \"FOUND\",\n    \"category\": \"KEYS\",\n    \"latitude\": 45.7644,\n    \"longitude\": 4.8361,\n    \"address\": \"Parc de la Tête d'Or, Lyon\",\n    \"incidentDate\": \"2025-07-12T16:45:00\",\n    \"contactInfo\": \"Keys are at the park information desk\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/announcements",
-              "host": ["{{base_url}}"],
-              "path": ["api", "announcements"]
-            },
-            "description": "Create new found item announcement with KEYS category."
+            "description": "Create found item announcement"
           }
         },
         {
@@ -882,7 +791,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements"]
             },
-            "description": "Get all active announcements without filters."
+            "description": "Get all announcements"
           }
         },
         {
@@ -896,60 +805,19 @@
               "query": [
                 {
                   "key": "type",
-                  "value": "LOST",
-                  "description": "Filter by LOST or FOUND"
+                  "value": "LOST"
                 },
                 {
                   "key": "status",
-                  "value": "ACTIVE",
-                  "description": "Filter by ACTIVE, RESOLVED, ARCHIVED"
+                  "value": "ACTIVE"
                 },
                 {
                   "key": "category",
-                  "value": "ELECTRONICS",
-                  "description": "Filter by category enum value"
+                  "value": "ELECTRONICS"
                 }
               ]
             },
-            "description": "Get announcements with type, status, and category filters using enum values."
-          }
-        },
-        {
-          "name": "Filter by Category - WALLET",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/announcements?category=WALLET",
-              "host": ["{{base_url}}"],
-              "path": ["api", "announcements"],
-              "query": [
-                {
-                  "key": "category",
-                  "value": "WALLET",
-                  "description": "Filter by WALLET category"
-                }
-              ]
-            },
-            "description": "Get all announcements in WALLET category."
-          }
-        },
-        {
-          "name": "Filter by Category - KEYS",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/announcements?category=KEYS",
-              "host": ["{{base_url}}"],
-              "path": ["api", "announcements"],
-              "query": [
-                {
-                  "key": "category",
-                  "value": "KEYS",
-                  "description": "Filter by KEYS category"
-                }
-              ]
-            },
-            "description": "Get all announcements in KEYS category."
+            "description": "Get filtered announcements"
           }
         },
         {
@@ -963,12 +831,11 @@
               "query": [
                 {
                   "key": "search",
-                  "value": "iPhone",
-                  "description": "Search in title and description"
+                  "value": "iPhone"
                 }
               ]
             },
-            "description": "Search announcements by text in title and description."
+            "description": "Search announcements"
           }
         },
         {
@@ -980,7 +847,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}"]
             },
-            "description": "Get specific announcement details by ID."
+            "description": "Get announcement by ID"
           }
         },
         {
@@ -998,7 +865,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "my"]
             },
-            "description": "Get current user's announcements."
+            "description": "Get current user announcements"
           }
         },
         {
@@ -1017,14 +884,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Lost DoDo's iPhone - URGENT\",\n    \"description\": \"Lost my iPhone 14 Pro near the train station. It has a blue case with stickers. URGENT - contains important photos!\",\n    \"category\": \"ELECTRONICS\",\n    \"contactInfo\": \"Please call me ASAP if you find it! Reward offered.\"\n}"
+              "raw": "{\n    \"title\": \"Lost iPhone - Updated\",\n    \"description\": \"Updated description for lost iPhone\",\n    \"category\": \"ELECTRONICS\",\n    \"contactInfo\": \"Updated contact info\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}"]
             },
-            "description": "Update announcement details (owner only) with enum category."
+            "description": "Update announcement"
           }
         },
         {
@@ -1050,53 +917,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}", "status"]
             },
-            "description": "Update announcement status to ACTIVE, RESOLVED, or ARCHIVED."
-          }
-        },
-        {
-          "name": "Deactivate Announcement",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/deactivate",
-              "host": ["{{base_url}}"],
-              "path": [
-                "api",
-                "announcements",
-                "{{announcement_id}}",
-                "deactivate"
-              ]
-            },
-            "description": "Deactivate announcement (hide from public view)."
-          }
-        },
-        {
-          "name": "Activate Announcement",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/activate",
-              "host": ["{{base_url}}"],
-              "path": [
-                "api",
-                "announcements",
-                "{{announcement_id}}",
-                "activate"
-              ]
-            },
-            "description": "Activate announcement (make visible to public)."
+            "description": "Update announcement status"
           }
         },
         {
@@ -1114,7 +935,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "{{announcement_id}}"]
             },
-            "description": "Delete announcement permanently (owner only)."
+            "description": "Delete announcement"
           }
         },
         {
@@ -1128,12 +949,11 @@
               "query": [
                 {
                   "key": "limit",
-                  "value": "5",
-                  "description": "Number of recent announcements to get"
+                  "value": "5"
                 }
               ]
             },
-            "description": "Get most recent announcements."
+            "description": "Get recent announcements"
           }
         },
         {
@@ -1145,13 +965,13 @@
               "host": ["{{base_url}}"],
               "path": ["api", "announcements", "stats"]
             },
-            "description": "Get announcement counts and statistics for dashboard."
+            "description": "Get announcement statistics"
           }
         }
       ]
     },
     {
-      "name": "📁 File Upload (Future - Issue #7)",
+      "name": "Files",
       "item": [
         {
           "name": "Upload Photo",
@@ -1183,7 +1003,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "files", "upload"]
             },
-            "description": "Upload photo for announcement."
+            "description": "Upload photo for announcement"
           }
         },
         {
@@ -1195,13 +1015,13 @@
               "host": ["{{base_url}}"],
               "path": ["api", "files", "{{file_id}}"]
             },
-            "description": "Get uploaded file by ID."
+            "description": "Get file by ID"
           }
         }
       ]
     },
     {
-      "name": "💬 Messaging (Future - Issue #8)",
+      "name": "Messaging",
       "item": [
         {
           "name": "Send Message",
@@ -1219,14 +1039,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"recipientId\": \"2\",\n    \"announcementId\": \"{{announcement_id}}\",\n    \"content\": \"Hi! I think I found your lost item. Can we meet?\"\n}"
+              "raw": "{\n    \"recipientId\": \"2\",\n    \"announcementId\": \"{{announcement_id}}\",\n    \"content\": \"Hello, I think I found your lost item.\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/messages",
               "host": ["{{base_url}}"],
               "path": ["api", "messages"]
             },
-            "description": "Send message to another user about an announcement."
+            "description": "Send message to another user"
           }
         },
         {
@@ -1244,7 +1064,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "conversations"]
             },
-            "description": "Get user's conversations."
+            "description": "Get user conversations"
           }
         },
         {
@@ -1267,13 +1087,13 @@
                 "messages"
               ]
             },
-            "description": "Get messages in specific conversation."
+            "description": "Get messages in conversation"
           }
         }
       ]
     },
     {
-      "name": "🔧 System",
+      "name": "System",
       "item": [
         {
           "name": "Health Check",
@@ -1284,7 +1104,7 @@
               "host": ["{{base_url}}"],
               "path": ["actuator", "health"]
             },
-            "description": "Check application health status."
+            "description": "Check application health"
           }
         },
         {
@@ -1296,7 +1116,7 @@
               "host": ["{{base_url}}"],
               "path": ["swagger-ui", "index.html"]
             },
-            "description": "Access Swagger API documentation."
+            "description": "Access API documentation"
           }
         }
       ]

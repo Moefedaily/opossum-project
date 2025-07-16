@@ -7,6 +7,7 @@ import com.opossum.dto.auth.LoginRequest;
 import com.opossum.dto.auth.RefreshTokenRequest;
 import com.opossum.dto.auth.RegisterRequest;
 import com.opossum.entity.User;
+import com.opossum.entity.UserRole;
 import com.opossum.mapper.UserMapper;
 import com.opossum.repository.UserRepository;
 import com.opossum.security.CustomUserDetailsService;
@@ -40,7 +41,6 @@ public class AuthenticationService {
     private final EmailService emailService; // Add email service
 
     // Register new user
-    // Register new user (no JWT tokens until verified)
     public Map<String, String> register(RegisterRequest request) {
         log.info("Registering new user: {}", request.getUsername());
 
@@ -63,12 +63,13 @@ public class AuthenticationService {
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
         user.setIsActive(true);
+        user.setRole(UserRole.USER);
         user.setIsVerified(false); // Email verification required
         user.setVerificationToken(UUID.randomUUID().toString());
 
         // Save user
         User savedUser = userRepository.save(user);
-        log.info("User registered successfully: {}", savedUser.getUsername());
+        log.info("User registered successfully with USER role: {}", savedUser.getUsername());
 
         // Send verification email
         try {
@@ -101,15 +102,15 @@ public class AuthenticationService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = userDetailsService.getUserEntity(request.getLogin());
 
-        // Generate JWT tokens
-        String accessToken = jwtService.generateToken(userDetails, user.getId());
-        String refreshToken = jwtService.generateRefreshToken(userDetails, user.getId());
+        // Generate JWT tokens WITH ROLE
+        String accessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole());
+        String refreshToken = jwtService.generateRefreshToken(userDetails, user.getId(), user.getRole());
 
         // Update last login
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        log.info("User logged in successfully: {}", user.getUsername());
+        log.info("User logged in successfully with role {}: {}", user.getRole(), user.getUsername());
 
         // Return authentication response
         return new AuthenticationResponse(
@@ -140,11 +141,13 @@ public class AuthenticationService {
             throw new RuntimeException("Refresh token is not valid for this user");
         }
 
-        // Generate new access token
+        // Get current user (to get updated role if changed)
         User user = userDetailsService.getUserEntity(username);
-        String newAccessToken = jwtService.generateToken(userDetails, user.getId());
 
-        log.info("Access token refreshed for user: {}", username);
+        // Generate new access token WITH ROLE
+        String newAccessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole());
+
+        log.info("Access token refreshed for user with role {}: {}", user.getRole(), username);
 
         // Return new authentication response
         return new AuthenticationResponse(
@@ -269,5 +272,9 @@ public class AuthenticationService {
         String username = jwtService.extractUsername(token);
         User user = userDetailsService.getUserEntity(username);
         return userMapper.toDto(user);
+    }
+
+    public UserRole getCurrentUserRole(String token) {
+        return jwtService.extractRole(token);
     }
 }

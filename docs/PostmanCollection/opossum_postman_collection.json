@@ -47,6 +47,7 @@
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    console.log('Registration successful:', response.message);",
+                  "    console.log('Note: User will have USER role by default');",
                   "} else {",
                   "    console.log('Registration failed:', pm.response.text());",
                   "}"
@@ -71,11 +72,11 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
             },
-            "description": "Register a new user account. Email verification required before login."
+            "description": "Register a new user account. Email verification required before login. User gets USER role automatically."
           }
         },
         {
-          "name": "Login User",
+          "name": "Login as USER",
           "event": [
             {
               "listen": "test",
@@ -86,8 +87,9 @@
                   "    const response = pm.response.json();",
                   "    ",
                   "    // Set tokens",
+                  "    pm.environment.set('user_access_token', response.accessToken);",
+                  "    pm.environment.set('user_refresh_token', response.refreshToken);",
                   "    pm.environment.set('access_token', response.accessToken);",
-                  "    pm.environment.set('refresh_token', response.refreshToken);",
                   "    ",
                   "    // Set user info",
                   "    pm.environment.set('user_id', response.user.id);",
@@ -97,6 +99,7 @@
                   "    console.log('✅ Login successful! Tokens and user info saved.');",
                   "    console.log('User ID:', response.user.id);",
                   "    console.log('Username:', response.user.username);",
+                  "    console.log('Role:', response.user.role);",
                   "} else {",
                   "    console.log('❌ Login failed:', pm.response.text());",
                   "}"
@@ -121,7 +124,117 @@
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login with username/email and password. Returns JWT tokens."
+            "description": "Login with username/email and password. Returns JWT tokens with role information."
+          }
+        },
+        {
+          "name": "Login as ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Auto-extract admin tokens and user info",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    // Set admin tokens",
+                  "    pm.environment.set('admin_access_token', response.accessToken);",
+                  "    pm.environment.set('admin_refresh_token', response.refreshToken);",
+                  "    pm.environment.set('access_token', response.accessToken);",
+                  "    ",
+                  "    // Set admin info",
+                  "    pm.environment.set('admin_id', response.user.id);",
+                  "    pm.environment.set('current_username', response.user.username);",
+                  "    pm.environment.set('current_email', response.user.email);",
+                  "    ",
+                  "    console.log('✅ Admin login successful!');",
+                  "    console.log('Admin ID:', response.user.id);",
+                  "    console.log('Username:', response.user.username);",
+                  "    console.log('Role:', response.user.role);",
+                  "} else {",
+                  "    console.log('❌ Admin login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as admin user (assumes admin user exists in database)."
+          }
+        },
+        {
+          "name": "Switch to USER Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Switch to USER token for testing",
+                  "const userToken = pm.environment.get('user_access_token');",
+                  "if (userToken) {",
+                  "    pm.environment.set('access_token', userToken);",
+                  "    console.log('✅ Switched to USER token');",
+                  "} else {",
+                  "    console.log('❌ USER token not found. Please login as USER first.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Switch to USER token and verify current user."
+          }
+        },
+        {
+          "name": "Switch to ADMIN Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Switch to ADMIN token for testing",
+                  "const adminToken = pm.environment.get('admin_access_token');",
+                  "if (adminToken) {",
+                  "    pm.environment.set('access_token', adminToken);",
+                  "    console.log('✅ Switched to ADMIN token');",
+                  "} else {",
+                  "    console.log('❌ ADMIN token not found. Please login as ADMIN first.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Switch to ADMIN token and verify current admin."
           }
         },
         {
@@ -339,6 +452,143 @@
               "path": ["api", "auth", "logout"]
             },
             "description": "Logout current user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Security Tests",
+      "item": [
+        {
+          "name": "USER tries Admin Endpoint (Should Fail)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Ensure using USER token",
+                  "const userToken = pm.environment.get('user_access_token');",
+                  "if (userToken) {",
+                  "    pm.environment.set('access_token', userToken);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This should fail with 403",
+                  "if (pm.response.code === 403) {",
+                  "    console.log('✅ Security test PASSED - USER correctly denied admin access');",
+                  "} else if (pm.response.code === 200) {",
+                  "    console.log('❌ Security test FAILED - USER should not access admin endpoints');",
+                  "} else {",
+                  "    console.log('🔍 Unexpected response:', pm.response.code, pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Security test: USER trying to access admin endpoint (should fail with 403)."
+          }
+        },
+        {
+          "name": "ADMIN accesses Admin Endpoint (Should Work)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Ensure using ADMIN token",
+                  "const adminToken = pm.environment.get('admin_access_token');",
+                  "if (adminToken) {",
+                  "    pm.environment.set('access_token', adminToken);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This should succeed",
+                  "if (pm.response.code === 200) {",
+                  "    console.log('✅ Security test PASSED - ADMIN correctly has admin access');",
+                  "    const users = pm.response.json();",
+                  "    console.log('📊 Admin can see', users.length, 'users');",
+                  "} else {",
+                  "    console.log('❌ Security test FAILED - ADMIN should access admin endpoints');",
+                  "    console.log('🔍 Response:', pm.response.code, pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Security test: ADMIN accessing admin endpoint (should succeed)."
+          }
+        },
+        {
+          "name": "No Token Access (Should Fail)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Remove authorization header for this test",
+                  "pm.request.removeHeader('Authorization');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This should fail with 401",
+                  "if (pm.response.code === 401) {",
+                  "    console.log('✅ Security test PASSED - No token correctly denied access');",
+                  "} else {",
+                  "    console.log('❌ Security test FAILED - Protected endpoint should require auth');",
+                  "    console.log('🔍 Response:', pm.response.code, pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Security test: No token accessing protected endpoint (should fail with 401)."
           }
         }
       ]

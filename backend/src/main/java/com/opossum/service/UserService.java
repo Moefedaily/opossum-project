@@ -3,6 +3,7 @@ package com.opossum.service;
 import com.opossum.dto.UserDto;
 import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.entity.User;
+import com.opossum.entity.UserRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +54,10 @@ public interface UserService {
     long getActiveUserCount();
 
     long getVerifiedUserCount();
+
+    // Role management
+    UserDto assignRole(Long userId, UserRole role);
+
+    List<UserDto> getUsersByRole(UserRole role);
+
 }

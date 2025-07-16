@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,39 +20,39 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
         log.debug("Loading user by login: {}", login);
 
-        // Try to find user by username first, then by email
-        User user = userRepository.findByUsername(login)
-                .or(() -> userRepository.findByEmail(login))
-                .orElseThrow(() -> {
-                    log.error("User not found with login: {}", login);
-                    return new UsernameNotFoundException("User not found with login: " + login);
-                });
+        User user = findUserForAuthentication(login);
 
-        log.debug("User found: {} (ID: {})", user.getUsername(), user.getId());
+        if (!user.getIsVerified()) {
+            throw new RuntimeException("Email not verified. Please verify your email before logging in.");
+        }
 
-        // Create UserDetails with authorities
+        if (!user.getIsActive()) {
+            throw new RuntimeException("Account is deactivated. Please contact support.");
+        }
+
+        // Create authorities based on user role
+        List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPasswordHash())
-                .authorities(getUserAuthorities(user))
-                .accountExpired(!user.isAccountNonExpired())
-                .accountLocked(!user.isAccountNonLocked())
-                .credentialsExpired(!user.isCredentialsNonExpired())
-                .disabled(!user.isEnabled())
+                .authorities(authorities)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(!user.getIsActive())
                 .build();
     }
 
-    // Get user authorities/roles
-    private List<SimpleGrantedAuthority> getUserAuthorities(User user) {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    public User getUserEntity(String login) {
+        return findUserForAuthentication(login);
     }
 
-    @Transactional(readOnly = true)
-    public User getUserEntity(String login) {
+    private User findUserForAuthentication(String login) {
         return userRepository.findByUsername(login)
                 .or(() -> userRepository.findByEmail(login))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + login));

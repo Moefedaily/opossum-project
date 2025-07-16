@@ -1,6 +1,5 @@
 package com.opossum.config;
 
-import com.opossum.security.CustomUserDetailsService;
 import com.opossum.security.JwtAuthenticationFilter;
 import com.opossum.util.Argon2idPasswordEncoder;
 
@@ -16,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -23,54 +23,77 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity // Enable method-level security
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new Argon2idPasswordEncoder();
     }
 
-    private static final String[] PUBLIC_URLS = {
-            "/api/auth/**", // All authentication endpoints
-            "/actuator/health", // Health check
-            "/swagger-ui/**", // Swagger UI
-            "/swagger-ui.html", // Swagger UI
-            "/v3/api-docs/**", // OpenAPI docs
-            "/h2-console/**" // H2 console (if used)
-    };
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF for REST API
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Configure CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // Configure authorization
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_URLS).permitAll()
-                        .anyRequest().authenticated())
-
-                // Stateless session management (JWT-based)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        // Public endpoints (no authentication required)
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/verify-email").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/resend-verification").permitAll()
 
-                // Configure authentication provider
+                        // Health check
+                        .requestMatchers("/actuator/health").permitAll()
+
+                        // Swagger documentation
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        // Public announcement viewing
+                        .requestMatchers("GET", "/api/announcements").permitAll()
+                        .requestMatchers("GET", "/api/announcements/*/files").permitAll()
+
+                        // Admin-only endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users").hasRole("ADMIN")
+                        .requestMatchers("POST", "/api/users").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/*/role").hasRole("ADMIN")
+
+                        // User endpoints (both USER and ADMIN)
+                        .requestMatchers("/api/auth/me").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/auth/change-password").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/auth/logout").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/auth/refresh").hasAnyRole("USER", "ADMIN")
+
+                        // Announcement management
+                        .requestMatchers("POST", "/api/announcements").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("PUT", "/api/announcements/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("DELETE", "/api/announcements/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/announcements/my").hasAnyRole("USER", "ADMIN")
+
+                        // File uploads
+                        .requestMatchers("POST", "/api/files/**").hasAnyRole("USER", "ADMIN")
+
+                        // Messaging
+                        .requestMatchers("/api/conversations/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/messages/**").hasAnyRole("USER", "ADMIN")
+
+                        // All other requests require authentication
+                        .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
-
-                // Add JWT filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -91,21 +114,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Allow specific origins (configure based on your frontend)
         configuration.setAllowedOriginPatterns(List.of("*"));
-
-        // Allow specific HTTP methods
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // Allow specific headers
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-
-        // Allow credentials (cookies, authorization headers)
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-
-        // Expose headers to frontend
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

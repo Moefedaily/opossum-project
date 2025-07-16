@@ -38,6 +38,10 @@ public class User {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role = UserRole.USER;
+
     @Column(length = 50)
     private String firstName;
 

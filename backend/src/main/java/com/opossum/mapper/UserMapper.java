@@ -20,6 +20,7 @@ public class UserMapper {
         dto.setLastName(user.getLastName());
         dto.setPhone(user.getPhone());
         dto.setIsActive(user.getIsActive());
+        dto.setRole(user.getRole());
         dto.setIsVerified(user.getIsVerified());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
@@ -42,6 +43,7 @@ public class UserMapper {
         user.setLastName(dto.getLastName());
         user.setPhone(dto.getPhone());
         user.setIsActive(dto.getIsActive());
+        user.setRole(dto.getRole());
         user.setIsVerified(dto.getIsVerified());
         user.setCreatedAt(dto.getCreatedAt());
         user.setUpdatedAt(dto.getUpdatedAt());

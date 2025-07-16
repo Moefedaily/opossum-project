@@ -3,6 +3,7 @@ package com.opossum.service.impl;
 import com.opossum.dto.UserDto;
 import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.entity.User;
+import com.opossum.entity.UserRole;
 import com.opossum.mapper.UserMapper;
 import com.opossum.repository.UserRepository;
 import com.opossum.service.UserService;
@@ -50,8 +51,9 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
+        user.setRole(UserRole.ADMIN);
         user.setIsActive(true);
-        user.setIsVerified(false);
+        user.setIsVerified(true);
         user.setVerificationToken(UUID.randomUUID().toString());
 
         // Save user
@@ -239,5 +241,24 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public long getVerifiedUserCount() {
         return userRepository.countByIsVerifiedTrue();
+    }
+
+    @Override
+    public UserDto assignRole(Long userId, UserRole role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setRole(role);
+        User updatedUser = userRepository.save(user);
+        return userMapper.toDto(updatedUser);
+
+    }
+
+    @Override
+    public List<UserDto> getUsersByRole(UserRole role) {
+        List<User> users = userRepository.findByRole(role);
+        return users.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

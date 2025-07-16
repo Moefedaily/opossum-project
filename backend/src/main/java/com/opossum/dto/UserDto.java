@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.opossum.entity.UserRole;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,6 +35,7 @@ public class UserDto {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
     private String avatarUrl;
+    private UserRole role;
 
     // Computed field
     public String getFullName() {

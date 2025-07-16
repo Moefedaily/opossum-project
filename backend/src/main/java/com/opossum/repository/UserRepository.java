@@ -1,6 +1,8 @@
 package com.opossum.repository;
 
 import com.opossum.entity.User;
+import com.opossum.entity.UserRole;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -39,4 +41,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Count verified users
     long countByIsVerifiedTrue();
+
+    // Find users by role
+    List<User> findByRole(UserRole role);
 }

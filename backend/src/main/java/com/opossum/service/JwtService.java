@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import com.opossum.entity.UserRole;
 
 import java.security.Key;
 import java.util.Date;
@@ -49,6 +50,14 @@ public class JwtService {
         return buildToken(claims, userDetails, jwtExpiration);
     }
 
+    // Generate token for user with role
+    public String generateToken(UserDetails userDetails, Long userId, UserRole role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("role", role.name());
+        return buildToken(claims, userDetails, jwtExpiration);
+    }
+
     // Generate token with custom claims
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpiration);
@@ -58,6 +67,14 @@ public class JwtService {
     public String generateRefreshToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
+        return buildToken(claims, userDetails, jwtExpiration * 7);
+    }
+
+    // Generate refresh token with role
+    public String generateRefreshToken(UserDetails userDetails, Long userId, UserRole role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("role", role.name());
         return buildToken(claims, userDetails, jwtExpiration * 7);
     }
 
@@ -81,6 +98,24 @@ public class JwtService {
         } catch (Exception e) {
             log.error("Error extracting user ID from token: {}", e.getMessage());
             throw new RuntimeException("Invalid token: cannot extract user ID");
+        }
+    }
+
+    // Extract user role from JWT token
+    public UserRole extractRole(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String roleClaim = claims.get("role", String.class);
+
+            if (roleClaim != null) {
+                return UserRole.valueOf(roleClaim);
+            } else {
+                log.warn("Role not found in token, defaulting to USER");
+                return UserRole.USER;
+            }
+        } catch (Exception e) {
+            log.error("Error extracting role from token: {}", e.getMessage());
+            return UserRole.USER;
         }
     }
 

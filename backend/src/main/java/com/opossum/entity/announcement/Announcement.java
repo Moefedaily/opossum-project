@@ -11,9 +11,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.opossum.entity.User;
+import com.opossum.entity.File;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ops_announcements")
@@ -84,6 +87,10 @@ public class Announcement {
     @NotNull(message = "User is required")
     private User user;
 
+    // File relationship - One-to-Many
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<File> files = new ArrayList<>();
+
     // Additional fields
     @Column(length = 500)
     @Size(max = 500, message = "Contact info must not exceed 500 characters")
@@ -92,7 +99,7 @@ public class Announcement {
     @Column(nullable = false)
     private Boolean isActive = true;
 
-    // Utility method
+    // Utility methods
     public String getLocationDescription() {
         if (address != null && !address.trim().isEmpty()) {
             return address;
@@ -101,4 +108,33 @@ public class Announcement {
         }
         return "Location not specified";
     }
+
+    // File utility methods
+    public void addFile(File file) {
+        if (files == null) {
+            files = new ArrayList<>();
+        }
+        files.add(file);
+        file.setAnnouncement(this);
+    }
+
+    public void removeFile(File file) {
+        if (files != null) {
+            files.remove(file);
+            file.setAnnouncement(null);
+        }
+    }
+
+    public List<File> getImageFiles() {
+        if (files == null)
+            return new ArrayList<>();
+        return files.stream()
+                .filter(File::isImage)
+                .toList();
+    }
+
+    public boolean hasImages() {
+        return getImageFiles().size() > 0;
+    }
+
 }

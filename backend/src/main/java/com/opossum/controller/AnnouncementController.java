@@ -14,12 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -258,6 +260,76 @@ public class AnnouncementController {
 
         } catch (Exception e) {
             log.error("Error getting announcement stats: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/nearby")
+    @Operation(summary = "Find nearby announcements", description = "Find announcements within specified radius from given location")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nearby announcements found"),
+            @ApiResponse(responseCode = "400", description = "Invalid location parameters")
+    })
+    public ResponseEntity<?> getNearbyAnnouncements(
+            @Parameter(description = "User's latitude") @RequestParam @NotNull BigDecimal latitude,
+            @Parameter(description = "User's longitude") @RequestParam @NotNull BigDecimal longitude,
+            @Parameter(description = "Search radius in kilometers") @RequestParam @NotNull Double radiusKm) {
+
+        try {
+            // Validate parameters
+            if (radiusKm <= 0 || radiusKm > 100) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Radius must be between 0 and 100 km"));
+            }
+
+            if (latitude.abs().compareTo(BigDecimal.valueOf(90)) > 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Latitude must be between -90 and 90"));
+            }
+
+            if (longitude.abs().compareTo(BigDecimal.valueOf(180)) > 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Longitude must be between -180 and 180"));
+            }
+
+            List<AnnouncementDto> nearbyAnnouncements = announcementService.findNearbyAnnouncements(latitude, longitude,
+                    radiusKm);
+            return ResponseEntity.ok(nearbyAnnouncements);
+
+        } catch (Exception e) {
+            log.error("Error finding nearby announcements: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/sorted-by-distance")
+    @Operation(summary = "Get announcements sorted by distance", description = "Get all announcements sorted by distance from user location")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Announcements sorted by distance"),
+            @ApiResponse(responseCode = "400", description = "Invalid location parameters")
+    })
+    public ResponseEntity<?> getAnnouncementsSortedByDistance(
+            @Parameter(description = "User's latitude") @RequestParam @NotNull BigDecimal latitude,
+            @Parameter(description = "User's longitude") @RequestParam @NotNull BigDecimal longitude) {
+
+        try {
+            // Validate coordinates
+            if (latitude.abs().compareTo(BigDecimal.valueOf(90)) > 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Latitude must be between -90 and 90"));
+            }
+
+            if (longitude.abs().compareTo(BigDecimal.valueOf(180)) > 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Longitude must be between -180 and 180"));
+            }
+
+            List<AnnouncementDto> sortedAnnouncements = announcementService.findAnnouncementsSortedByDistance(latitude,
+                    longitude);
+            return ResponseEntity.ok(sortedAnnouncements);
+
+        } catch (Exception e) {
+            log.error("Error getting announcements sorted by distance: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

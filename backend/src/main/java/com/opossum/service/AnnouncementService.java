@@ -1,5 +1,6 @@
 package com.opossum.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import com.opossum.dto.announcement.UpdateAnnouncementRequest;
 import com.opossum.entity.announcement.AnnouncementCategory;
 import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.entity.announcement.AnnouncementType;
+
+import jakarta.validation.constraints.NotNull;
 
 public interface AnnouncementService {
 
@@ -73,4 +76,28 @@ public interface AnnouncementService {
     void adminDeleteAnnouncement(Long id);
 
     AnnouncementDto adminUpdateAnnouncementStatus(Long id, AnnouncementStatus status);
+
+    /**
+     * Find active announcements within radius, sorted by distance *
+     * 
+     * @param latitude  User's latitude
+     * @param longitude User's longitude
+     * @param radiusKm  Search radius in kilometers
+     * @return List of announcements within the radius, sorted by distance
+     */
+    List<AnnouncementDto> findNearbyAnnouncements(
+            @NotNull BigDecimal latitude,
+            @NotNull BigDecimal longitude,
+            @NotNull Double radiusKm);
+
+    /**
+     * Find all active announcements sorted by distance *
+     * 
+     * @param userLatitude  User's current latitude
+     * @param userLongitude User's current longitude
+     * @return List of announcements sorted by distance (closest first)
+     */
+    List<AnnouncementDto> findAnnouncementsSortedByDistance(
+            @NotNull BigDecimal userLatitude,
+            @NotNull BigDecimal userLongitude);
 }

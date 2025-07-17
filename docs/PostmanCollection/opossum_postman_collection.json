@@ -971,10 +971,36 @@
       ]
     },
     {
-      "name": "Files",
+      "name": "Files - Lost & Found Photos",
       "item": [
         {
-          "name": "Upload Photo",
+          "name": "Upload Single Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success) {",
+                  "        console.log('Upload successful!');",
+                  "        console.log('File ID:', response.id);",
+                  "        console.log('Original name:', response.originalFilename);",
+                  "        console.log('Size:', response.formattedFileSize);",
+                  "        console.log('Cloudinary URL:', response.url);",
+                  "        console.log('Thumbnail URL:', response.thumbnailUrl);",
+                  "        pm.environment.set('file_id', response.id);",
+                  "    } else {",
+                  "        console.log('Upload failed:', response.message);",
+                  "    }",
+                  "} else {",
+                  "    console.log('Upload failed with status:', pm.response.code);",
+                  "    console.log('Error:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -1003,11 +1029,99 @@
               "host": ["{{base_url}}"],
               "path": ["api", "files", "upload"]
             },
-            "description": "Upload photo for announcement"
+            "description": "Upload a single photo to a lost/found announcement"
           }
         },
         {
-          "name": "Get File",
+          "name": "Upload Multiple Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responses = pm.response.json();",
+                  "    console.log(`Uploaded ${responses.length} files:`);",
+                  "    responses.forEach((response, index) => {",
+                  "        if (response.success) {",
+                  "            console.log(`File ${index + 1}: SUCCESS - ${response.originalFilename} (ID: ${response.id})`);",
+                  "            if (index === 0) {",
+                  "                pm.environment.set('file_id', response.id);",
+                  "            }",
+                  "        } else {",
+                  "            console.log(`File ${index + 1}: FAILED - ${response.message}`);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    console.log('Upload failed with status:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "announcementId",
+                  "value": "{{announcement_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload-multiple",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload-multiple"]
+            },
+            "description": "Upload multiple photos to a lost/found announcement"
+          }
+        },
+        {
+          "name": "Get Photo Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const file = pm.response.json();",
+                  "    console.log('Photo Details:');",
+                  "    console.log('ID:', file.id);",
+                  "    console.log('Original Name:', file.originalFilename);",
+                  "    console.log('Size:', file.formattedFileSize);",
+                  "    console.log('Type:', file.contentType);",
+                  "    console.log('Is Image:', file.isImage);",
+                  "    console.log('Cloudinary URL:', file.url);",
+                  "    console.log('Thumbnail URL:', file.thumbnailUrl);",
+                  "    console.log('Optimized URL:', file.optimizedUrl);",
+                  "    console.log('Uploaded by:', file.uploadedByUsername);",
+                  "    console.log('Announcement:', file.announcementTitle);",
+                  "} else {",
+                  "    console.log('Photo not found');",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "url": {
@@ -1015,7 +1129,222 @@
               "host": ["{{base_url}}"],
               "path": ["api", "files", "{{file_id}}"]
             },
-            "description": "Get file by ID"
+            "description": "Get photo metadata and URLs by ID"
+          }
+        },
+        {
+          "name": "Get Photos by Announcement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`Found ${files.length} photo(s) for this announcement:`);",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} - ${file.formattedFileSize}`);",
+                  "        console.log('   Thumbnail: ' + file.thumbnailUrl);",
+                  "        console.log('   Full size: ' + file.url);",
+                  "    });",
+                  "} else {",
+                  "    console.log('Error getting photos for announcement');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/files/announcement/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "announcement", "{{announcement_id}}"]
+            },
+            "description": "Get all photos for a specific lost/found announcement"
+          }
+        },
+        {
+          "name": "Get My Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`You have uploaded ${files.length} photo(s):`);",
+                  "    let totalSize = 0;",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} - ${file.formattedFileSize}`);",
+                  "        console.log('   For announcement: ' + file.announcementTitle);",
+                  "        console.log('   Upload date: ' + file.createdAt);",
+                  "        totalSize += file.fileSize || 0;",
+                  "    });",
+                  "    const totalMB = (totalSize / 1024 / 1024).toFixed(2);",
+                  "    console.log(`Total storage used: ${totalMB} MB`);",
+                  "} else {",
+                  "    console.log('Error getting your photos');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/my",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "my"]
+            },
+            "description": "Get all photos uploaded by current user"
+          }
+        },
+        {
+          "name": "Delete Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    console.log('Photo deleted successfully');",
+                  "    console.log('The photo has been removed from both Cloudinary and database');",
+                  "} else if (pm.response.code === 403) {",
+                  "    console.log('Permission denied - you can only delete your own photos');",
+                  "} else {",
+                  "    console.log('Error deleting photo:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "{{file_id}}"]
+            },
+            "description": "Delete a photo (owner only) - removes from both Cloudinary and database"
+          }
+        },
+        {
+          "name": "Admin - Get All Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`Admin view: ${files.length} total photos in system`);",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} by ${file.uploadedByUsername}`);",
+                  "        console.log('   Announcement: ' + file.announcementTitle);",
+                  "        console.log('   Status: ' + (file.isActive ? 'Active' : 'Inactive'));",
+                  "    });",
+                  "} else {",
+                  "    console.log('Error getting all photos (admin access required)');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "all"]
+            },
+            "description": "Get all photos in system (Admin only)"
+          }
+        },
+        {
+          "name": "Admin - Delete Any Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    console.log('Photo deleted by admin successfully');",
+                  "    console.log('Admin can delete any photo regardless of ownership');",
+                  "} else {",
+                  "    console.log('Error in admin deletion:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "{{file_id}}"]
+            },
+            "description": "Delete any photo regardless of ownership (Admin only)"
+          }
+        },
+        {
+          "name": "Admin - Get Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const stats = pm.response.json();",
+                  "    console.log('Photo Statistics:');",
+                  "    console.log('Total Active Photos:', stats.totalFiles);",
+                  "    console.log('Status:', stats.message);",
+                  "} else {",
+                  "    console.log('Error getting photo statistics (admin access required)');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "stats"]
+            },
+            "description": "Get basic photo statistics (Admin only)"
           }
         }
       ]

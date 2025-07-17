@@ -1401,6 +1401,48 @@
       "name": "Messaging",
       "item": [
         {
+          "name": "Start Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('conversation_id', response.id);",
+                  "    console.log('Conversation started with ID:', response.id);",
+                  "} else {",
+                  "    console.log('Failed to start conversation');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"announcementId\": {{announcement_id}},\n    \"initialMessage\": \"Hello, I think I found your lost item. When can we meet?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations/start",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "start"]
+            },
+            "description": "Start a new conversation about an announcement"
+          }
+        },
+        {
           "name": "Send Message",
           "request": {
             "method": "POST",
@@ -1416,18 +1458,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"recipientId\": \"2\",\n    \"announcementId\": \"{{announcement_id}}\",\n    \"content\": \"Hello, I think I found your lost item.\"\n}"
+              "raw": "{\n    \"conversationId\": {{conversation_id}},\n    \"content\": \"Yes, I believe this is yours. Where would you like to meet?\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/messages",
               "host": ["{{base_url}}"],
               "path": ["api", "messages"]
             },
-            "description": "Send message to another user"
+            "description": "Send a message in an existing conversation"
           }
         },
         {
-          "name": "Get Conversations",
+          "name": "Get User Conversations",
           "request": {
             "method": "GET",
             "header": [
@@ -1441,11 +1483,11 @@
               "host": ["{{base_url}}"],
               "path": ["api", "conversations"]
             },
-            "description": "Get user conversations"
+            "description": "Get all conversations for current user"
           }
         },
         {
-          "name": "Get Messages in Conversation",
+          "name": "Get Active Conversations",
           "request": {
             "method": "GET",
             "header": [
@@ -1455,16 +1497,226 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/messages",
+              "raw": "{{base_url}}/api/conversations/active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "active"]
+            },
+            "description": "Get only active conversations for current user"
+          }
+        },
+        {
+          "name": "Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "{{conversation_id}}"]
+            },
+            "description": "Get specific conversation details"
+          }
+        },
+        {
+          "name": "Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "conversation", "{{conversation_id}}"]
+            },
+            "description": "Get all messages in a conversation"
+          }
+        },
+        {
+          "name": "Get Message by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}"]
+            },
+            "description": "Get specific message details"
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}", "read"]
+            },
+            "description": "Mark a specific message as read"
+          }
+        },
+        {
+          "name": "Mark All Messages as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}/read-all",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "messages",
+                "conversation",
+                "{{conversation_id}}",
+                "read-all"
+              ]
+            },
+            "description": "Mark all messages in a conversation as read"
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}"]
+            },
+            "description": "Delete a message (sender only)"
+          }
+        },
+        {
+          "name": "Get Unread Message Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "unread-count"]
+            },
+            "description": "Get total count of unread messages for user"
+          }
+        },
+        {
+          "name": "Get Conversation Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}/unread-count",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "messages",
+                "conversation",
+                "{{conversation_id}}",
+                "unread-count"
+              ]
+            },
+            "description": "Get count of unread messages in specific conversation"
+          }
+        },
+        {
+          "name": "Archive Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/archive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "{{conversation_id}}", "archive"]
+            },
+            "description": "Archive a conversation"
+          }
+        },
+        {
+          "name": "Reactivate Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/reactivate",
               "host": ["{{base_url}}"],
               "path": [
                 "api",
                 "conversations",
                 "{{conversation_id}}",
-                "messages"
+                "reactivate"
               ]
             },
-            "description": "Get messages in conversation"
+            "description": "Reactivate an archived conversation"
+          }
+        },
+        {
+          "name": "Get Unread Conversations Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "unread-count"]
+            },
+            "description": "Get count of conversations with unread messages"
           }
         }
       ]

@@ -22,6 +22,7 @@ public class AnnouncementDto {
     private BigDecimal longitude;
     private String address;
     private Boolean isLocationApproximate;
+    private Double distanceKm;
 
     // Date fields
     private LocalDateTime incidentDate;

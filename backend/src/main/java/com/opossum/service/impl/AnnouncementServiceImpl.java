@@ -17,9 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -297,4 +300,95 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         log.info("Announcement status updated by admin for ID: {}", updatedAnnouncement.getId());
         return announcementMapper.toDto(updatedAnnouncement);
     }
+
+    /**
+     * Calculate distance between two GPS coordinates using Haversine formula
+     * 
+     * @param lat1 First point latitude
+     * @param lng1 First point longitude
+     * @param lat2 Second point latitude
+     * @param lng2 Second point longitude
+     * @return Distance in kilometers
+     */
+    private Double calculateDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2) {
+        // Handle null coordinates
+        if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
+            return null;
+        }
+
+        // Convert to double for calculations
+        double lat1Rad = Math.toRadians(lat1.doubleValue());
+        double lng1Rad = Math.toRadians(lng1.doubleValue());
+        double lat2Rad = Math.toRadians(lat2.doubleValue());
+        double lng2Rad = Math.toRadians(lng2.doubleValue());
+
+        // Haversine formula
+        double deltaLat = lat2Rad - lat1Rad;
+        double deltaLng = lng2Rad - lng1Rad;
+
+        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+                        Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        // Earth's radius in kilometers
+        double earthRadiusKm = 6371.0;
+
+        return earthRadiusKm * c;
+    }
+
+    @Override
+    public List<AnnouncementDto> findNearbyAnnouncements(BigDecimal latitude, BigDecimal longitude, Double radiusKm) {
+        log.debug("Finding announcements within {}km of location: {}, {}", radiusKm, latitude, longitude);
+
+        // Calculate bounding box for efficient database query
+        double latDelta = radiusKm / 111.0; // Approximate: 1 degree latitude ≈ 111 km
+        double lngDelta = radiusKm / (111.0 * Math.cos(Math.toRadians(latitude.doubleValue())));
+
+        BigDecimal minLat = latitude.subtract(BigDecimal.valueOf(latDelta));
+        BigDecimal maxLat = latitude.add(BigDecimal.valueOf(latDelta));
+        BigDecimal minLng = longitude.subtract(BigDecimal.valueOf(lngDelta));
+        BigDecimal maxLng = longitude.add(BigDecimal.valueOf(lngDelta));
+
+        // Get announcements within bounding box
+        List<Announcement> candidates = announcementRepository.findWithinBoundingBox(minLat, maxLat, minLng, maxLng);
+
+        // Filter by exact distance and sort by distance
+        return candidates.stream()
+                .map(announcement -> {
+                    AnnouncementDto dto = announcementMapper.toDto(announcement);
+                    // Calculate exact distance
+                    Double distance = calculateDistance(latitude, longitude,
+                            announcement.getLatitude(), announcement.getLongitude());
+                    dto.setDistanceKm(distance);
+                    return dto;
+                })
+                .filter(dto -> dto.getDistanceKm() != null && dto.getDistanceKm() <= radiusKm)
+                .sorted(Comparator.comparing(AnnouncementDto::getDistanceKm))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AnnouncementDto> findAnnouncementsSortedByDistance(BigDecimal userLatitude, BigDecimal userLongitude) {
+        log.debug("Finding all announcements sorted by distance from: {}, {}", userLatitude, userLongitude);
+
+        // Get all announcements with GPS coordinates
+        List<Announcement> announcements = announcementRepository.findAllWithGpsCoordinates();
+
+        // Calculate distances and sort
+        return announcements.stream()
+                .map(announcement -> {
+                    AnnouncementDto dto = announcementMapper.toDto(announcement);
+                    // Calculate distance
+                    Double distance = calculateDistance(userLatitude, userLongitude,
+                            announcement.getLatitude(), announcement.getLongitude());
+                    dto.setDistanceKm(distance);
+                    return dto;
+                })
+                .filter(dto -> dto.getDistanceKm() != null)
+                .sorted(Comparator.comparing(AnnouncementDto::getDistanceKm))
+                .collect(Collectors.toList());
+    }
+
 }

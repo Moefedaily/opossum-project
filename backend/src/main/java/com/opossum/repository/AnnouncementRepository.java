@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -82,4 +83,36 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
 
         // User's recent announcements
         List<Announcement> findTop5ByUserIdOrderByCreatedAtDesc(Long userId);
+
+        /**
+         * Find announcements with GPS coordinates within bounding box
+         * This is more efficient than calculating distance for every record
+         * 
+         * @param minLat Minimum latitude (south boundary)
+         * @param maxLat Maximum latitude (north boundary)
+         * @param minLng Minimum longitude (west boundary)
+         * @param maxLng Maximum longitude (east boundary)
+         * @return List of announcements within the bounding box
+         */
+        @Query("SELECT a FROM Announcement a WHERE " +
+                        "a.latitude IS NOT NULL AND a.longitude IS NOT NULL AND " +
+                        "a.latitude BETWEEN :minLat AND :maxLat AND " +
+                        "a.longitude BETWEEN :minLng AND :maxLng AND " +
+                        "a.isActive = true " +
+                        "ORDER BY a.createdAt DESC")
+        List<Announcement> findWithinBoundingBox(@Param("minLat") BigDecimal minLat,
+                        @Param("maxLat") BigDecimal maxLat,
+                        @Param("minLng") BigDecimal minLng,
+                        @Param("maxLng") BigDecimal maxLng);
+
+        /**
+         * Find all active announcements that have GPS coordinates
+         * 
+         * @return List of announcements with valid GPS coordinates
+         */
+        @Query("SELECT a FROM Announcement a WHERE " +
+                        "a.latitude IS NOT NULL AND a.longitude IS NOT NULL AND " +
+                        "a.isActive = true " +
+                        "ORDER BY a.createdAt DESC")
+        List<Announcement> findAllWithGpsCoordinates();
 }

@@ -967,6 +967,54 @@
             },
             "description": "Get announcement statistics"
           }
+        },
+        {
+          "name": "Find Nearby Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7640&longitude=4.8357&radiusKm=2.0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "nearby"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "45.7640"
+                },
+                {
+                  "key": "longitude",
+                  "value": "4.8357"
+                },
+                {
+                  "key": "radiusKm",
+                  "value": "2.0"
+                }
+              ]
+            },
+            "description": "Find announcements within specified radius"
+          }
+        },
+        {
+          "name": "Get Announcements Sorted by Distance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/sorted-by-distance?latitude=45.7640&longitude=4.8357",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "sorted-by-distance"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "45.7640"
+                },
+                {
+                  "key": "longitude",
+                  "value": "4.8357"
+                }
+              ]
+            },
+            "description": "Get all announcements sorted by distance from user location"
+          }
         }
       ]
     },

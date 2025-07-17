@@ -41,8 +41,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
@@ -60,16 +59,25 @@ public class SecurityConfig {
                         // Swagger documentation
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // Public announcement viewing
+                        // Public announcement viewing (lost & found browsing)
                         .requestMatchers("GET", "/api/announcements").permitAll()
-                        .requestMatchers("GET", "/api/announcements/*/files").permitAll()
+                        .requestMatchers("GET", "/api/announcements/*/").permitAll()
+                        .requestMatchers("GET", "/api/announcements/recent").permitAll()
+                        .requestMatchers("GET", "/api/announcements/stats").permitAll()
+
+                        // Public file viewing (photos in lost & found announcements)
+                        .requestMatchers("GET", "/api/files/{id}").permitAll()
+                        .requestMatchers("GET", "/api/files/announcement/*").permitAll()
+
+                        // Public categories (dropdown values)
+                        .requestMatchers("GET", "/api/categories").permitAll()
 
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .requestMatchers("POST", "/api/users").hasRole("ADMIN")
                         .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users/*/role").hasRole("ADMIN")
+                        .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
 
                         // User endpoints (both USER and ADMIN)
                         .requestMatchers("/api/auth/me").hasAnyRole("USER", "ADMIN")
@@ -77,16 +85,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/logout").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/auth/refresh").hasAnyRole("USER", "ADMIN")
 
-                        // Announcement management
+                        // Announcement management (create, update, delete)
                         .requestMatchers("POST", "/api/announcements").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PUT", "/api/announcements/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("PATCH", "/api/announcements/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("DELETE", "/api/announcements/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/announcements/my").hasAnyRole("USER", "ADMIN")
 
-                        // File uploads
-                        .requestMatchers("POST", "/api/files/**").hasAnyRole("USER", "ADMIN")
+                        // File management (upload, delete own files)
+                        .requestMatchers("POST", "/api/files/upload").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("POST", "/api/files/upload-multiple").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("GET", "/api/files/my").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("DELETE", "/api/files/*").hasAnyRole("USER", "ADMIN")
 
-                        // Messaging
+                        // Messaging (when implemented)
                         .requestMatchers("/api/conversations/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/messages/**").hasAnyRole("USER", "ADMIN")
 

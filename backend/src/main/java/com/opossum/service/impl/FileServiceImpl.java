@@ -71,7 +71,7 @@ public class FileServiceImpl implements FileService {
         }
 
         // Upload to Cloudinary
-        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap("resource_type", "auto"));
         String publicId = (String) uploadResult.get("public_id");
         String url = (String) uploadResult.get("secure_url");

@@ -34,15 +34,15 @@ export default function LoginScreen() {
     }
 
     try {
-      console.log("🚀 Starting login process...");
+      console.log("Starting login process...");
       const response = await login(formData);
-      console.log("✅ Login successful, navigating to tabs...");
+      console.log("Login successful, navigating to tabs...");
 
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 100);
     } catch (error: any) {
-      console.error("❌ Login failed:", error.message);
+      console.error("Login failed:", error.message);
 
       if (error.message?.includes("verify")) {
         Toast.show({

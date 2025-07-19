@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
-import { Text, Input, Button } from "@rneui/themed";
-import { Link, router } from "expo-router";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../contexts/AuthContext";
 import { RegisterRequest } from "../../types/auth";
@@ -16,6 +24,7 @@ export default function RegisterScreen() {
     lastName: "",
     phone: "",
   });
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { register, isLoading } = useAuth();
 
   const handleRegister = async () => {
@@ -67,150 +76,175 @@ export default function RegisterScreen() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSocialRegister = (provider: string) => {
+    Alert.alert(
+      "Coming Soon",
+      `${provider} registration will be available soon!`
+    );
+  };
+
+  const getInputContainerStyle = (field: string) => [
+    globalStyles.authInputContainer,
+    focusedField === field && globalStyles.authInputFocused,
+  ];
+
   return (
-    <ScrollView
-      style={globalStyles.container}
-      contentContainerStyle={globalStyles.paddingLg}
-    >
-      <View style={globalStyles.center}>
-        <Text style={globalStyles.heading1}>Create Account 🚀</Text>
-        <Text style={[globalStyles.secondaryText, globalStyles.marginXxl]}>
-          Join OPOSSUM community
-        </Text>
-      </View>
+    <ScrollView style={globalStyles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Input
-        placeholder="Username *"
-        leftIcon={{
-          type: "ionicon",
-          name: "person",
-          color: colors.richOxblood,
-        }}
-        value={formData.username}
-        onChangeText={(value) => updateField("username", value)}
-        autoCapitalize="none"
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="username"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+      {/* Back Button */}
+      <TouchableOpacity
+        style={globalStyles.backButton}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+      </TouchableOpacity>
 
-      <Input
-        placeholder="Email *"
-        leftIcon={{ type: "ionicon", name: "mail", color: colors.richOxblood }}
-        value={formData.email}
-        onChangeText={(value) => updateField("email", value)}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="email"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+      <View style={globalStyles.authContainer}>
+        {/* Header */}
+        <Text style={globalStyles.authHeader}>Sign up.</Text>
 
-      <Input
-        placeholder="Password *"
-        leftIcon={{
-          type: "ionicon",
-          name: "lock-closed",
-          color: colors.richOxblood,
-        }}
-        value={formData.password}
-        onChangeText={(value) => updateField("password", value)}
-        secureTextEntry
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="new-password"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+        <View style={globalStyles.authFormContainer}>
+          {/* Username Input */}
+          <View style={getInputContainerStyle("username")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="NAME"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.username}
+              onChangeText={(value) => updateField("username", value)}
+              onFocus={() => setFocusedField("username")}
+              onBlur={() => setFocusedField(null)}
+              autoCapitalize="none"
+              autoComplete="username"
+            />
+          </View>
 
-      <Input
-        placeholder="First Name"
-        leftIcon={{
-          type: "ionicon",
-          name: "person-outline",
-          color: colors.richOxblood,
-        }}
-        value={formData.firstName}
-        onChangeText={(value) => updateField("firstName", value)}
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="given-name"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+          {/* Email Input */}
+          <View style={getInputContainerStyle("email")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="EMAIL"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.email}
+              onChangeText={(value) => updateField("email", value)}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
+          </View>
 
-      <Input
-        placeholder="Last Name"
-        leftIcon={{
-          type: "ionicon",
-          name: "person-outline",
-          color: colors.richOxblood,
-        }}
-        value={formData.lastName}
-        onChangeText={(value) => updateField("lastName", value)}
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="family-name"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+          {/* Password Input */}
+          <View style={getInputContainerStyle("password")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="PASSWORD"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.password}
+              onChangeText={(value) => updateField("password", value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+          </View>
 
-      <Input
-        placeholder="Phone (optional)"
-        leftIcon={{
-          type: "ionicon",
-          name: "call-outline",
-          color: colors.richOxblood,
-        }}
-        value={formData.phone}
-        onChangeText={(value) => updateField("phone", value)}
-        keyboardType="phone-pad"
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="tel"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+          {/* Phone Input */}
+          <View style={getInputContainerStyle("phone")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="PHONE"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.phone}
+              onChangeText={(value) => updateField("phone", value)}
+              onFocus={() => setFocusedField("phone")}
+              onBlur={() => setFocusedField(null)}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+            />
+          </View>
 
-      <Button
-        title="Create Account"
-        loading={isLoading}
-        onPress={handleRegister}
-        buttonStyle={[globalStyles.primaryButton, globalStyles.marginLg]}
-        titleStyle={{ color: colors.white, fontSize: 16, fontWeight: "600" }}
-        disabled={isLoading}
-      />
+          {/* Privacy Notice */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={[
+                globalStyles.caption,
+                { textAlign: "center", lineHeight: 18 },
+              ]}
+            >
+              By continuing, you agree to our Terms of Service and Privacy
+              Policy
+            </Text>
+          </View>
 
-      <View style={[globalStyles.center, globalStyles.marginXxl]}>
-        <Link href="/(auth)/login">
-          <Text
-            style={[globalStyles.secondaryText, { color: colors.richOxblood }]}
+          {/* Sign Up Button */}
+          <TouchableOpacity
+            style={[
+              globalStyles.authButton,
+              isLoading && globalStyles.authButtonLoading,
+            ]}
+            onPress={handleRegister}
+            disabled={isLoading}
+            activeOpacity={0.8}
           >
-            Already have an account? Sign in
-          </Text>
-        </Link>
+            <Text style={globalStyles.authButtonText}>
+              {isLoading ? "Creating Account..." : "Sign Up"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Social Registration Section */}
+          <View style={globalStyles.socialButtonsContainer}>
+            <Text style={globalStyles.socialButtonsTitle}>OR SIGN UP WITH</Text>
+
+            <View style={globalStyles.socialButtonsRow}>
+              {/* Google Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.googleButton]}
+                onPress={() => handleSocialRegister("Google")}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name="logo-google"
+                  size={24}
+                  color={colors.text.primary}
+                />
+              </TouchableOpacity>
+
+              {/* Facebook Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.facebookButton]}
+                onPress={() => handleSocialRegister("Facebook")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-facebook" size={24} color={colors.white} />
+              </TouchableOpacity>
+
+              {/* Twitter Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.twitterButton]}
+                onPress={() => handleSocialRegister("Twitter")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-twitter" size={24} color={colors.white} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Sign In Link */}
+          <View style={globalStyles.authLinksContainer}>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/login")}
+              activeOpacity={0.7}
+            >
+              <Text style={globalStyles.authLink}>
+                Already have an account? Sign In
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );

@@ -33,6 +33,16 @@ export const colors = {
     medium: "#b69a99",
     dark: "#5b191a",
   },
+
+  // Social media brand colors
+  google: "#ffffff",
+  googleBorder: "#dadce0",
+  facebook: "#1877f2",
+  twitter: "#1da1f2",
+
+  // Additional semantic colors
+  overlay: "rgba(0, 0, 0, 0.5)",
+  transparent: "transparent",
 };
 
 export const getStatusColor = (status: "ACTIVE" | "RESOLVED" | "ARCHIVED") => {

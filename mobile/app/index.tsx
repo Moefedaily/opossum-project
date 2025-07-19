@@ -18,6 +18,6 @@ export default function IndexPage() {
   if (isAuthenticated) {
     return <Redirect href="/(tabs)" />;
   } else {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/(auth)/" />;
   }
 }

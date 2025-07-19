@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
-import { Text, Input, Button } from "@rneui/themed";
-import { Link, router } from "expo-router";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../contexts/AuthContext";
 import { LoginRequest } from "../../types/auth";
@@ -12,6 +20,7 @@ export default function LoginScreen() {
     login: "",
     password: "",
   });
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { login, isLoading, resendVerification } = useAuth();
 
   const handleLogin = async () => {
@@ -65,82 +74,144 @@ export default function LoginScreen() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSocialLogin = (provider: string) => {
+    Alert.alert("Coming Soon", `${provider} login will be available soon!`);
+  };
+
+  const getInputContainerStyle = (field: string) => [
+    globalStyles.authInputContainer,
+    focusedField === field && globalStyles.authInputFocused,
+  ];
+
   return (
-    <ScrollView
-      style={globalStyles.container}
-      contentContainerStyle={globalStyles.paddingLg}
-    >
-      <View style={globalStyles.center}>
-        <Text style={globalStyles.heading1}>Welcome Back! 👋</Text>
-        <Text style={[globalStyles.secondaryText, globalStyles.marginXxl]}>
-          Sign in to OPOSSUM
-        </Text>
-      </View>
+    <ScrollView style={globalStyles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Input
-        placeholder="Email or Username"
-        leftIcon={{ type: "ionicon", name: "mail", color: colors.richOxblood }}
-        value={formData.login}
-        onChangeText={(value) => updateField("login", value)}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="email"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+      {/* Back Button */}
+      <TouchableOpacity
+        style={globalStyles.backButton}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+      </TouchableOpacity>
 
-      <Input
-        placeholder="Password"
-        leftIcon={{
-          type: "ionicon",
-          name: "lock-closed",
-          color: colors.richOxblood,
-        }}
-        value={formData.password}
-        onChangeText={(value) => updateField("password", value)}
-        secureTextEntry
-        containerStyle={globalStyles.inputContainer}
-        inputStyle={globalStyles.bodyText}
-        autoComplete="password"
-        inputContainerStyle={{
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border.medium,
-          paddingHorizontal: 10,
-        }}
-      />
+      <View style={globalStyles.authContainer}>
+        {/* Header */}
+        <Text style={globalStyles.authHeader}>Log in.</Text>
 
-      <Button
-        title={isLoading ? "Signing In..." : "Sign In"}
-        loading={isLoading}
-        onPress={handleLogin}
-        buttonStyle={[globalStyles.primaryButton, globalStyles.marginLg]}
-        titleStyle={{ color: colors.white, fontSize: 16, fontWeight: "600" }}
-        disabled={isLoading}
-      />
+        <View style={globalStyles.authFormContainer}>
+          {/* Email/Username Input */}
+          <View style={getInputContainerStyle("login")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="EMAIL"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.login}
+              onChangeText={(value) => updateField("login", value)}
+              onFocus={() => setFocusedField("login")}
+              onBlur={() => setFocusedField(null)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
+          </View>
 
-      <View style={[globalStyles.center, globalStyles.marginXxl]}>
-        <Link href="/(auth)/register">
-          <Text
-            style={[globalStyles.secondaryText, { color: colors.richOxblood }]}
+          {/* Password Input */}
+          <View style={getInputContainerStyle("password")}>
+            <TextInput
+              style={globalStyles.authInput}
+              placeholder="PASSWORD"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.password}
+              onChangeText={(value) => updateField("password", value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              secureTextEntry
+              autoComplete="password"
+            />
+          </View>
+
+          {/* Forgot Password Link */}
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/forgot-password")}
+            activeOpacity={0.7}
           >
-            Don't have an account? Sign up
-          </Text>
-        </Link>
-      </View>
+            <Text
+              style={[
+                globalStyles.authLink,
+                { textAlign: "right", marginBottom: 20 },
+              ]}
+            >
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
 
-      <View style={[globalStyles.center, globalStyles.marginLg]}>
-        <Link href="/(auth)/forgot-password">
-          <Text
-            style={[globalStyles.secondaryText, { color: colors.richOxblood }]}
+          {/* Login Button */}
+          <TouchableOpacity
+            style={[
+              globalStyles.authButton,
+              isLoading && globalStyles.authButtonLoading,
+            ]}
+            onPress={handleLogin}
+            disabled={isLoading}
+            activeOpacity={0.8}
           >
-            Forgot your password?
-          </Text>
-        </Link>
+            <Text style={globalStyles.authButtonText}>
+              {isLoading ? "Signing in..." : "Log in"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Social Login Section */}
+          <View style={globalStyles.socialButtonsContainer}>
+            <Text style={globalStyles.socialButtonsTitle}>OR SIGN IN WITH</Text>
+
+            <View style={globalStyles.socialButtonsRow}>
+              {/* Google Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.googleButton]}
+                onPress={() => handleSocialLogin("Google")}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name="logo-google"
+                  size={24}
+                  color={colors.text.primary}
+                />
+              </TouchableOpacity>
+
+              {/* Facebook Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.facebookButton]}
+                onPress={() => handleSocialLogin("Facebook")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-facebook" size={24} color={colors.white} />
+              </TouchableOpacity>
+
+              {/* Twitter Button */}
+              <TouchableOpacity
+                style={[globalStyles.socialButton, globalStyles.twitterButton]}
+                onPress={() => handleSocialLogin("Twitter")}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-twitter" size={24} color={colors.white} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Sign Up Link */}
+          <View style={globalStyles.authLinksContainer}>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/register")}
+              activeOpacity={0.7}
+            >
+              <Text style={globalStyles.authLink}>
+                Don't have an account? Sign Up
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );

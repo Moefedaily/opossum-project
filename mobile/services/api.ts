@@ -16,6 +16,22 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+const AUTH_NOT_REQUIRED_ENDPOINTS = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/verify-email",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+  "/api/categories",
+  "/api/announcements",
+];
+
+// **HELPER FUNCTION** - Check if endpoint needs auth
+const shouldSkipAuth = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return AUTH_NOT_REQUIRED_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+};
+
 // Flag to prevent multiple refresh attempts
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -32,27 +48,13 @@ const processQueue = (error: any = null, token: string | null = null) => {
       resolve(token);
     }
   });
-
   failedQueue = [];
 };
 
-// REQUEST INTERCEPTOR - Add auth token to requests
+// **REQUEST INTERCEPTOR** - Add auth token to requests
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    // Skip auth for login/register endpoints
-    const authNotRequired = [
-      "/api/auth/login",
-      "/api/auth/register",
-      "/api/auth/verify-email",
-      "/api/auth/forgot-password",
-      "/api/auth/reset-password",
-      "/api/categories",
-      "/api/announcements",
-    ];
-
-    const skipAuth = authNotRequired.some((endpoint) =>
-      config.url?.includes(endpoint)
-    );
+    const skipAuth = shouldSkipAuth(config.url);
 
     if (!skipAuth) {
       const authData = await storage.getAuthData();
@@ -63,32 +65,27 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// RESPONSE INTERCEPTOR - Handle token refresh
+// **RESPONSE INTERCEPTOR** - Handle token refresh
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
+    const skipRefresh = shouldSkipAuth(originalRequest.url);
 
-    // If 401 and we haven't already tried to refresh
+    // Only attempt refresh for 401 errors on protected endpoints
     if (
       error.response?.status === HttpStatus.UNAUTHORIZED &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !skipRefresh
     ) {
       if (isRefreshing) {
         // Queue this request while refresh is happening
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
-          // Retry original request with new token
-          return api(originalRequest);
-        });
+        }).then(() => api(originalRequest));
       }
 
       originalRequest._retry = true;
@@ -122,12 +119,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-
-        // Refresh failed - clear auth data (logout)
         await storage.clearAuthData();
-
-        // You might want to redirect to login here
-        // For now, we'll just reject
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -138,7 +130,7 @@ api.interceptors.response.use(
   }
 );
 
-// Helper to format API errors
+// **HELPER FUNCTION** - Format API errors consistently
 export const handleApiError = (error: any): ApiError => {
   if (error.response?.data) {
     return {

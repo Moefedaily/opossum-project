@@ -15,9 +15,13 @@ import com.opossum.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,31 +98,77 @@ public class AuthenticationService {
     public AuthenticationResponse login(LoginRequest request) {
         log.info("User login attempt: {}", request.getLogin());
 
-        // Authenticate user credentials
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
+        try {
+            // First, find the user to check verification status BEFORE authentication
+            User user = userDetailsService.getUserEntity(request.getLogin());
 
-        // Get user details
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userDetailsService.getUserEntity(request.getLogin());
+            // Check if user exists (getUserEntity should throw exception if not found)
+            if (user == null) {
+                log.warn("Login attempt for non-existent user: {}", request.getLogin());
+                throw new RuntimeException("No account found with this email or username");
+            }
 
-        // Generate JWT tokens WITH ROLE
-        String accessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole());
-        String refreshToken = jwtService.generateRefreshToken(userDetails, user.getId(), user.getRole());
+            // Check if email is verified BEFORE checking password
+            if (!user.getIsVerified()) {
+                log.warn("Login attempt with unverified email: {}", user.getEmail());
+                throw new RuntimeException(
+                        "Please verify your email before logging in. Check your inbox for the verification link.");
+            }
 
-        // Update last login
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
+            // Check if account is active
+            if (!user.getIsActive()) {
+                log.warn("Login attempt with inactive account: {}", user.getUsername());
+                throw new RuntimeException("Your account has been deactivated. Please contact support.");
+            }
 
-        log.info("User logged in successfully with role {}: {}", user.getRole(), user.getUsername());
+            // Now authenticate user credentials (this will throw BadCredentialsException if
+            // password is wrong)
+            Authentication authentication;
+            try {
+                authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
+            } catch (BadCredentialsException e) {
+                log.warn("Invalid password for user: {}", request.getLogin());
+                throw new RuntimeException("Invalid username or password");
+            } catch (DisabledException e) {
+                log.warn("Disabled account login attempt: {}", request.getLogin());
+                throw new RuntimeException("Your account has been disabled. Please contact support.");
+            } catch (LockedException e) {
+                log.warn("Locked account login attempt: {}", request.getLogin());
+                throw new RuntimeException("Your account has been locked. Please contact support.");
+            }
 
-        // Return authentication response
-        return new AuthenticationResponse(
-                accessToken,
-                refreshToken,
-                "Bearer",
-                jwtService.getExpirationTime(),
-                userMapper.toDto(user));
+            // Get user details from authentication
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            // Generate JWT tokens WITH ROLE
+            String accessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole());
+            String refreshToken = jwtService.generateRefreshToken(userDetails, user.getId(), user.getRole());
+
+            // Update last login
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+
+            log.info("User logged in successfully with role {}: {}", user.getRole(), user.getUsername());
+
+            // Return authentication response
+            return new AuthenticationResponse(
+                    accessToken,
+                    refreshToken,
+                    "Bearer",
+                    jwtService.getExpirationTime(),
+                    userMapper.toDto(user));
+
+        } catch (UsernameNotFoundException e) {
+            log.warn("Login attempt for non-existent user: {}", request.getLogin());
+            throw new RuntimeException("No account found with this email or username");
+        } catch (RuntimeException e) {
+            log.error("Login failed for: {} - {}", request.getLogin(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during login for: {} - {}", request.getLogin(), e.getMessage());
+            throw new RuntimeException("Login failed. Please try again.");
+        }
     }
 
     // Refresh access token

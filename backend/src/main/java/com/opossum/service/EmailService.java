@@ -34,7 +34,7 @@ public class EmailService {
         try {
             Context context = new Context();
             context.setVariable("username", username);
-            context.setVariable("verificationLink", baseUrl + "/api/auth/verify-email?token=" + verificationToken);
+            context.setVariable("verificationLink", baseUrl + "/verify-email?token=" + verificationToken);
 
             String htmlContent = templateEngine.process("email/verification", context);
 

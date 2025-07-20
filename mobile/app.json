@@ -1,31 +1,32 @@
 {
   "expo": {
     "name": "OPOSSUM",
-    "slug": "opossum-mobile",
+    "slug": "opossum-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "scheme": "opossum",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.opossum.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.opossum.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "scheme": "opossum",
     "plugins": ["expo-router"]
   }
 }

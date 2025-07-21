@@ -27,10 +27,10 @@ export const colors = {
   surface: "#ffffff",
 
   text: {
-    primary: "#320f13", // Keep for main headlines
-    secondary: "#7C444F", // 🆕 Better contrast for subheadlines
-    light: "#b69a99", // Keep for very light text
-    inverse: "#dacccc", // Keep for text on dark backgrounds
+    primary: "#320f13",
+    secondary: "#7C444F",
+    light: "#b69a99",
+    inverse: "#dacccc",
   },
 
   border: {

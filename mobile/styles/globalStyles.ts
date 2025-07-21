@@ -1,6 +1,13 @@
 import { StyleSheet } from "react-native";
 import { colors } from "./colors";
 
+// 🎨 TYPOGRAPHY SYSTEM - DM Sans + Nunito
+const fonts = {
+  primary: "DMSans", // DM Sans for headers and important text
+  secondary: "Nunito", // Nunito for body text and secondary content
+  system: "System", // Fallback to system font
+};
+
 export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -60,9 +67,11 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
+  // 🎨 TYPOGRAPHY HIERARCHY WITH FONTS
   heading1: {
     fontSize: 28,
     fontWeight: "bold",
+    fontFamily: fonts.primary, // DM Sans for main headers
     color: colors.text.primary,
     marginBottom: 8,
   },
@@ -70,6 +79,7 @@ export const globalStyles = StyleSheet.create({
   heading2: {
     fontSize: 24,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for section headers
     color: colors.text.primary,
     marginBottom: 6,
   },
@@ -77,6 +87,7 @@ export const globalStyles = StyleSheet.create({
   heading3: {
     fontSize: 18,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for card titles
     color: colors.text.primary,
     marginBottom: 4,
   },
@@ -84,12 +95,14 @@ export const globalStyles = StyleSheet.create({
   bodyText: {
     fontSize: 16,
     fontWeight: "400",
+    fontFamily: fonts.secondary, // Nunito for body text
     color: colors.text.primary,
     lineHeight: 24,
   },
 
   secondaryText: {
     fontSize: 14,
+    fontFamily: fonts.secondary, // Nunito for secondary text
     color: colors.text.secondary,
     lineHeight: 20,
   },
@@ -97,6 +110,7 @@ export const globalStyles = StyleSheet.create({
   caption: {
     fontSize: 12,
     fontWeight: "500",
+    fontFamily: fonts.secondary, // Nunito for captions
     color: colors.text.secondary,
     lineHeight: 16,
   },
@@ -120,6 +134,7 @@ export const globalStyles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for status badges
     color: colors.white,
     textTransform: "uppercase",
   },
@@ -134,6 +149,7 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    fontFamily: fonts.secondary, // Nunito for input text
     backgroundColor: colors.surface,
   },
 
@@ -148,9 +164,11 @@ export const globalStyles = StyleSheet.create({
   errorText: {
     color: colors.danger,
     fontSize: 12,
+    fontFamily: fonts.secondary,
     marginTop: 4,
   },
 
+  // Spacing utilities
   marginXs: { margin: 4 },
   marginSm: { margin: 8 },
   marginMd: { margin: 12 },
@@ -199,6 +217,7 @@ export const globalStyles = StyleSheet.create({
   appTitle: {
     fontSize: 32,
     fontWeight: "bold",
+    fontFamily: fonts.primary, // DM Sans for app branding
     color: colors.deepBurgundy,
     marginBottom: 60,
     textAlign: "center",
@@ -213,7 +232,7 @@ export const globalStyles = StyleSheet.create({
   // Primary welcome button (Log In)
   welcomeButtonPrimary: {
     backgroundColor: colors.richOxblood,
-    borderRadius: 25, // More rounded like design
+    borderRadius: 25,
     paddingVertical: 16,
     paddingHorizontal: 32,
     width: "100%",
@@ -238,12 +257,14 @@ export const globalStyles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for button text
   },
 
   welcomeButtonTextSecondary: {
     color: colors.richOxblood,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for button text
   },
 
   // ========================================
@@ -263,6 +284,7 @@ export const globalStyles = StyleSheet.create({
   authHeader: {
     fontSize: 28,
     fontWeight: "bold",
+    fontFamily: fonts.primary, // DM Sans for auth headers
     color: colors.deepBurgundy,
     textAlign: "center",
     marginBottom: 40,
@@ -281,133 +303,233 @@ export const globalStyles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 16,
     paddingVertical: 4,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    minHeight: 60,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+
+  authInputFocused: {
+    borderColor: colors.richOxblood,
+    borderWidth: 2,
   },
 
   authInput: {
     fontSize: 16,
+    fontFamily: fonts.secondary, // Nunito for input text
     color: colors.text.primary,
     paddingVertical: 12,
-    borderWidth: 0, // Remove default border
+    flex: 1,
   },
 
-  // Auth action button
+  // Auth button styles
   authButton: {
     backgroundColor: colors.richOxblood,
-    borderRadius: 25,
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 8,
+    marginBottom: 24,
+  },
+
+  authButtonLoading: {
+    opacity: 0.7,
   },
 
   authButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans for button text
   },
 
-  // ========================================
-  // SOCIAL LOGIN BUTTONS
-  // ========================================
+  // Back button
+  backButton: {
+    position: "absolute",
+    top: 60,
+    left: 20,
+    zIndex: 1,
+    padding: 8,
+  },
 
-  // Social buttons container
+  // Social login styles
   socialButtonsContainer: {
-    gap: 12,
-    marginTop: 20,
-    marginBottom: 30,
+    marginVertical: 24,
+    alignItems: "center",
   },
 
   socialButtonsTitle: {
-    textAlign: "center",
+    fontSize: 12,
+    fontFamily: fonts.secondary,
     color: colors.text.secondary,
-    fontSize: 14,
     marginBottom: 16,
+    textAlign: "center",
   },
 
   socialButtonsRow: {
     flexDirection: "row",
+    gap: 16,
     justifyContent: "center",
-    gap: 20,
   },
 
-  // Individual social buttons
   socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+  },
+
+  googleButton: {
+    backgroundColor: colors.google,
+    borderColor: colors.googleBorder,
+  },
+
+  facebookButton: {
+    backgroundColor: colors.facebook,
+    borderColor: colors.facebook,
+  },
+
+  twitterButton: {
+    backgroundColor: colors.twitter,
+    borderColor: colors.twitter,
+  },
+
+  // Auth links
+  authLinksContainer: {
+    alignItems: "center",
+    marginTop: 16,
+  },
+
+  authLink: {
+    fontSize: 14,
+    fontFamily: fonts.secondary,
+    color: colors.text.secondary,
+    textAlign: "center",
+  },
+
+  authLinkHighlight: {
+    color: colors.richOxblood,
+    fontWeight: "600",
+  },
+
+  // Forgot password link
+  forgotPasswordContainer: {
+    alignItems: "flex-end",
+    marginBottom: 24,
+  },
+
+  forgotPasswordText: {
+    fontSize: 14,
+    fontFamily: fonts.secondary,
+    color: colors.richOxblood,
+  },
+
+  // ========================================
+  // DASHBOARD/HOME SCREEN STYLES
+  // ========================================
+
+  // Dashboard container
+  dashboardContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+
+  // Dashboard header
+  dashboardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+
+  headerButton: {
+    padding: 8,
+  },
+
+  // Greeting section
+  greetingSection: {
+    marginTop: 10,
+    marginBottom: 30,
+  },
+
+  greetingText: {
+    fontSize: 18,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary, // Better contrast
+    fontWeight: "400",
+    marginBottom: 4,
+  },
+
+  greetingName: {
+    fontSize: 32,
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.deepBurgundy,
+    fontWeight: "bold",
+  },
+
+  // Dashboard cards
+  dashboardCardsContainer: {
+    gap: 16,
+    paddingBottom: 30,
+  },
+
+  dashboardCard: {
+    borderRadius: 16,
+    padding: 24,
+    minHeight: 120,
+    justifyContent: "space-between",
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
 
-  googleButton: {
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#dadce0",
+  cardIconContainer: {
+    alignSelf: "flex-start",
+    marginBottom: 12,
   },
 
-  facebookButton: {
-    backgroundColor: "#1877f2",
+  dashboardCardTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.white,
+    marginBottom: 4,
   },
 
-  twitterButton: {
-    backgroundColor: "#1da1f2",
-  },
-
-  // ========================================
-  // AUTH LINKS AND NAVIGATION
-  // ========================================
-
-  // Bottom links container
-  authLinksContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-
-  // Auth links (Sign up, Forgot password, etc.)
-  authLink: {
-    color: colors.richOxblood,
+  dashboardCardSubtitle: {
     fontSize: 14,
-    fontWeight: "500",
-    textAlign: "center",
-    marginVertical: 8,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.white,
+    opacity: 0.9,
+    lineHeight: 18,
   },
 
-  // Back navigation
-  backButton: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    zIndex: 1,
+  // Specific dashboard card colors
+  createAdvertCard: {
+    backgroundColor: colors.cardPrimary, // #7C444F
   },
 
-  // ========================================
-  // FORM VALIDATION & STATES
-  // ========================================
-
-  // Loading state for buttons
-  authButtonLoading: {
-    backgroundColor: colors.warmTaupe,
+  browseItemsCard: {
+    backgroundColor: colors.cardSecondary, // #944E63
   },
 
-  // Input focus state
-  authInputFocused: {
-    borderWidth: 2,
-    borderColor: colors.richOxblood,
-  },
-
-  // Input error state
-  authInputError: {
-    borderWidth: 2,
-    borderColor: colors.danger,
+  mapSearchCard: {
+    backgroundColor: colors.cardTertiary, // #B47B84
   },
 });
+
+// Export fonts for use in other components
+export { fonts };

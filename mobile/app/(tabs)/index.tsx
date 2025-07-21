@@ -1,108 +1,137 @@
 import React from "react";
-import { View, ScrollView } from "react-native";
-import { Text, Button, Card } from "@rneui/themed";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+  ScrollView,
+  SafeAreaView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { globalStyles, colors } from "../../styles";
 
-export default function HomeScreen() {
-  const { user, logout, isLoading } = useAuth();
+export default function DashboardHomeScreen() {
+  const { user } = useAuth();
+
+  const handleCreateAdvert = () => {
+    // Navigate to create announcement screen
+    console.log("Navigate to create advert");
+    // router.push("/create-announcement");
+  };
+
+  const handleBrowseItems = () => {
+    // Navigate to lost & found items list
+    console.log("Navigate to browse items");
+    // router.push("/announcements");
+  };
+
+  const handleSearchOnMap = () => {
+    // Navigate to map search
+    console.log("Navigate to map search");
+    // router.push("/map-search");
+  };
+
+  const handleSearch = () => {
+    // Open search functionality
+    console.log("Open search");
+  };
+
+  const handleMenu = () => {
+    // Open hamburger menu
+    console.log("Open menu");
+  };
 
   return (
-    <ScrollView
-      style={globalStyles.container}
-      contentContainerStyle={globalStyles.paddingLg}
-    >
-      <View style={[globalStyles.center, globalStyles.marginXxl]}>
-        <Text style={globalStyles.heading1}>OPOSSUM</Text>
-        <Text style={globalStyles.heading3}>
-          Welcome back, {user?.firstName || user?.username}! 👋
-        </Text>
-        <Text style={globalStyles.secondaryText}>
-          Ready to help reunite lost items?
-        </Text>
-      </View>
+    <SafeAreaView style={globalStyles.dashboardContainer}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Card containerStyle={[globalStyles.card, globalStyles.marginLg]}>
-        <Text style={globalStyles.heading3}>Your Profile</Text>
-        <Text style={globalStyles.bodyText}>
-          <Text style={{ fontWeight: "600" }}>Username:</Text> {user?.username}
-        </Text>
-        <Text style={globalStyles.bodyText}>
-          <Text style={{ fontWeight: "600" }}>Email:</Text> {user?.email}
-        </Text>
-        <Text style={globalStyles.bodyText}>
-          <Text style={{ fontWeight: "600" }}>Role:</Text> {user?.role}
-        </Text>
-        {user?.firstName && (
-          <Text style={globalStyles.bodyText}>
-            <Text style={{ fontWeight: "600" }}>Name:</Text> {user.firstName}{" "}
-            {user.lastName}
-          </Text>
-        )}
-      </Card>
+      <ScrollView
+        style={globalStyles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={globalStyles.dashboardHeader}>
+          <TouchableOpacity
+            style={globalStyles.headerButton}
+            onPress={handleMenu}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="menu" size={24} color={colors.deepBurgundy} />
+          </TouchableOpacity>
 
-      <View style={globalStyles.marginLg}>
-        <Button
-          title="📝 Report Lost Item"
-          buttonStyle={[
-            globalStyles.primaryButton,
-            { backgroundColor: colors.lost },
-            globalStyles.marginLg,
-          ]}
-          titleStyle={{ fontSize: 16, fontWeight: "600" }}
-          onPress={() => console.log("Report Lost pressed")}
-        />
-
-        <Button
-          title="🔍 Report Found Item"
-          buttonStyle={[globalStyles.foundButton, globalStyles.marginLg]}
-          titleStyle={{ fontSize: 16, fontWeight: "600" }}
-          onPress={() => console.log("Report Found pressed")}
-        />
-
-        <Button
-          title="🗺️ Browse Nearby Items"
-          buttonStyle={[
-            globalStyles.outlineButton,
-            { borderColor: colors.richOxblood },
-            globalStyles.marginLg,
-          ]}
-          titleStyle={{
-            color: colors.richOxblood,
-            fontSize: 16,
-            fontWeight: "600",
-          }}
-          onPress={() => console.log("Browse pressed")}
-        />
-      </View>
-
-      <Card containerStyle={[globalStyles.card, globalStyles.marginLg]}>
-        <Text style={globalStyles.heading3}>Quick Stats</Text>
-        <View style={globalStyles.row}>
-          <View style={{ flex: 1 }}>
-            <Text style={globalStyles.caption}>Your Posts</Text>
-            <Text style={globalStyles.heading2}>0</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={globalStyles.caption}>Items Reunited</Text>
-            <Text style={globalStyles.heading2}>0</Text>
-          </View>
+          <TouchableOpacity
+            style={globalStyles.headerButton}
+            onPress={handleSearch}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="search" size={24} color={colors.deepBurgundy} />
+          </TouchableOpacity>
         </View>
-      </Card>
 
-      <Button
-        title="Logout"
-        type="outline"
-        loading={isLoading}
-        buttonStyle={[
-          globalStyles.outlineButton,
-          { borderColor: colors.danger },
-          globalStyles.marginXxl,
-        ]}
-        titleStyle={{ color: colors.danger }}
-        onPress={logout}
-        disabled={isLoading}
-      />
-    </ScrollView>
+        {/* Greeting */}
+        <View style={globalStyles.greetingSection}>
+          <Text style={globalStyles.greetingText}>Hello,</Text>
+          <Text style={globalStyles.greetingName}>
+            {user?.username || user?.firstName || "User"}
+          </Text>
+        </View>
+
+        {/* Action Cards */}
+        <View style={globalStyles.dashboardCardsContainer}>
+          {/* Create an advert card */}
+          <TouchableOpacity
+            style={[globalStyles.dashboardCard, globalStyles.createAdvertCard]}
+            onPress={handleCreateAdvert}
+            activeOpacity={0.8}
+          >
+            <View style={globalStyles.cardIconContainer}>
+              <Ionicons name="add-circle" size={32} color={colors.white} />
+            </View>
+            <Text style={globalStyles.dashboardCardTitle}>
+              Create an advert
+            </Text>
+            <Text style={globalStyles.dashboardCardSubtitle}>
+              Report if you find or lost an item
+            </Text>
+          </TouchableOpacity>
+
+          {/* Lost & found items card */}
+          <TouchableOpacity
+            style={[globalStyles.dashboardCard, globalStyles.browseItemsCard]}
+            onPress={handleBrowseItems}
+            activeOpacity={0.8}
+          >
+            <View style={globalStyles.cardIconContainer}>
+              <Ionicons name="search" size={32} color={colors.white} />
+            </View>
+            <Text style={globalStyles.dashboardCardTitle}>
+              Lost & found items
+            </Text>
+            <Text style={globalStyles.dashboardCardSubtitle}>
+              Go through the lost and found items
+            </Text>
+          </TouchableOpacity>
+
+          {/* Search on map card */}
+          <TouchableOpacity
+            style={[globalStyles.dashboardCard, globalStyles.mapSearchCard]}
+            onPress={handleSearchOnMap}
+            activeOpacity={0.8}
+          >
+            <View style={globalStyles.cardIconContainer}>
+              <Ionicons name="map" size={32} color={colors.white} />
+            </View>
+            <Text style={globalStyles.dashboardCardTitle}>Search on map</Text>
+            <Text style={globalStyles.dashboardCardSubtitle}>
+              Search for items on locations near you
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+
+// 🎉 NO MORE LOCAL STYLES! Everything is now centralized in globalStyles.ts

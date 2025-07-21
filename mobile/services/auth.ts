@@ -8,7 +8,6 @@ import {
   User,
 } from "../types/auth";
 import { ApiError } from "../types/api";
-import axios from "axios";
 
 export const authService = {
   // Register new user
@@ -29,47 +28,24 @@ export const authService = {
   // Login user
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     try {
-      console.log("🔐 Starting login request to backend...");
+      const response = await api.post<AuthResponse>("/api/auth/login", data);
+      console.log("Login response:", response.data);
 
-      // Use a clean axios instance for login to avoid interceptor issues
-      const loginResponse = await axios.post<AuthResponse>(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/auth/login`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          timeout: 10000,
-        }
-      );
-
-      console.log("🔐 Login response received:", loginResponse.data);
-
-      const { accessToken, refreshToken, user, expiresIn } = loginResponse.data;
+      const { accessToken, refreshToken, user, expiresIn } = response.data;
 
       // Save to secure storage
       await storage.saveAuthData(accessToken, refreshToken, user, expiresIn);
 
-      return loginResponse.data;
+      return response.data;
     } catch (error: any) {
-      console.error("🔐 Login request failed:", error);
+      const apiError = handleApiError(error);
 
-      // Handle the error properly
-      if (error.response?.data) {
-        // Backend returned an error response
-        const backendError =
-          error.response.data.error ||
-          error.response.data.message ||
-          "Login failed";
-        console.log("🔐 Backend error message:", backendError);
-        throw new Error(backendError);
-      } else if (error.message) {
-        // Network or other error
-        console.log("🔐 Network/other error:", error.message);
-        throw new Error(error.message);
-      } else {
-        throw new Error("Login failed - please try again");
+      // Handle specific login errors
+      if (error.response?.status === 401) {
+        throw new Error(apiError.error);
       }
+
+      throw new Error(apiError.error);
     }
   },
 

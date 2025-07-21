@@ -1,10 +1,15 @@
 export const colors = {
+  // Original Oxblood Dreams Base Palette
   deepBurgundy: "#320f13",
   richOxblood: "#4a0001",
   mediumBurgundy: "#5b191a",
   warmTaupe: "#b69a99",
   softRose: "#dacccc",
 
+  cardPrimary: "#643843",
+  cardSecondary: "#944E63",
+  cardTertiary: "#B47B84",
+  // Functional colors
   lost: "#4a0001",
   found: "#2d5a3d",
   success: "#2d5a3d",
@@ -23,7 +28,7 @@ export const colors = {
 
   text: {
     primary: "#320f13",
-    secondary: "#b69a99",
+    secondary: "#7C444F",
     light: "#b69a99",
     inverse: "#dacccc",
   },

@@ -517,6 +517,242 @@ export const globalStyles = StyleSheet.create({
     lineHeight: 18,
   },
 
+  // ========================================
+  // ANNOUNCEMENTS SCREEN STYLES
+  // ========================================
+  announcementsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.background,
+  },
+
+  announcementsHeaderTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.deepBurgundy,
+  },
+
+  // Category tabs
+  categoryContainer: {
+    backgroundColor: colors.background,
+    paddingVertical: 8,
+  },
+
+  categoryScrollContent: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+
+  categoryTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+
+  categoryTabActive: {
+    backgroundColor: colors.richOxblood,
+    borderColor: colors.richOxblood,
+  },
+
+  categoryTabText: {
+    fontSize: 14,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary,
+    fontWeight: "500",
+  },
+
+  categoryTabTextActive: {
+    color: colors.white,
+    fontWeight: "600",
+  },
+
+  // Announcements list
+  announcementsList: {
+    padding: 16,
+  },
+
+  announcementsRow: {
+    justifyContent: "space-between",
+  },
+
+  // Announcement card
+  announcementCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: "48%",
+  },
+
+  // Card image
+  announcementImageContainer: {
+    height: 120,
+    backgroundColor: colors.border.light,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    overflow: "hidden",
+  },
+
+  announcementImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  announcementImagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.softRose,
+  },
+
+  // Card content
+  announcementCardContent: {
+    padding: 12,
+  },
+
+  announcementCardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.text.primary,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+
+  announcementCardMeta: {
+    marginBottom: 12,
+  },
+
+  announcementLocationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+
+  announcementLocationText: {
+    fontSize: 12,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary,
+    marginLeft: 4,
+    flex: 1,
+  },
+
+  announcementTimeText: {
+    fontSize: 11,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.warmTaupe,
+  },
+
+  // Card actions
+  announcementCardActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  announcementShareButton: {
+    backgroundColor: colors.richOxblood,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 6,
+    flex: 1,
+    marginRight: 8,
+    alignItems: "center",
+  },
+
+  announcementShareButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.white,
+  },
+
+  announcementFavoriteButton: {
+    padding: 6,
+  },
+
+  // Loading states
+  announcementsLoadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+
+  announcementsLoadingText: {
+    fontSize: 16,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary,
+    marginTop: 12,
+  },
+
+  // Error states
+  announcementsErrorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+
+  announcementsErrorText: {
+    fontSize: 16,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary,
+    textAlign: "center",
+    marginVertical: 16,
+  },
+
+  announcementsRetryButton: {
+    backgroundColor: colors.richOxblood,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+
+  announcementsRetryButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.white,
+  },
+
+  // Empty state
+  announcementsEmptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+
+  announcementsEmptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    fontFamily: fonts.primary, // DM Sans
+    color: colors.text.primary,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  announcementsEmptySubtitle: {
+    fontSize: 14,
+    fontFamily: fonts.secondary, // Nunito
+    color: colors.text.secondary,
+    textAlign: "center",
+    paddingHorizontal: 40,
+  },
+
   // Specific dashboard card colors
   createAdvertCard: {
     backgroundColor: colors.cardPrimary, // #7C444F

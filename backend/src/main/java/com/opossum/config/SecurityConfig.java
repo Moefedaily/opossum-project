@@ -61,7 +61,7 @@ public class SecurityConfig {
 
                         // Public announcement viewing (lost & found browsing)
                         .requestMatchers("GET", "/api/announcements").permitAll()
-                        .requestMatchers("GET", "/api/announcements/*/").permitAll()
+                        .requestMatchers("GET", "/api/announcements/*").permitAll()
                         .requestMatchers("GET", "/api/announcements/recent").permitAll()
                         .requestMatchers("GET", "/api/announcements/stats").permitAll()
 

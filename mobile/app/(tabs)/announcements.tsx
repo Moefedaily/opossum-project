@@ -288,10 +288,3 @@ export default function AnnouncementsScreen() {
     </SafeAreaView>
   );
 }
-
-// ✅ CLEAN IMPLEMENTATION:
-// - Uses focused announcementService (only 3 functions)
-// - Imports types from types/announcement.ts
-// - Uses global styles consistently
-// - Handles Cloudinary images + category placeholders
-// - Public mobile functionality only

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,10 +40,18 @@ public class FileController {
     public ResponseEntity<?> uploadFile(
             @Parameter(description = "File to upload") @RequestParam("file") MultipartFile file,
             @Parameter(description = "ID of the announcement to associate the file with") @RequestParam("announcementId") Long announcementId,
-            @RequestHeader("Authorization") String authHeader) {
+            HttpServletRequest request) {
 
         try {
-            String token = authHeader.substring(7);
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Authorization header missing"));
+            }
+
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+
+            // Extract user ID using your existing JwtService
             Long userId = jwtService.extractUserId(token);
 
             FileUploadResponse response = fileService.uploadFile(file, announcementId, userId);

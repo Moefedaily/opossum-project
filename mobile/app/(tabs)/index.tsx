@@ -18,7 +18,7 @@ export default function DashboardHomeScreen() {
   const handleCreateAdvert = () => {
     // Navigate to create announcement screen
     console.log("Navigate to create advert");
-    // router.push("/create-announcement");
+    router.push("/(tabs)/announcements/create/basic-info");
   };
 
   const handleBrowseItems = () => {

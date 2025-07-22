@@ -1,0 +1,38 @@
+import React from "react";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { CreateAnnouncementProvider } from "../../../../contexts/CreateAnnouncementContext";
+import { colors } from "../../../../styles";
+
+export default function CreateAnnouncementLayout() {
+  return (
+    <CreateAnnouncementProvider>
+      <StatusBar style="dark" backgroundColor={colors.background} />
+      <Stack
+        screenOptions={{
+          headerShown: false, // I'll create custom headers in each screen
+          animation: "slide_from_right", // Smooth navigation between steps
+        }}
+      >
+        <Stack.Screen
+          name="basic-info"
+          options={{
+            title: "Basic Information",
+          }}
+        />
+        <Stack.Screen
+          name="photos"
+          options={{
+            title: "Add Photos",
+          }}
+        />
+        <Stack.Screen
+          name="location"
+          options={{
+            title: "Location & Submit",
+          }}
+        />
+      </Stack>
+    </CreateAnnouncementProvider>
+  );
+}

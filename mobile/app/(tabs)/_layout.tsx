@@ -25,9 +25,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="browse"
+        name="announcements"
         options={{
-          title: "Browse",
+          title: "Browse", // Better name than "announcements"
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
@@ -49,6 +49,20 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+        }}
+      />
+
+      {/* 🔧 HIDE THESE FROM TAB BAR */}
+      <Tabs.Screen
+        name="announcements/[id]"
+        options={{
+          href: null, // ← This hides it from tab bar
+        }}
+      />
+      <Tabs.Screen
+        name="announcements/create"
+        options={{
+          href: null, // ← This hides it from tab bar
         }}
       />
     </Tabs>

@@ -1,15 +1,16 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../styles";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#2563eb",
+        tabBarActiveTintColor: colors.cardPrimary,
         tabBarInactiveTintColor: "#6b7280",
         tabBarStyle: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "#FAF7F0",
           borderTopWidth: 1,
           borderTopColor: "#e5e7eb",
         },
@@ -27,7 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="announcements"
         options={{
-          title: "Browse", // Better name than "announcements"
+          title: "Browse",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
@@ -52,17 +53,16 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 🔧 HIDE THESE FROM TAB BAR */}
       <Tabs.Screen
         name="announcements/[id]"
         options={{
-          href: null, // ← This hides it from tab bar
+          href: null,
         }}
       />
       <Tabs.Screen
         name="announcements/create"
         options={{
-          href: null, // ← This hides it from tab bar
+          href: null,
         }}
       />
     </Tabs>

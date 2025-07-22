@@ -22,9 +22,8 @@ export default function DashboardHomeScreen() {
   };
 
   const handleBrowseItems = () => {
-    // Navigate to lost & found items list
     console.log("Navigate to browse items");
-    // router.push("/announcements");
+    router.push("/(tabs)/announcements");
   };
 
   const handleSearchOnMap = () => {
@@ -133,5 +132,3 @@ export default function DashboardHomeScreen() {
     </SafeAreaView>
   );
 }
-
-// 🎉 NO MORE LOCAL STYLES! Everything is now centralized in globalStyles.ts

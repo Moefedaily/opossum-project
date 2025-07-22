@@ -40,10 +40,10 @@ export interface AuthContextType {
   accessToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (loginData: LoginRequest) => Promise<AuthResponse>; // ✅ Returns AuthResponse
+  login: (loginData: LoginRequest) => Promise<AuthResponse>;
   register: (
     registerData: RegisterRequest
-  ) => Promise<{ message: string; email: string }>; // ✅ Returns registration response
+  ) => Promise<{ message: string; email: string }>;
   logout: () => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
 }

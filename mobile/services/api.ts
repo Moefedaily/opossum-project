@@ -7,12 +7,14 @@ import { storage } from "../utils/storage";
 import { ApiError, HttpStatus } from "../types/api";
 import { AuthResponse, RefreshTokenRequest } from "../types/auth";
 
-// Create axios instance with base config
+// Create axios instance with base config + ngrok headers
 const api: AxiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
+    "User-Agent": "OPOSSUM-Mobile-App",
   },
 });
 
@@ -62,6 +64,9 @@ api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const skipAuth = shouldSkipAuth(config.url, config.method);
     const isFormData = config.data instanceof FormData;
+
+    config.headers["ngrok-skip-browser-warning"] = "true";
+    config.headers["User-Agent"] = "OPOSSUM-Mobile-App";
 
     if (!skipAuth) {
       const authData = await storage.getAuthData();
@@ -115,7 +120,13 @@ api.interceptors.response.use(
         // Call refresh endpoint
         const refreshResponse = await axios.post<AuthResponse>(
           `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/auth/refresh`,
-          { refreshToken: authData.refreshToken } as RefreshTokenRequest
+          { refreshToken: authData.refreshToken } as RefreshTokenRequest,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+              "User-Agent": "OPOSSUM-Mobile-App",
+            },
+          }
         );
 
         const { accessToken, expiresIn } = refreshResponse.data;

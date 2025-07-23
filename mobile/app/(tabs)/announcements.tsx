@@ -81,18 +81,6 @@ export default function AnnouncementsScreen() {
     router.push(`/announcements/${announcement.id}`);
   };
 
-  // Handle share
-  const handleShare = (announcement: AnnouncementDto) => {
-    console.log("Share announcement:", announcement.id);
-    // TODO: Implement share functionality
-  };
-
-  // Handle favorite
-  const handleFavorite = (announcement: AnnouncementDto) => {
-    console.log("Toggle favorite:", announcement.id);
-    // TODO: Implement favorite functionality
-  };
-
   // Render announcement card using global styles
   const renderAnnouncementCard = ({ item }: { item: AnnouncementDto }) => (
     <TouchableOpacity
@@ -139,29 +127,6 @@ export default function AnnouncementsScreen() {
           <Text style={globalStyles.announcementTimeText}>
             {getTimeAgo(item.createdAt)}
           </Text>
-        </View>
-
-        {/* Action buttons */}
-        <View style={globalStyles.announcementCardActions}>
-          <TouchableOpacity
-            style={globalStyles.announcementShareButton}
-            onPress={() => handleShare(item)}
-            activeOpacity={0.7}
-          >
-            <Text style={globalStyles.announcementShareButtonText}>Share</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={globalStyles.announcementFavoriteButton}
-            onPress={() => handleFavorite(item)}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name="heart-outline"
-              size={16}
-              color={colors.text.secondary}
-            />
-          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>

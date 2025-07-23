@@ -23,15 +23,18 @@ const AUTH_NOT_REQUIRED_ENDPOINTS = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/categories",
-  "/api/announcements",
-  "/api/categories",
-  "/api/announcements/",
-  "/api/files/announcement/",
 ];
 
 // **HELPER FUNCTION** - Check if endpoint needs auth
-const shouldSkipAuth = (url: string | undefined): boolean => {
+const shouldSkipAuth = (url: string | undefined, method = "GET"): boolean => {
   if (!url) return false;
+  if (url.includes("/api/announcements")) {
+    return method.toUpperCase() === "GET";
+  }
+
+  if (url.includes("/api/files")) {
+    return method.toUpperCase() === "GET";
+  }
   return AUTH_NOT_REQUIRED_ENDPOINTS.some((endpoint) => url.includes(endpoint));
 };
 
@@ -57,12 +60,17 @@ const processQueue = (error: any = null, token: string | null = null) => {
 // **REQUEST INTERCEPTOR** - Add auth token to requests
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const skipAuth = shouldSkipAuth(config.url);
+    const skipAuth = shouldSkipAuth(config.url, config.method);
+    const isFormData = config.data instanceof FormData;
 
     if (!skipAuth) {
       const authData = await storage.getAuthData();
       if (authData?.accessToken) {
         config.headers.Authorization = `Bearer ${authData.accessToken}`;
+
+        if (isFormData) {
+          delete config.headers["Content-Type"];
+        }
       }
     }
 
@@ -76,7 +84,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
-    const skipRefresh = shouldSkipAuth(originalRequest.url);
+    const skipRefresh = shouldSkipAuth(
+      originalRequest.url,
+      originalRequest.method
+    );
 
     // Only attempt refresh for 401 errors on protected endpoints
     if (

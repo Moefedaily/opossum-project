@@ -35,6 +35,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="map"
+        options={{
+          title: "Map",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="map" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="messages"
         options={{
           title: "Messages",
@@ -52,7 +61,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="announcements/[id]"
         options={{

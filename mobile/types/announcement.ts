@@ -1,3 +1,5 @@
+import { Double } from "react-native/Libraries/Types/CodegenTypes";
+
 export interface AnnouncementDto {
   id: number;
   title: string;
@@ -17,7 +19,7 @@ export interface AnnouncementDto {
   username: string;
   userEmail: string;
   userFullName: string;
-
+  distanceKm?: Double;
   files: FileDto[];
 }
 

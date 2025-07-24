@@ -265,7 +265,7 @@ public class AnnouncementController {
     }
 
     @GetMapping("/nearby")
-    @Operation(summary = "Find nearby announcements", description = "Find announcements within specified radius from given location")
+    @Operation(summary = "Find nearby announcements", description = "Find announcements within specified radius from given location with optional filtering")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Nearby announcements found"),
             @ApiResponse(responseCode = "400", description = "Invalid location parameters")
@@ -273,10 +273,13 @@ public class AnnouncementController {
     public ResponseEntity<?> getNearbyAnnouncements(
             @Parameter(description = "User's latitude") @RequestParam @NotNull BigDecimal latitude,
             @Parameter(description = "User's longitude") @RequestParam @NotNull BigDecimal longitude,
-            @Parameter(description = "Search radius in kilometers") @RequestParam @NotNull Double radiusKm) {
+            @Parameter(description = "Search radius in kilometers") @RequestParam @NotNull Double radiusKm,
+            // 🆕 NEW: Optional filter parameters
+            @Parameter(description = "Filter by announcement type") @RequestParam(required = false) AnnouncementType type,
+            @Parameter(description = "Filter by announcement category") @RequestParam(required = false) AnnouncementCategory category) {
 
         try {
-            // Validate parameters
+            // Validate parameters (existing validation)
             if (radiusKm <= 0 || radiusKm > 100) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Radius must be between 0 and 100 km"));
@@ -292,8 +295,12 @@ public class AnnouncementController {
                         .body(Map.of("error", "Longitude must be between -180 and 180"));
             }
 
-            List<AnnouncementDto> nearbyAnnouncements = announcementService.findNearbyAnnouncements(latitude, longitude,
-                    radiusKm);
+            List<AnnouncementDto> nearbyAnnouncements = announcementService.findNearbyAnnouncementsWithFilters(
+                    latitude, longitude, radiusKm, type, category);
+
+            log.info("Found {} nearby announcements within {}km with filters - type: {}, category: {}",
+                    nearbyAnnouncements.size(), radiusKm, type, category);
+
             return ResponseEntity.ok(nearbyAnnouncements);
 
         } catch (Exception e) {

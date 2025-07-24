@@ -391,4 +391,40 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<AnnouncementDto> findNearbyAnnouncementsWithFilters(
+            BigDecimal latitude, BigDecimal longitude, Double radiusKm,
+            AnnouncementType type, AnnouncementCategory category) {
+
+        log.debug("Finding announcements within {}km of location: {}, {} with filters - type: {}, category: {}",
+                radiusKm, latitude, longitude, type, category);
+
+        // Calculate bounding box for efficient database query (same as existing method)
+        double latDelta = radiusKm / 111.0; // Approximate: 1 degree latitude ≈ 111 km
+        double lngDelta = radiusKm / (111.0 * Math.cos(Math.toRadians(latitude.doubleValue())));
+
+        BigDecimal minLat = latitude.subtract(BigDecimal.valueOf(latDelta));
+        BigDecimal maxLat = latitude.add(BigDecimal.valueOf(latDelta));
+        BigDecimal minLng = longitude.subtract(BigDecimal.valueOf(lngDelta));
+        BigDecimal maxLng = longitude.add(BigDecimal.valueOf(lngDelta));
+
+        // 🆕 NEW: Get announcements within bounding box with optional filters
+        List<Announcement> candidates = announcementRepository.findWithinBoundingBoxWithFilters(
+                minLat, maxLat, minLng, maxLng, type, category);
+
+        // Filter by exact distance and sort by distance (same logic as existing method)
+        return candidates.stream()
+                .map(announcement -> {
+                    AnnouncementDto dto = announcementMapper.toDto(announcement);
+                    // Calculate exact distance
+                    Double distance = calculateDistance(latitude, longitude,
+                            announcement.getLatitude(), announcement.getLongitude());
+                    dto.setDistanceKm(distance);
+                    return dto;
+                })
+                .filter(dto -> dto.getDistanceKm() != null && dto.getDistanceKm() <= radiusKm)
+                .sorted(Comparator.comparing(AnnouncementDto::getDistanceKm))
+                .collect(Collectors.toList());
+    }
+
 }

@@ -16,88 +16,99 @@ import jakarta.validation.constraints.NotNull;
 
 public interface AnnouncementService {
 
-    // Create operations
-    AnnouncementDto createAnnouncement(CreateAnnouncementRequest request, Long userId);
+        // Create operations
+        AnnouncementDto createAnnouncement(CreateAnnouncementRequest request, Long userId);
 
-    // Read operations
-    List<AnnouncementDto> getAllAnnouncements();
+        // Read operations
+        List<AnnouncementDto> getAllAnnouncements();
 
-    Optional<AnnouncementDto> getAnnouncementById(Long id);
+        Optional<AnnouncementDto> getAnnouncementById(Long id);
 
-    List<AnnouncementDto> getAnnouncementsByUser(Long userId);
+        List<AnnouncementDto> getAnnouncementsByUser(Long userId);
 
-    List<AnnouncementDto> getAnnouncementsByType(AnnouncementType type);
+        List<AnnouncementDto> getAnnouncementsByType(AnnouncementType type);
 
-    List<AnnouncementDto> getAnnouncementsByStatus(AnnouncementStatus status);
+        List<AnnouncementDto> getAnnouncementsByStatus(AnnouncementStatus status);
 
-    List<AnnouncementDto> getAnnouncementsByCategory(AnnouncementCategory category);
+        List<AnnouncementDto> getAnnouncementsByCategory(AnnouncementCategory category);
 
-    // Update operations
-    AnnouncementDto updateAnnouncement(Long id, UpdateAnnouncementRequest request, Long userId);
+        // Update operations
+        AnnouncementDto updateAnnouncement(Long id, UpdateAnnouncementRequest request, Long userId);
 
-    AnnouncementDto updateAnnouncementStatus(Long id, AnnouncementStatus status, Long userId);
+        AnnouncementDto updateAnnouncementStatus(Long id, AnnouncementStatus status, Long userId);
 
-    // Delete operations
-    void deleteAnnouncement(Long id, Long userId);
+        // Delete operations
+        void deleteAnnouncement(Long id, Long userId);
 
-    void deactivateAnnouncement(Long id, Long userId);
+        void deactivateAnnouncement(Long id, Long userId);
 
-    void activateAnnouncement(Long id, Long userId);
+        void activateAnnouncement(Long id, Long userId);
 
-    // Search operations
-    List<AnnouncementDto> searchAnnouncements(String searchText);
+        // Search operations
+        List<AnnouncementDto> searchAnnouncements(String searchText);
 
-    List<AnnouncementDto> getAnnouncementsWithFilters(AnnouncementType type,
-            AnnouncementStatus status,
-            AnnouncementCategory category);
+        List<AnnouncementDto> getAnnouncementsWithFilters(AnnouncementType type,
+                        AnnouncementStatus status,
+                        AnnouncementCategory category);
 
-    // Date-based queries
-    List<AnnouncementDto> getAnnouncementsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+        // Date-based queries
+        List<AnnouncementDto> getAnnouncementsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<AnnouncementDto> getRecentAnnouncements(int limit);
+        List<AnnouncementDto> getRecentAnnouncements(int limit);
 
-    List<AnnouncementDto> getUserRecentAnnouncements(Long userId, int limit);
+        List<AnnouncementDto> getUserRecentAnnouncements(Long userId, int limit);
 
-    // Statistics
-    long getTotalAnnouncementsCount();
+        // Statistics
+        long getTotalAnnouncementsCount();
 
-    long getAnnouncementsCountByType(AnnouncementType type);
+        long getAnnouncementsCountByType(AnnouncementType type);
 
-    long getAnnouncementsCountByStatus(AnnouncementStatus status);
+        long getAnnouncementsCountByStatus(AnnouncementStatus status);
 
-    long getUserAnnouncementsCount(Long userId);
+        long getUserAnnouncementsCount(Long userId);
 
-    // Validation operations
-    boolean isAnnouncementOwner(Long announcementId, Long userId);
+        // Validation operations
+        boolean isAnnouncementOwner(Long announcementId, Long userId);
 
-    // Admin operations
-    List<AnnouncementDto> getAllAnnouncementsForAdmin();
+        // Admin operations
+        List<AnnouncementDto> getAllAnnouncementsForAdmin();
 
-    void adminDeleteAnnouncement(Long id);
+        void adminDeleteAnnouncement(Long id);
 
-    AnnouncementDto adminUpdateAnnouncementStatus(Long id, AnnouncementStatus status);
+        AnnouncementDto adminUpdateAnnouncementStatus(Long id, AnnouncementStatus status);
 
-    /**
-     * Find active announcements within radius, sorted by distance *
-     * 
-     * @param latitude  User's latitude
-     * @param longitude User's longitude
-     * @param radiusKm  Search radius in kilometers
-     * @return List of announcements within the radius, sorted by distance
-     */
-    List<AnnouncementDto> findNearbyAnnouncements(
-            @NotNull BigDecimal latitude,
-            @NotNull BigDecimal longitude,
-            @NotNull Double radiusKm);
+        /**
+         * Find active announcements within radius with optional filtering, sorted by
+         * distance
+         * 
+         * @param latitude  User's latitude
+         * @param longitude User's longitude
+         * @param radiusKm  Search radius in kilometers
+         * @param type      Optional filter by announcement type (LOST/FOUND)
+         * @param category  Optional filter by announcement category
+         * @return List of announcements within the radius matching filters, sorted by
+         *         distance
+         */
+        List<AnnouncementDto> findNearbyAnnouncementsWithFilters(
+                        @NotNull BigDecimal latitude,
+                        @NotNull BigDecimal longitude,
+                        @NotNull Double radiusKm,
+                        AnnouncementType type,
+                        AnnouncementCategory category);
 
-    /**
-     * Find all active announcements sorted by distance *
-     * 
-     * @param userLatitude  User's current latitude
-     * @param userLongitude User's current longitude
-     * @return List of announcements sorted by distance (closest first)
-     */
-    List<AnnouncementDto> findAnnouncementsSortedByDistance(
-            @NotNull BigDecimal userLatitude,
-            @NotNull BigDecimal userLongitude);
+        List<AnnouncementDto> findNearbyAnnouncements(
+                        @NotNull BigDecimal latitude,
+                        @NotNull BigDecimal longitude,
+                        @NotNull Double radiusKm);
+
+        /**
+         * Find all active announcements sorted by distance *
+         * 
+         * @param userLatitude  User's current latitude
+         * @param userLongitude User's current longitude
+         * @return List of announcements sorted by distance (closest first)
+         */
+        List<AnnouncementDto> findAnnouncementsSortedByDistance(
+                        @NotNull BigDecimal userLatitude,
+                        @NotNull BigDecimal userLongitude);
 }

@@ -969,30 +969,233 @@
           }
         },
         {
-          "name": "Find Nearby Announcements",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7640&longitude=4.8357&radiusKm=2.0",
-              "host": ["{{base_url}}"],
-              "path": ["api", "announcements", "nearby"],
-              "query": [
-                {
-                  "key": "latitude",
-                  "value": "45.7640"
+          "name": "Nearby Announcements (with Filtering)",
+          "item": [
+            {
+              "name": "Find Nearby Announcements (All Items)",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670",
+                      "description": "Your current latitude"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340",
+                      "description": "Your current longitude"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0",
+                      "description": "Search radius in kilometers"
+                    }
+                  ]
                 },
-                {
-                  "key": "longitude",
-                  "value": "4.8357"
-                },
-                {
-                  "key": "radiusKm",
-                  "value": "2.0"
-                }
-              ]
+                "description": "Find all announcements within 50km radius (no filters)"
+              }
             },
-            "description": "Find announcements within specified radius"
-          }
+            {
+              "name": "Find Nearby Lost Items",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=LOST",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "LOST",
+                      "description": "Filter by LOST items only"
+                    }
+                  ]
+                },
+                "description": "Find only LOST items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Found Items",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=FOUND",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "FOUND",
+                      "description": "Filter by FOUND items only"
+                    }
+                  ]
+                },
+                "description": "Find only FOUND items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Electronics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&category=ELECTRONICS",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "category",
+                      "value": "ELECTRONICS",
+                      "description": "Filter by Electronics category"
+                    }
+                  ]
+                },
+                "description": "Find Electronics items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Lost Electronics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=LOST&category=ELECTRONICS",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "LOST",
+                      "description": "Filter by LOST items"
+                    },
+                    {
+                      "key": "category",
+                      "value": "ELECTRONICS",
+                      "description": "Filter by Electronics category"
+                    }
+                  ]
+                },
+                "description": "Find LOST Electronics within 50km radius (combined filters)"
+              }
+            },
+            {
+              "name": "Find Nearby Found Wallets",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=20.0&type=FOUND&category=WALLET",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "20.0",
+                      "description": "Smaller radius for wallets"
+                    },
+                    {
+                      "key": "type",
+                      "value": "FOUND"
+                    },
+                    {
+                      "key": "category",
+                      "value": "WALLET"
+                    }
+                  ]
+                },
+                "description": "Find FOUND Wallets within 20km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Clothing (All Types)",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=30.0&category=CLOTHING",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "30.0"
+                    },
+                    {
+                      "key": "category",
+                      "value": "CLOTHING",
+                      "description": "All clothing items (both lost and found)"
+                    }
+                  ]
+                },
+                "description": "Find all Clothing items within 30km radius"
+              }
+            }
+          ]
         },
         {
           "name": "Get Announcements Sorted by Distance",

@@ -15,11 +15,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.Map;
 
 @RestController
@@ -237,4 +240,40 @@ public class AuthController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    // ADD these NEW endpoints for email links (redirects)
+    @GetMapping("/verify-email-redirect")
+    public ResponseEntity<?> handleEmailVerificationRedirect(@RequestParam("token") String token) {
+        try {
+            authenticationService.verifyEmail(token);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(
+                    URI.create("opossum://verify-success?status=success&message=Email verified successfully"));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
+        } catch (Exception e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("opossum://verify-success?status=error&message=" + e.getMessage()));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        }
+    }
+
+    @GetMapping("/reset-password-redirect")
+    public ResponseEntity<?> handlePasswordResetRedirect(@RequestParam("token") String token) {
+        try {
+            // Just validate token exists - don't reset password yet
+            authenticationService.validateResetToken(token); // You'll need to add this method
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("opossum://reset-password?token=" + token));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
+        } catch (Exception e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("opossum://reset-password?status=error&message=" + e.getMessage()));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        }
+    }
+
 }

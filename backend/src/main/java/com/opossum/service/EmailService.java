@@ -34,10 +34,10 @@ public class EmailService {
         try {
             Context context = new Context();
             context.setVariable("username", username);
-            context.setVariable("verificationLink", baseUrl + "/verify-email?token=" + verificationToken);
+            context.setVariable("verificationLink",
+                    baseUrl + "/api/auth/verify-email-redirect?token=" + verificationToken);
 
             String htmlContent = templateEngine.process("email/verification", context);
-
             sendHtmlEmail(toEmail, "Verify your OPOSSUM account", htmlContent);
             log.info("Verification email sent to: {}", toEmail);
         } catch (Exception e) {
@@ -50,10 +50,9 @@ public class EmailService {
         try {
             Context context = new Context();
             context.setVariable("username", username);
-            context.setVariable("resetLink", baseUrl + "/reset-password?token=" + resetToken);
+            context.setVariable("resetLink", baseUrl + "/api/auth/reset-password-redirect?token=" + resetToken);
 
             String htmlContent = templateEngine.process("email/password-reset", context);
-
             sendHtmlEmail(toEmail, "Reset your OPOSSUM password", htmlContent);
             log.info("Password reset email sent to: {}", toEmail);
         } catch (Exception e) {

@@ -327,4 +327,19 @@ public class AuthenticationService {
     public UserRole getCurrentUserRole(String token) {
         return jwtService.extractRole(token);
     }
+
+    public User validateResetToken(String token) {
+        log.info("Validating reset token: {}", token);
+
+        User user = userRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        // Check if token has expired
+        if (user.getResetPasswordExpires() == null ||
+                LocalDateTime.now().isAfter(user.getResetPasswordExpires())) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        return user;
+    }
 }

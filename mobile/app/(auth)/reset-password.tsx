@@ -14,7 +14,12 @@ import { authService } from "../../services/auth";
 import { globalStyles, colors } from "../../styles";
 
 export default function ResetPasswordMobileScreen() {
-  const { token } = useLocalSearchParams<{ token: string }>();
+  const { token, status, message } = useLocalSearchParams<{
+    token?: string;
+    status?: "error";
+    message?: string;
+  }>();
+
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
@@ -23,6 +28,7 @@ export default function ResetPasswordMobileScreen() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Handle API call to actually reset password
   const handleResetPassword = async () => {
     // Validation
     if (!formData.newPassword || !formData.confirmPassword) {
@@ -63,6 +69,7 @@ export default function ResetPasswordMobileScreen() {
 
     try {
       setIsLoading(true);
+      // THIS API CALL IS CORRECT AND NEEDED!
       const message = await authService.resetPassword(
         token as string,
         formData.newPassword,
@@ -105,6 +112,51 @@ export default function ResetPasswordMobileScreen() {
     focusedField === field && globalStyles.authInputFocused,
   ];
 
+  // ERROR CASE: Backend redirect with error
+  if (status === "error") {
+    return (
+      <View style={globalStyles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background}
+        />
+        <View style={globalStyles.authContainer}>
+          <View style={styles.content}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.errorIcon}>❌</Text>
+            </View>
+
+            <Text
+              style={[
+                globalStyles.heading1,
+                { color: colors.danger, textAlign: "center" },
+              ]}
+            >
+              Invalid Reset Link
+            </Text>
+
+            <Text
+              style={[
+                globalStyles.bodyText,
+                { textAlign: "center", marginBottom: 40 },
+              ]}
+            >
+              {message || "This password reset link is invalid or has expired."}
+            </Text>
+
+            <TouchableOpacity
+              style={globalStyles.authButton}
+              onPress={handleBackToAuth}
+              activeOpacity={0.8}
+            >
+              <Text style={globalStyles.authButtonText}>Back to Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   if (!token) {
     return (
       <View style={globalStyles.container}>
@@ -133,7 +185,7 @@ export default function ResetPasswordMobileScreen() {
                 { textAlign: "center", marginBottom: 40 },
               ]}
             >
-              This password reset link is invalid or has expired.
+              This password reset link is invalid or missing token.
             </Text>
 
             <TouchableOpacity
@@ -149,6 +201,7 @@ export default function ResetPasswordMobileScreen() {
     );
   }
 
+  // SUCCESS CASE: Password was reset successfully
   if (resetSuccess) {
     return (
       <View style={globalStyles.container}>
@@ -194,6 +247,7 @@ export default function ResetPasswordMobileScreen() {
     );
   }
 
+  // MAIN FORM: Show password reset form
   return (
     <ScrollView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -207,11 +261,7 @@ export default function ResetPasswordMobileScreen() {
           <Text
             style={[
               globalStyles.bodyText,
-              {
-                textAlign: "center",
-                marginBottom: 30,
-                lineHeight: 24,
-              },
+              { textAlign: "center", marginBottom: 30, lineHeight: 24 },
             ]}
           >
             Enter your new password below.

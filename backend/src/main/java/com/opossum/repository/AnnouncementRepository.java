@@ -106,6 +106,34 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
                         @Param("maxLng") BigDecimal maxLng);
 
         /**
+         * Find announcements with GPS coordinates within bounding box with optional
+         * filters
+         * 
+         * @param minLat   Minimum latitude (south boundary)
+         * @param maxLat   Maximum latitude (north boundary)
+         * @param minLng   Minimum longitude (west boundary)
+         * @param maxLng   Maximum longitude (east boundary)
+         * @param type     Optional filter by announcement type
+         * @param category Optional filter by announcement category
+         * @return List of announcements within the bounding box matching filters
+         */
+        @Query("SELECT a FROM Announcement a WHERE " +
+                        "a.latitude IS NOT NULL AND a.longitude IS NOT NULL AND " +
+                        "a.latitude BETWEEN :minLat AND :maxLat AND " +
+                        "a.longitude BETWEEN :minLng AND :maxLng AND " +
+                        "a.isActive = true AND " +
+                        "(:type IS NULL OR a.type = :type) AND " +
+                        "(:category IS NULL OR a.category = :category) " +
+                        "ORDER BY a.createdAt DESC")
+        List<Announcement> findWithinBoundingBoxWithFilters(
+                        @Param("minLat") BigDecimal minLat,
+                        @Param("maxLat") BigDecimal maxLat,
+                        @Param("minLng") BigDecimal minLng,
+                        @Param("maxLng") BigDecimal maxLng,
+                        @Param("type") AnnouncementType type,
+                        @Param("category") AnnouncementCategory category);
+
+        /**
          * Find all active announcements that have GPS coordinates
          * 
          * @return List of announcements with valid GPS coordinates

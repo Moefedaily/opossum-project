@@ -1,4 +1,3 @@
-// app/(tabs)/map/components/MobileMap.tsx - Simplified & Clean
 import React, { useState, useRef } from "react";
 import {
   View,
@@ -13,17 +12,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { AnnouncementDto } from "../../../../types/announcement";
-import { MapRegion, UserLocation } from "../../../../types/map";
-
-interface MobileMapProps {
-  region: MapRegion;
-  announcements: AnnouncementDto[];
-  userLocation: UserLocation | null;
-  onRegionChange: (region: MapRegion) => void;
-  onMarkerPress: (announcement: AnnouncementDto) => void;
-  style?: any;
-}
-
+import { MapRegion, MapProps } from "../../../../types/map";
 const { width, height } = Dimensions.get("window");
 
 export default function MobileMap({
@@ -33,7 +22,9 @@ export default function MobileMap({
   onRegionChange,
   onMarkerPress,
   style,
-}: MobileMapProps) {
+  filters,
+  onOpenFilters,
+}: MapProps) {
   const mapRef = useRef<MapView>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AnnouncementDto | null>(null);
@@ -73,20 +64,45 @@ export default function MobileMap({
     }
   };
 
+  // Get filter summary for display
+  const getFilterSummary = () => {
+    const parts = [];
+    if (filters.type !== "ALL") parts.push(filters.type.toLowerCase());
+    if (filters.category !== "ALL") parts.push(filters.category.toLowerCase());
+    return parts.length > 0 ? parts.join(" • ") : "all items";
+  };
+
+  // Check if filters are active (not default)
+  const hasActiveFilters =
+    filters.type !== "ALL" ||
+    filters.category !== "ALL" ||
+    filters.radius !== 10;
+
   return (
     <View style={[styles.container, style]}>
-      {/* Simple Header */}
+      {/* Updated Header with Filter Summary */}
       <View style={styles.headerCard}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.headerTitle}>Map View</Text>
             <Text style={styles.headerSubtitle}>
-              {announcements.length} items nearby
+              {announcements.length} {getFilterSummary()} • {filters.radius}km
             </Text>
           </View>
-          {/* Only essential filter button */}
-          <TouchableOpacity style={styles.filterButton}>
-            <Ionicons name="options-outline" size={20} color="#7C444F" />
+          {/* Filter button with active indicator */}
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              hasActiveFilters && styles.filterButtonActive,
+            ]}
+            onPress={onOpenFilters}
+          >
+            <Ionicons
+              name="options-outline"
+              size={20}
+              color={hasActiveFilters ? "#FFFFFF" : "#7C444F"}
+            />
+            {hasActiveFilters && <View style={styles.filterIndicator} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -277,6 +293,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF7F0",
     padding: 12,
     borderRadius: 12,
+    position: "relative",
+  },
+
+  // Active filter button style
+  filterButtonActive: {
+    backgroundColor: "#7C444F",
+  },
+
+  // Filter indicator dot
+  filterIndicator: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    backgroundColor: "#FF6B6B",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
   },
 
   mapContainer: {

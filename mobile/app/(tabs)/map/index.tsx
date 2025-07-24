@@ -1,4 +1,4 @@
-// app/(tabs)/map/index.tsx - FIXED TEXT RENDERING ISSUES
+// app/(tabs)/map/index.tsx - UPDATED with filter functionality
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -13,11 +13,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { mapService } from "../../../services/map";
 import { AnnouncementDto } from "../../../types/announcement";
-import { UserLocation, MapRegion } from "../../../types/map";
+import { UserLocation, MapRegion, FilterState } from "../../../types/map";
 import Map from "./components/Map";
+import FilterModal from "./components/FilterModal"; // 🆕 Import your filter modal
 
 export default function MapScreen() {
-  // State
+  // Existing state
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [announcements, setAnnouncements] = useState<AnnouncementDto[]>([]);
   const [mapRegion, setMapRegion] = useState<MapRegion>(
@@ -25,28 +26,42 @@ export default function MapScreen() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [searchRadius, setSearchRadius] = useState(5);
   const [showList, setShowList] = useState(false);
+
+  // 🆕 NEW: Filter state
+  const [filters, setFilters] = useState<FilterState>({
+    type: "ALL",
+    radius: 10,
+    category: "ALL",
+  });
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   // Initialize map
   useEffect(() => {
     initializeMap();
   }, []);
 
+  // Load announcements when filters change
+  useEffect(() => {
+    if (userLocation) {
+      loadNearbyAnnouncementsWithFilters();
+    }
+  }, [filters, userLocation]);
+
   const initializeMap = async () => {
     try {
       setIsLoading(true);
       await getUserLocation();
-      await loadNearbyAnnouncements();
+      await loadNearbyAnnouncementsWithFilters();
     } catch (error) {
       console.error("Error initializing map:", error);
-      await loadNearbyAnnouncements();
+      await loadNearbyAnnouncementsWithFilters();
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Get user location
+  // Get user location (unchanged)
   const getUserLocation = async () => {
     try {
       setIsLoadingLocation(true);
@@ -66,45 +81,57 @@ export default function MapScreen() {
     }
   };
 
-  // Load nearby announcements
-  const loadNearbyAnnouncements = async () => {
+  //Load announcements with current filters
+  const loadNearbyAnnouncementsWithFilters = async () => {
     try {
-      const searchLocation = userLocation || {
+      // 🎯 FIXED: Always use current map center for search
+      const searchLocation = {
         latitude: mapRegion.latitude,
         longitude: mapRegion.longitude,
       };
 
-      const items = await mapService.getNearbyAnnouncements({
+      // Convert filter state to API parameters
+      const params = {
         latitude: searchLocation.latitude,
         longitude: searchLocation.longitude,
-        radiusKm: searchRadius,
-      });
+        radiusKm: filters.radius,
+        ...(filters.type !== "ALL" && {
+          type: filters.type as "LOST" | "FOUND",
+        }),
+        ...(filters.category !== "ALL" && { category: filters.category }),
+      };
 
+      console.log("🔍 Searching map center with filters:", params);
+
+      const items = await mapService.getNearbyAnnouncements(params);
       setAnnouncements(items);
     } catch (error: any) {
       Alert.alert("Error", "Could not load announcements.");
       console.error("Error loading announcements:", error);
     }
   };
-
-  // Search current area when map region changes
-  const searchCurrentArea = async () => {
-    try {
-      const items = await mapService.getAnnouncementsInRegion(mapRegion);
-      setAnnouncements(items);
-    } catch (error: any) {
-      console.error("Error searching area:", error);
-      // Don't show alert for automatic searches, just log
-    }
-  };
-
   // Handle map region change (throttled to avoid too many API calls)
+  let searchTimeout: NodeJS.Timeout | null = null;
+
   const handleRegionChange = (region: MapRegion) => {
     setMapRegion(region);
-    // Debounce the search to avoid too many API calls
-    setTimeout(() => {
-      searchCurrentArea();
-    }, 1500);
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(() => {
+      console.log("🗺️ Map moved to:", region.latitude, region.longitude);
+      loadNearbyAnnouncementsWithFilters();
+    }, 2000);
+  };
+
+  // Handle filter changes
+  const handleApplyFilters = (newFilters: FilterState) => {
+    console.log("🔧 Applying new filters:", newFilters);
+    setFilters(newFilters);
+    setShowFilterModal(false);
+    // loadNearbyAnnouncementsWithFilters will be called by useEffect
   };
 
   // Handle marker press - Show details
@@ -127,9 +154,8 @@ export default function MapScreen() {
         {
           text: "View Full Details",
           onPress: () => {
-            // Navigate to announcement detail page
             const announcementPath =
-              `/announcement/${announcement.id}` as const;
+              `/announcements/${announcement.id}` as const;
             router.push(announcementPath);
           },
         },
@@ -137,7 +163,7 @@ export default function MapScreen() {
     );
   };
 
-  // Render announcement item for list view
+  // Render announcement item for list view (unchanged)
   const renderAnnouncementItem = ({ item }: { item: AnnouncementDto }) => (
     <TouchableOpacity
       style={styles.announcementCard}
@@ -166,7 +192,16 @@ export default function MapScreen() {
     </TouchableOpacity>
   );
 
-  // Loading screen
+  // 🆕 NEW: Get filter summary for display
+  const getFilterSummary = () => {
+    const parts = [];
+    if (filters.type !== "ALL") parts.push(filters.type.toLowerCase());
+    if (filters.category !== "ALL") parts.push(filters.category.toLowerCase());
+    parts.push(`${filters.radius}km radius`);
+    return parts.join(" • ");
+  };
+
+  // Loading screen (unchanged)
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -176,20 +211,12 @@ export default function MapScreen() {
     );
   }
 
-  // Show list view
+  // Show list view (unchanged)
   if (showList) {
     return (
       <View style={styles.container}>
-        <FlatList
-          data={announcements}
-          renderItem={renderAnnouncementItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
-
-        {/* Header for list view */}
-        <View style={styles.header}>
+        {/* Header for list view - FIXED positioning */}
+        <View style={styles.listHeader}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => setShowList(false)}
@@ -199,10 +226,20 @@ export default function MapScreen() {
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>All Items</Text>
             <Text style={styles.headerSubtitle}>
-              {announcements.length} items found
+              {announcements.length} items • {getFilterSummary()}
             </Text>
           </View>
         </View>
+
+        {/* FlatList with proper top padding */}
+        <FlatList
+          data={announcements}
+          renderItem={renderAnnouncementItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          style={styles.listFlatList}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     );
   }
@@ -218,6 +255,8 @@ export default function MapScreen() {
         onRegionChange={handleRegionChange}
         onMarkerPress={showAnnouncementDetails}
         style={styles.map}
+        filters={filters}
+        onOpenFilters={() => setShowFilterModal(true)}
       />
 
       {/* Floating Action Buttons */}
@@ -230,34 +269,19 @@ export default function MapScreen() {
         >
           <Ionicons name="list" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-
-        {/* My Location Button */}
-        <TouchableOpacity
-          style={[styles.fab, styles.locationFab]}
-          onPress={getUserLocation}
-          disabled={isLoadingLocation}
-          activeOpacity={0.8}
-        >
-          {isLoadingLocation ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Ionicons name="locate" size={24} color="#FFFFFF" />
-          )}
-        </TouchableOpacity>
-
-        {/* Search This Area Button */}
-        <TouchableOpacity
-          style={[styles.fab, styles.searchFab]}
-          onPress={searchCurrentArea}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="search" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
       </View>
+
+      <FilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        currentFilters={filters}
+        onApplyFilters={handleApplyFilters}
+      />
     </View>
   );
 }
 
+// Styles remain the same...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -280,7 +304,26 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
-    paddingTop: 100, // Account for header
+    paddingTop: 16,
+    paddingBottom: 100,
+  },
+  listHeader: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 10,
+  },
+  listFlatList: {
+    flex: 1,
+    backgroundColor: "#FAF7F0",
   },
   header: {
     position: "absolute",
@@ -300,6 +343,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FAF7F0",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 16,
   },
   headerTextContainer: {
@@ -318,12 +367,12 @@ const styles = StyleSheet.create({
   fabContainer: {
     position: "absolute",
     right: 20,
-    bottom: 100,
+    bottom: 272,
     alignItems: "center",
   },
   fab: {
-    width: 56,
-    height: 56,
+    width: 50,
+    height: 50,
     backgroundColor: "#7C444F",
     borderRadius: 28,
     justifyContent: "center",
@@ -335,15 +384,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  locationFab: {
-    backgroundColor: "#4ECDC4",
-  },
-  searchFab: {
-    backgroundColor: "#FF6B6B",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
+
   announcementCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,

@@ -12,6 +12,24 @@ export interface MapSearchParams {
   radiusKm: number;
   category?: string;
   type?: "LOST" | "FOUND";
+  search?: string;
+}
+
+export interface MapProps {
+  region: MapRegion;
+  announcements: AnnouncementDto[];
+  userLocation: UserLocation | null;
+  onRegionChange: (region: MapRegion) => void;
+  onMarkerPress: (announcement: AnnouncementDto) => void;
+  style?: any;
+  filters: FilterState;
+  onOpenFilters?: () => void;
+}
+
+export interface FilterState {
+  type: "ALL" | "LOST" | "FOUND";
+  radius: number;
+  category: string;
 }
 
 export interface MapMarkerData {

@@ -13,7 +13,7 @@ services:
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres123}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - CORS_URLS=${CORS_URLS:-http://localhost:3000}
+      - CORS_URLS=${CORS_URLS:-https://51b8551d70fd.ngrok-free.app,http://localhost:8081}
       - JWT_SECRET=${JWT_SECRET:-rKkTeex9w6EG9q4A4AGkpvgoz2DwP0wM6KhRWAK7fHw=}
     restart: unless-stopped
     depends_on:

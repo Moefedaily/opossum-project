@@ -241,7 +241,6 @@ public class AuthController {
         }
     }
 
-    // ADD these NEW endpoints for email links (redirects)
     @GetMapping("/verify-email-redirect")
     public ResponseEntity<?> handleEmailVerificationRedirect(@RequestParam("token") String token) {
         try {

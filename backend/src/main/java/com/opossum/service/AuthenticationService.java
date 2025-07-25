@@ -1,11 +1,11 @@
 package com.opossum.service;
 
-import com.opossum.dto.*;
 import com.opossum.dto.auth.AuthenticationResponse;
 import com.opossum.dto.auth.ChangePasswordRequest;
 import com.opossum.dto.auth.LoginRequest;
 import com.opossum.dto.auth.RefreshTokenRequest;
 import com.opossum.dto.auth.RegisterRequest;
+import com.opossum.dto.user.UserDto;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
 import com.opossum.mapper.UserMapper;

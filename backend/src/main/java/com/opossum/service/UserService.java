@@ -1,8 +1,9 @@
 package com.opossum.service;
 
-import com.opossum.dto.UserDto;
-import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
+import com.opossum.dto.user.UpdateProfileDto;
+import com.opossum.dto.user.UserDto;
+import com.opossum.dto.user.UserStatsDto;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
 
@@ -28,7 +29,7 @@ public interface UserService {
     // Update operations
     UserDto updateUser(Long id, UserDto userDto);
 
-    UserDto updateUserProfile(Long id, String firstName, String lastName, String phone);
+    UserDto updateUserProfile(Long id, UpdateProfileDto profileDto);
 
     void updateLastLogin(Long userId);
 

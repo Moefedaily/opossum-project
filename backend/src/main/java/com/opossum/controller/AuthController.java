@@ -1,12 +1,12 @@
 package com.opossum.controller;
 
-import com.opossum.dto.*;
 import com.opossum.dto.auth.AuthenticationResponse;
 import com.opossum.dto.auth.ChangePasswordRequest;
 import com.opossum.dto.auth.LoginRequest;
 import com.opossum.dto.auth.RefreshTokenRequest;
 import com.opossum.dto.auth.RegisterRequest;
 import com.opossum.dto.auth.ResetPasswordRequest;
+import com.opossum.dto.user.UserDto;
 import com.opossum.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

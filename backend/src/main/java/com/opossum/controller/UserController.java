@@ -1,8 +1,10 @@
 package com.opossum.controller;
 
-import com.opossum.dto.UserDto;
-import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
+import com.opossum.dto.user.UpdateProfileDto;
+import com.opossum.dto.user.UserDto;
+import com.opossum.dto.user.UserStatsDto;
+import com.opossum.entity.UserRole;
 import com.opossum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -124,22 +128,33 @@ public class UserController {
 
     @PatchMapping("/{id}/profile")
     @Operation(summary = "Update user profile details", description = "Updates only profile information")
-    public ResponseEntity<?> updateUserProfile(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> profileData) {
-
-        log.info("Updating profile for user ID: {}", id);
-
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id,
+            @Valid @RequestBody UpdateProfileDto profileDto,
+            Authentication auth) {
         try {
-            String firstName = profileData.get("firstName");
-            String lastName = profileData.get("lastName");
-            String phone = profileData.get("phone");
+            // Get current user
+            String username = auth.getUsername();
+            Optional<UserDto> currentUserOpt = userService.getUserByUsername(username);
 
-            UserDto updatedUser = userService.updateUserProfile(id, firstName, lastName, phone);
+            if (!currentUserOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Authentication failed"));
+            }
+
+            UserDto currentUser = currentUserOpt.get();
+
+            if (!currentUser.getId().equals(id) && !currentUser.getRole().equals(UserRole.ADMIN)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "You can only update your own profile"));
+            }
+
+            // Update the profile
+            UserDto updatedUser = userService.updateUserProfile(id, profileDto);
             return ResponseEntity.ok(updatedUser);
+
         } catch (RuntimeException e) {
-            log.error("Error updating profile: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            log.error("Error updating user profile: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
     }

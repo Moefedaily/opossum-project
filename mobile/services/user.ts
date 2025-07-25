@@ -24,8 +24,13 @@ export const userService = {
     profileData: UpdateProfileRequest
   ): Promise<UserProfileResponse> => {
     try {
-      // Get current user ID first
       const currentUser = await userService.getCurrentUser();
+
+      console.log(
+        `🔍 About to call: PATCH /api/users/${currentUser.id}/profile`
+      );
+      console.log(`🔍 Profile data:`, profileData);
+
       const response = await api.patch<UserProfileResponse>(
         `/api/users/${currentUser.id}/profile`,
         profileData,
@@ -35,8 +40,13 @@ export const userService = {
       );
       return response.data;
     } catch (error: any) {
+      console.log(
+        `💥 Profile update failed:`,
+        error.response?.status,
+        error.response?.data
+      );
       const apiError = handleApiError(error);
-      throw new Error(apiError.error);
+      throw new Error(apiError.error || "Failed to update profile");
     }
   },
 

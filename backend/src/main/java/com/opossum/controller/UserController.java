@@ -15,10 +15,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -133,7 +133,7 @@ public class UserController {
             Authentication auth) {
         try {
             // Get current user
-            String username = auth.getUsername();
+            String username = auth.getName();
             Optional<UserDto> currentUserOpt = userService.getUserByUsername(username);
 
             if (!currentUserOpt.isPresent()) {

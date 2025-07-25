@@ -1,10 +1,13 @@
 package com.opossum.service.impl;
 
 import com.opossum.dto.UserDto;
+import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
+import com.opossum.entity.announcement.AnnouncementStatus;
 import com.opossum.mapper.UserMapper;
+import com.opossum.repository.AnnouncementRepository;
 import com.opossum.repository.UserRepository;
 import com.opossum.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AnnouncementRepository announcementRepository;
 
     @Override
     public UserDto createUser(CreateUserRequest request) {
@@ -261,4 +265,28 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public UserStatsDto getUserStats(Long userId) {
+        log.info("Getting user statistics for user ID: {}", userId);
+
+        // Validate user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        log.debug("User found: {}", user.getUsername());
+
+        // Count announcements by status
+        Long totalAnnouncements = announcementRepository.countByUserId(userId);
+        Long activeAnnouncements = announcementRepository.countByUserIdAndStatus(userId, AnnouncementStatus.ACTIVE);
+        Long resolvedAnnouncements = announcementRepository.countByUserIdAndStatus(userId, AnnouncementStatus.RESOLVED);
+        Long expiredAnnouncements = announcementRepository.countByUserIdAndStatus(userId, AnnouncementStatus.ARCHIVED);
+
+        return UserStatsDto.builder()
+                .totalAnnouncements(totalAnnouncements)
+                .activeAnnouncements(activeAnnouncements)
+                .resolvedAnnouncements(resolvedAnnouncements)
+                .expiredAnnouncements(expiredAnnouncements)
+                .build();
+    }
+
 }

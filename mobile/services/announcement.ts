@@ -5,7 +5,6 @@ import {
 } from "../types/announcement";
 
 export const announcementService = {
-  // Get all announcements with optional category filter (for Issue #12)
   getAllAnnouncements: async (params?: {
     category?: string;
   }): Promise<AnnouncementDto[]> => {
@@ -54,7 +53,6 @@ export const announcementService = {
     }
   },
 
-  // Get announcement by ID (for Issue #13 - detail screen)
   getAnnouncementById: async (id: number): Promise<AnnouncementDto> => {
     try {
       console.log(`Fetching announcement ${id}`);
@@ -83,7 +81,6 @@ export const announcementService = {
     }
   },
 
-  // Create new announcement (for Issue #14 - create screen)
   createAnnouncement: async (
     data: CreateAnnouncementRequest
   ): Promise<AnnouncementDto> => {
@@ -96,6 +93,16 @@ export const announcementService = {
       const apiError = handleApiError(error);
       console.error("Error creating announcement:", apiError);
       throw new Error(apiError.error);
+    }
+  },
+  deleteAnnouncement: async (announcementId: number): Promise<void> => {
+    try {
+      await api.delete(`/api/announcements/${announcementId}`, {
+        timeout: 30000,
+      });
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      throw new Error(apiError.error || "Failed to delete announcement");
     }
   },
 };

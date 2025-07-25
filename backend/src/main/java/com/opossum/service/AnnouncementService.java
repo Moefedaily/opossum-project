@@ -111,4 +111,5 @@ public interface AnnouncementService {
         List<AnnouncementDto> findAnnouncementsSortedByDistance(
                         @NotNull BigDecimal userLatitude,
                         @NotNull BigDecimal userLongitude);
+
 }

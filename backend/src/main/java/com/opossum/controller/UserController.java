@@ -1,6 +1,7 @@
 package com.opossum.controller;
 
 import com.opossum.dto.UserDto;
+import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -213,5 +214,24 @@ public class UserController {
                 "emailAvailable", email == null || !userService.existsByEmail(email));
 
         return ResponseEntity.ok(availability);
+    }
+
+    @GetMapping("/{id}/stats")
+    @Operation(summary = "Get user statistics", description = "Gets user's announcement statistics")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public ResponseEntity<?> getUserStats(@PathVariable Long id) {
+        log.info("Getting statistics for user ID: {}", id);
+        try {
+            UserStatsDto stats = userService.getUserStats(id);
+            return ResponseEntity.ok(stats);
+        } catch (RuntimeException e) {
+            log.error("Error getting user statistics: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

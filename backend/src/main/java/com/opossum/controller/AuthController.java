@@ -21,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import java.net.URI;
 import java.util.Map;
@@ -245,17 +247,16 @@ public class AuthController {
     public ResponseEntity<?> handleEmailVerificationRedirect(@RequestParam("token") String token) {
         try {
             authenticationService.verifyEmail(token);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(
-                    "exp://ly-do5w-moefedaily-8081.exp.direct/--/verify-success?status=success&message=Email verified successfully"));
+                    "exp://ly-do5w-moefedaily-8081.exp.direct/--/verify-success?status=success&message=Email%20verified%20successfully"));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
-
         } catch (Exception e) {
             HttpHeaders headers = new HttpHeaders();
+            String encodedMessage = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
             headers.setLocation(
                     URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/verify-success?status=error&message="
-                            + e.getMessage()));
+                            + encodedMessage));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
@@ -264,19 +265,17 @@ public class AuthController {
     public ResponseEntity<?> handlePasswordResetRedirect(@RequestParam("token") String token) {
         try {
             authenticationService.validateResetToken(token);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(
                     URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/reset-password?token=" + token));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
-
         } catch (Exception e) {
             HttpHeaders headers = new HttpHeaders();
+            String encodedMessage = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
             headers.setLocation(
                     URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/reset-password?status=error&message="
-                            + e.getMessage()));
+                            + encodedMessage));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
-
 }

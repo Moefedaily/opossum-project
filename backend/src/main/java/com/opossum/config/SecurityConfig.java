@@ -74,13 +74,6 @@ public class SecurityConfig {
                         // Public categories (dropdown values)
                         .requestMatchers("GET", "/api/categories").permitAll()
 
-                        // Admin-only endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users").hasRole("ADMIN")
-                        .requestMatchers("POST", "/api/users").hasRole("ADMIN")
-                        .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
-                        .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
-
                         // User endpoints (both USER and ADMIN)
                         .requestMatchers("/api/auth/me").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/auth/change-password").hasAnyRole("USER", "ADMIN")
@@ -90,7 +83,6 @@ public class SecurityConfig {
                         // ADD THESE USER PROFILE ENDPOINTS:
                         .requestMatchers("GET", "/api/users/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PUT", "/api/users/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("PUT", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/deactivate").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("GET", "/api/users/*/stats").hasAnyRole("USER", "ADMIN")
 
@@ -110,6 +102,13 @@ public class SecurityConfig {
                         // Messaging (when implemented)
                         .requestMatchers("/api/conversations/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/messages/**").hasAnyRole("USER", "ADMIN")
+
+                        // Admin-only endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users").hasRole("ADMIN")
+                        .requestMatchers("POST", "/api/users").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
 
                         // All other requests require authentication
                         .anyRequest().authenticated())

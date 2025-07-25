@@ -1,7 +1,7 @@
 package com.opossum.dto.messaging;
 
-import com.opossum.dto.UserDto;
 import com.opossum.dto.announcement.AnnouncementDto;
+import com.opossum.dto.user.UserDto;
 import com.opossum.entity.messaging.ConversationStatus;
 
 import lombok.AllArgsConstructor;

@@ -419,7 +419,7 @@ export default function EditProfileScreen() {
 
               {/* Phone */}
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Phone Number</Text>
+                <Text style={styles.fieldLabel}>Phone Number *</Text>
                 <View style={getInputContainerStyle("phone")}>
                   <TextInput
                     style={globalStyles.authInput}
@@ -433,9 +433,6 @@ export default function EditProfileScreen() {
                     editable={!isSaving}
                   />
                 </View>
-                <Text style={styles.fieldHint}>
-                  Optional - Used for contact purposes
-                </Text>
               </View>
             </View>
           </View>

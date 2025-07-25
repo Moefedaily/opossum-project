@@ -83,7 +83,7 @@ export const fileUploadService = {
       console.log("Sending file upload request...");
 
       const uploadConfig: any = {
-        timeout: 30000,
+        timeout: 45000,
       };
 
       if (Platform.OS === "web") {

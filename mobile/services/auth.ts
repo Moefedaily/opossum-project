@@ -15,9 +15,9 @@ export const authService = {
     data: RegisterRequest
   ): Promise<{ message: string; email: string }> => {
     try {
-      const response = await api.post("/api/auth/register", data);
-
-      // Your backend returns: { message: "Registration successful! Please check your email...", email: "..." }
+      const response = await api.post("/api/auth/register", data, {
+        timeout: 450000,
+      });
       return response.data;
     } catch (error: any) {
       const apiError = handleApiError(error);
@@ -176,20 +176,25 @@ export const authService = {
   // Resend verification email
   resendVerification: async (email: string): Promise<string> => {
     try {
-      const response = await api.post("/api/auth/resend-verification", {
-        email,
-      });
+      const response = await api.post(
+        "/api/auth/resend-verification",
+        { email },
+        { timeout: 60000 }
+      );
       return response.data.message || "Verification email sent successfully";
     } catch (error: any) {
       const apiError = handleApiError(error);
       throw new Error(apiError.error);
     }
   },
-
   // Forgot password
   forgotPassword: async (email: string): Promise<string> => {
     try {
-      const response = await api.post("/api/auth/forgot-password", { email });
+      const response = await api.post(
+        "/api/auth/forgot-password",
+        { email },
+        { timeout: 60000 }
+      );
       return response.data.message || "Password reset email sent successfully";
     } catch (error: any) {
       const apiError = handleApiError(error);
@@ -203,28 +208,28 @@ export const authService = {
     confirmPassword: string
   ): Promise<string> => {
     try {
-      const response = await api.post("/api/auth/reset-password", {
-        token,
-        newPassword,
-        confirmPassword,
-      });
+      const response = await api.post(
+        "/api/auth/reset-password",
+        { token, newPassword, confirmPassword },
+        { timeout: 60000 }
+      );
       return response.data.message || "Password reset successfully";
     } catch (error: any) {
       const apiError = handleApiError(error);
       throw new Error(apiError.error);
     }
   },
-
   verifyEmail: async (token: string): Promise<string> => {
     try {
-      const response = await api.get(`/api/auth/verify-email?token=${token}`);
+      const response = await api.get(`/api/auth/verify-email?token=${token}`, {
+        timeout: 45000,
+      });
       return response.data.message || "Email verified successfully";
     } catch (error: any) {
       const apiError = handleApiError(error);
       throw new Error(apiError.error);
     }
   },
-
   validateStoredToken: async (): Promise<{
     user: User | null;
     accessToken: string | null;

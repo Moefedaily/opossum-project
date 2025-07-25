@@ -34,10 +34,6 @@ export interface FileDto {
   contentType: string;
   isActive: boolean;
   createdAt: string;
-  uploadedBy?: {
-    id: number;
-    username: string;
-  };
 }
 
 export interface CreateAnnouncementRequest {

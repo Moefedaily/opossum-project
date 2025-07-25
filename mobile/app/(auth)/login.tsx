@@ -46,7 +46,7 @@ export default function LoginScreen() {
       errorMessage.includes("not verified") ||
       errorMessage.includes("unverified")
     ) {
-      console.log("✅ Detected as VERIFICATION error");
+      console.log("Detected as VERIFICATION error");
       return "verification";
     }
 
@@ -55,11 +55,11 @@ export default function LoginScreen() {
       errorMessage.includes("timeout") ||
       errorMessage.includes("connection")
     ) {
-      console.log("✅ Detected as NETWORK error");
+      console.log("Detected as NETWORK error");
       return "network";
     }
 
-    console.log("✅ Detected as CREDENTIALS error");
+    console.log("Detected as CREDENTIALS error");
     return "credentials";
   };
 
@@ -80,7 +80,7 @@ export default function LoginScreen() {
       setErrorType(null);
       Toast.show({
         type: "success",
-        text1: "Verification Email Sent! 📧",
+        text1: "Verification Email Sent!",
         text2: "Check your email and click the verification link",
         visibilityTime: 5000,
       });

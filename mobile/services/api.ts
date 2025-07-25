@@ -10,7 +10,7 @@ import { AuthResponse, RefreshTokenRequest } from "../types/auth";
 // Create axios instance with base config + ngrok headers
 const api: AxiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_BASE_URL,
-  timeout: 10000,
+  timeout: 45000,
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "true",
@@ -25,6 +25,8 @@ const AUTH_NOT_REQUIRED_ENDPOINTS = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/categories",
+  "/api/auth/me", //
+  "/api/users",
 ];
 
 // **HELPER FUNCTION** - Check if endpoint needs auth

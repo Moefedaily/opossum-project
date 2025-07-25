@@ -49,7 +49,7 @@ export default function ForgotPasswordScreen() {
       setEmailSent(true);
       Toast.show({
         type: "success",
-        text1: "Reset Email Sent! 📧",
+        text1: "Reset Email Sent!",
         text2: "Check your email for reset instructions",
         visibilityTime: 5000,
       });

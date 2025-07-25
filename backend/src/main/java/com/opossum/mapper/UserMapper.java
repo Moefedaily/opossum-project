@@ -1,6 +1,6 @@
 package com.opossum.mapper;
 
-import com.opossum.dto.UserDto;
+import com.opossum.dto.user.UserDto;
 import com.opossum.entity.User;
 import org.springframework.stereotype.Component;
 

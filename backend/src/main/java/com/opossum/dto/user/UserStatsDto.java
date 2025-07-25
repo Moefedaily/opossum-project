@@ -1,5 +1,5 @@
 
-package com.opossum.dto;
+package com.opossum.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -248,13 +248,15 @@ public class AuthController {
             authenticationService.verifyEmail(token);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(
-                    URI.create("opossum://verify-success?status=success&message=Email verified successfully"));
+            headers.setLocation(URI.create(
+                    "exp://ly-do5w-moefedaily-8081.exp.direct/--/verify-success?status=success&message=Email verified successfully"));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception e) {
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create("opossum://verify-success?status=error&message=" + e.getMessage()));
+            headers.setLocation(
+                    URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/verify-success?status=error&message="
+                            + e.getMessage()));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
@@ -262,16 +264,18 @@ public class AuthController {
     @GetMapping("/reset-password-redirect")
     public ResponseEntity<?> handlePasswordResetRedirect(@RequestParam("token") String token) {
         try {
-            // Just validate token exists - don't reset password yet
-            authenticationService.validateResetToken(token); // You'll need to add this method
+            authenticationService.validateResetToken(token);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create("opossum://reset-password?token=" + token));
+            headers.setLocation(
+                    URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/reset-password?token=" + token));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception e) {
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create("opossum://reset-password?status=error&message=" + e.getMessage()));
+            headers.setLocation(
+                    URI.create("exp://ly-do5w-moefedaily-8081.exp.direct/--/reset-password?status=error&message="
+                            + e.getMessage()));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }

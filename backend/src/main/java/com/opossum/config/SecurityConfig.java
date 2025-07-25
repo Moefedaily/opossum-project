@@ -49,8 +49,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/verify-email").permitAll()
+                        .requestMatchers("/api/auth/verify-email-redirect").permitAll()
                         .requestMatchers("/api/auth/forgot-password").permitAll()
                         .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/reset-password-redirect").permitAll()
                         .requestMatchers("/api/auth/resend-verification").permitAll()
 
                         // Health check

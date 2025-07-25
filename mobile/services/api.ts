@@ -25,6 +25,8 @@ const AUTH_NOT_REQUIRED_ENDPOINTS = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/categories",
+  "/api/auth/me", //
+  "/api/users",
 ];
 
 // **HELPER FUNCTION** - Check if endpoint needs auth

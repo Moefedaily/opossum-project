@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: colors.warmTaupe,
+    backgroundColor: colors.info + "15",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border.light,

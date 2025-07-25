@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.warmTaupe,
+    backgroundColor: colors.warmTaupe + "15",
     justifyContent: "center" as const,
     alignItems: "center" as const,
     marginRight: 12,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: "500" as const,
   },
   warningContainer: {
-    backgroundColor: colors.warning + "15",
+    backgroundColor: colors.warmTaupe + "15",
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,

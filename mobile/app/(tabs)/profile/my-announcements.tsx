@@ -421,7 +421,7 @@ export default function MyAnnouncementsScreen() {
 
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push("/(tabs)/create")}
+          onPress={() => router.push("/(tabs)/announcements/create")}
           activeOpacity={0.8}
         >
           <Ionicons name="add" size={24} color={colors.richOxblood} />
@@ -460,7 +460,7 @@ export default function MyAnnouncementsScreen() {
           </Text>
           <TouchableOpacity
             style={styles.createButton}
-            onPress={() => router.push("/(tabs)/create")}
+            onPress={() => router.push("/(tabs)/announcements/create")}
             activeOpacity={0.8}
           >
             <Ionicons name="add" size={20} color={colors.white} />
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    backgroundColor: colors.softRose,
+    backgroundColor: colors.warmTaupe + "15",
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,

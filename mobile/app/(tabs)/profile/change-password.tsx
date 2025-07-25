@@ -1,4 +1,3 @@
-// app/(tabs)/profile/change-password.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -10,7 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  SafeAreaView, // ✅ Added SafeAreaView import
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -121,9 +120,15 @@ export default function ChangePasswordScreen() {
         confirmPassword: formData.confirmPassword.trim(),
       });
 
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
       Toast.show({
         type: "success",
-        text1: "Password Changed! ✅",
+        text1: "Password Changed! ",
         text2: "Your password has been successfully updated",
         visibilityTime: 4000,
       });
@@ -371,7 +376,7 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
     justifyContent: "space-between" as const,
     paddingHorizontal: 20,
-    paddingTop: 20, // ✅ Reduced - SafeAreaView handles safe area
+    paddingTop: 20, //  Reduced - SafeAreaView handles safe area
     paddingBottom: 16,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
@@ -446,7 +451,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic" as const,
   },
   guidelinesContainer: {
-    backgroundColor: colors.warmTaupe,
+    backgroundColor: colors.info + "15",
     borderRadius: 12,
     padding: 16,
     marginBottom: 32,

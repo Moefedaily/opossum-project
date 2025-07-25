@@ -1,6 +1,7 @@
 package com.opossum.service;
 
 import com.opossum.dto.UserDto;
+import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
@@ -59,5 +60,7 @@ public interface UserService {
     UserDto assignRole(Long userId, UserRole role);
 
     List<UserDto> getUsersByRole(UserRole role);
+
+    UserStatsDto getUserStats(Long userId);
 
 }

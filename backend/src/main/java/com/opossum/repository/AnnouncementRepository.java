@@ -73,6 +73,10 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
 
         long countByUserId(Long userId);
 
+        long countByUserIdAndStatus(Long userId, AnnouncementStatus status);
+
+        long countByUserIdAndIsActive(Long userId, boolean isActive);
+
         long countByIsActiveTrue();
 
         // Order by created date

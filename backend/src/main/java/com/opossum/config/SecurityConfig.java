@@ -92,6 +92,7 @@ public class SecurityConfig {
                         .requestMatchers("PUT", "/api/users/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PUT", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/deactivate").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("GET", "/api/users/*/stats").hasAnyRole("USER", "ADMIN")
 
                         // Announcement management (create, update, delete)
                         .requestMatchers("POST", "/api/announcements").hasAnyRole("USER", "ADMIN")

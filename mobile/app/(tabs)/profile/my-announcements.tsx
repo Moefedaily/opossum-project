@@ -19,6 +19,7 @@ import { userService } from "../../../services/user";
 import { globalStyles, colors } from "../../../styles";
 import { FileDto } from "../../../types/announcement";
 import { UserAnnouncementResponse } from "../../../types/profile";
+import { announcementService } from "../../../services/announcement";
 
 type FilterStatus = "ALL" | "ACTIVE" | "RESOLVED" | "EXPIRED";
 
@@ -119,10 +120,9 @@ export default function MyAnnouncementsScreen() {
 
   const confirmDeleteAnnouncement = async (announcementId: number) => {
     try {
-      // TODO: Implement delete announcement API call
-      // await announcementService.deleteAnnouncement(announcementId);
+      await announcementService.deleteAnnouncement(announcementId);
 
-      // For now, just show success and remove from local state
+      // Remove from local state
       setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
 
       Toast.show({

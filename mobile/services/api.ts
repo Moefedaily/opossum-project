@@ -25,13 +25,17 @@ const AUTH_NOT_REQUIRED_ENDPOINTS = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/categories",
-  "/api/auth/me", //
-  "/api/users",
+  "/api/announcements",
 ];
 
 // **HELPER FUNCTION** - Check if endpoint needs auth
 const shouldSkipAuth = (url: string | undefined, method = "GET"): boolean => {
   if (!url) return false;
+
+  if (url.includes("/api/announcements/my")) {
+    return false;
+  }
+
   if (url.includes("/api/announcements")) {
     return method.toUpperCase() === "GET";
   }
@@ -39,6 +43,7 @@ const shouldSkipAuth = (url: string | undefined, method = "GET"): boolean => {
   if (url.includes("/api/files")) {
     return method.toUpperCase() === "GET";
   }
+
   return AUTH_NOT_REQUIRED_ENDPOINTS.some((endpoint) => url.includes(endpoint));
 };
 
@@ -74,11 +79,16 @@ api.interceptors.request.use(
       const authData = await storage.getAuthData();
       if (authData?.accessToken) {
         config.headers.Authorization = `Bearer ${authData.accessToken}`;
-
-        if (isFormData) {
-          delete config.headers["Content-Type"];
-        }
+        console.log(`🔐 Adding auth header for: ${config.url}`);
+      } else {
+        console.log(`❌ No token found for: ${config.url}`);
       }
+
+      if (isFormData) {
+        delete config.headers["Content-Type"];
+      }
+    } else {
+      console.log(`⏭️ Skipping auth for: ${config.url}`);
     }
 
     return config;

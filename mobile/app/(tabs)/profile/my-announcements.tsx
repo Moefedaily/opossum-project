@@ -1,4 +1,3 @@
-// app/(tabs)/profile/my-announcements.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -11,6 +10,7 @@ import {
   RefreshControl,
   Alert,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -63,7 +63,6 @@ export default function MyAnnouncementsScreen() {
       setIsRefreshing(true);
       await loadMyAnnouncements();
     } catch (error) {
-      // Error already handled in loadMyAnnouncements
     } finally {
       setIsRefreshing(false);
     }
@@ -384,7 +383,7 @@ export default function MyAnnouncementsScreen() {
 
   if (isLoading) {
     return (
-      <View style={[globalStyles.container, styles.loadingContainer]}>
+      <SafeAreaView style={[globalStyles.container, styles.loadingContainer]}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
@@ -398,12 +397,12 @@ export default function MyAnnouncementsScreen() {
         >
           Loading your announcements...
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* Header */}
@@ -504,7 +503,7 @@ export default function MyAnnouncementsScreen() {
           <View style={styles.bottomSpacing} />
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

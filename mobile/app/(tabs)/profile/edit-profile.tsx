@@ -1,4 +1,3 @@
-// app/(tabs)/profile/edit-profile.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,6 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -127,7 +127,6 @@ export default function EditProfileScreen() {
       return false;
     }
 
-    // Phone validation (optional but if provided, must be valid)
     if (formData.phone?.trim()) {
       const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
       if (!phoneRegex.test(formData.phone.trim())) {
@@ -157,7 +156,6 @@ export default function EditProfileScreen() {
     try {
       setIsSaving(true);
 
-      // Clean data - trim whitespace
       const cleanData: UpdateProfileRequest = {
         firstName: formData.firstName?.trim(),
         lastName: formData.lastName?.trim(),
@@ -234,7 +232,7 @@ export default function EditProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={[globalStyles.container, styles.loadingContainer]}>
+      <SafeAreaView style={[globalStyles.container, styles.loadingContainer]}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
@@ -248,13 +246,13 @@ export default function EditProfileScreen() {
         >
           Loading your profile...
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!userProfile) {
     return (
-      <View style={[globalStyles.container, styles.errorContainer]}>
+      <SafeAreaView style={[globalStyles.container, styles.errorContainer]}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
@@ -265,186 +263,33 @@ export default function EditProfileScreen() {
         <TouchableOpacity style={styles.retryButton} onPress={loadUserProfile}>
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleCancel}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
-        </TouchableOpacity>
-
-        <Text style={[globalStyles.heading2, styles.headerTitle]}>
-          Edit Profile
-        </Text>
-
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            (!hasChanges || isSaving) && styles.saveButtonDisabled,
-          ]}
-          onPress={handleSaveProfile}
-          disabled={!hasChanges || isSaving}
-          activeOpacity={0.8}
-        >
-          {isSaving ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            <Text style={styles.saveButtonText}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.contentContainer}>
-        {/* Avatar Section */}
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            {/* TODO: Replace with actual avatar image when upload is implemented */}
-            {userProfile.avatarUrl ? (
-              // When avatar upload is implemented, show actual image here
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={50} color={colors.white} />
-              </View>
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={50} color={colors.white} />
-              </View>
-            )}
-          </View>
-
-          {/* TODO: Avatar upload button - implement later */}
+      <ScrollView style={styles.scrollContainer}>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            style={styles.changeAvatarButton}
-            onPress={handleChangeAvatar}
-            activeOpacity={0.8}
+            style={styles.backButton}
+            onPress={handleCancel}
+            activeOpacity={0.7}
           >
-            <Ionicons
-              name="camera-outline"
-              size={20}
-              color={colors.richOxblood}
-            />
-            <Text style={styles.changeAvatarText}>Change Photo</Text>
+            <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
           </TouchableOpacity>
-        </View>
 
-        {/* Form Section */}
-        <View style={styles.formContainer}>
-          {/* Account Info (Read-only) */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Account Information</Text>
+          <Text style={[globalStyles.heading2, styles.headerTitle]}>
+            Edit Profile
+          </Text>
 
-            <View style={styles.readOnlyField}>
-              <Text style={styles.fieldLabel}>Username</Text>
-              <Text style={styles.fieldValue}>{userProfile.username}</Text>
-            </View>
-
-            <View style={styles.readOnlyField}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <Text style={styles.fieldValue}>{userProfile.email}</Text>
-              <View style={styles.verificationBadge}>
-                <Ionicons
-                  name={
-                    userProfile.isVerified ? "checkmark-circle" : "time-outline"
-                  }
-                  size={14}
-                  color={
-                    userProfile.isVerified ? colors.success : colors.warning
-                  }
-                />
-                <Text
-                  style={[
-                    styles.verificationText,
-                    {
-                      color: userProfile.isVerified
-                        ? colors.success
-                        : colors.warning,
-                    },
-                  ]}
-                >
-                  {userProfile.isVerified ? "Verified" : "Pending"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Personal Info (Editable) */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Personal Information</Text>
-
-            {/* First Name */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>First Name *</Text>
-              <View style={getInputContainerStyle("firstName")}>
-                <TextInput
-                  style={globalStyles.authInput}
-                  placeholder="Enter your first name"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.firstName}
-                  onChangeText={(value) => updateField("firstName", value)}
-                  onFocus={() => setFocusedField("firstName")}
-                  onBlur={() => setFocusedField(null)}
-                  autoCapitalize="words"
-                  editable={!isSaving}
-                />
-              </View>
-            </View>
-
-            {/* Last Name */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Last Name *</Text>
-              <View style={getInputContainerStyle("lastName")}>
-                <TextInput
-                  style={globalStyles.authInput}
-                  placeholder="Enter your last name"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.lastName}
-                  onChangeText={(value) => updateField("lastName", value)}
-                  onFocus={() => setFocusedField("lastName")}
-                  onBlur={() => setFocusedField(null)}
-                  autoCapitalize="words"
-                  editable={!isSaving}
-                />
-              </View>
-            </View>
-
-            {/* Phone */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Phone Number</Text>
-              <View style={getInputContainerStyle("phone")}>
-                <TextInput
-                  style={globalStyles.authInput}
-                  placeholder="Enter your phone number"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.phone}
-                  onChangeText={(value) => updateField("phone", value)}
-                  onFocus={() => setFocusedField("phone")}
-                  onBlur={() => setFocusedField(null)}
-                  keyboardType="phone-pad"
-                  editable={!isSaving}
-                />
-              </View>
-              <Text style={styles.fieldHint}>
-                Optional - Used for contact purposes
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Save Button (Mobile) */}
-        <View style={styles.mobileButtonContainer}>
           <TouchableOpacity
             style={[
-              styles.primaryButton,
-              (!hasChanges || isSaving) && styles.primaryButtonDisabled,
+              styles.saveButton,
+              (!hasChanges || isSaving) && styles.saveButtonDisabled,
             ]}
             onPress={handleSaveProfile}
             disabled={!hasChanges || isSaving}
@@ -453,27 +298,187 @@ export default function EditProfileScreen() {
             {isSaving ? (
               <ActivityIndicator size="small" color={colors.white} />
             ) : (
-              <Text style={styles.primaryButtonText}>Save Changes</Text>
+              <Text style={styles.saveButtonText}>Save</Text>
             )}
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleCancel}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryButtonText}>Cancel</Text>
-          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Bottom Spacing */}
-      <View style={styles.bottomSpacing} />
-    </ScrollView>
+        <View style={styles.contentContainer}>
+          {/* Avatar Section */}
+          <View style={styles.avatarSection}>
+            <View style={styles.avatarContainer}>
+              {/* TODO: Replace with actual avatar image when upload is implemented */}
+              {userProfile.avatarUrl ? (
+                // When avatar upload is implemented, show actual image here
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons name="person" size={50} color={colors.white} />
+                </View>
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons name="person" size={50} color={colors.white} />
+                </View>
+              )}
+            </View>
+
+            {/* TODO: Avatar upload button - implement later */}
+            <TouchableOpacity
+              style={styles.changeAvatarButton}
+              onPress={handleChangeAvatar}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="camera-outline"
+                size={20}
+                color={colors.richOxblood}
+              />
+              <Text style={styles.changeAvatarText}>Change Photo</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Form Section */}
+          <View style={styles.formContainer}>
+            {/* Account Info (Read-only) */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Account Information</Text>
+
+              <View style={styles.readOnlyField}>
+                <Text style={styles.fieldLabel}>Username</Text>
+                <Text style={styles.fieldValue}>{userProfile.username}</Text>
+              </View>
+
+              <View style={styles.readOnlyField}>
+                <Text style={styles.fieldLabel}>Email</Text>
+                <Text style={styles.fieldValue}>{userProfile.email}</Text>
+                <View style={styles.verificationBadge}>
+                  <Ionicons
+                    name={
+                      userProfile.isVerified
+                        ? "checkmark-circle"
+                        : "time-outline"
+                    }
+                    size={14}
+                    color={
+                      userProfile.isVerified ? colors.success : colors.warning
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.verificationText,
+                      {
+                        color: userProfile.isVerified
+                          ? colors.success
+                          : colors.warning,
+                      },
+                    ]}
+                  >
+                    {userProfile.isVerified ? "Verified" : "Pending"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Personal Info (Editable) */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+
+              {/* First Name */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>First Name *</Text>
+                <View style={getInputContainerStyle("firstName")}>
+                  <TextInput
+                    style={globalStyles.authInput}
+                    placeholder="Enter your first name"
+                    placeholderTextColor={colors.text.secondary}
+                    value={formData.firstName}
+                    onChangeText={(value) => updateField("firstName", value)}
+                    onFocus={() => setFocusedField("firstName")}
+                    onBlur={() => setFocusedField(null)}
+                    autoCapitalize="words"
+                    editable={!isSaving}
+                  />
+                </View>
+              </View>
+
+              {/* Last Name */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Last Name *</Text>
+                <View style={getInputContainerStyle("lastName")}>
+                  <TextInput
+                    style={globalStyles.authInput}
+                    placeholder="Enter your last name"
+                    placeholderTextColor={colors.text.secondary}
+                    value={formData.lastName}
+                    onChangeText={(value) => updateField("lastName", value)}
+                    onFocus={() => setFocusedField("lastName")}
+                    onBlur={() => setFocusedField(null)}
+                    autoCapitalize="words"
+                    editable={!isSaving}
+                  />
+                </View>
+              </View>
+
+              {/* Phone */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Phone Number</Text>
+                <View style={getInputContainerStyle("phone")}>
+                  <TextInput
+                    style={globalStyles.authInput}
+                    placeholder="Enter your phone number"
+                    placeholderTextColor={colors.text.secondary}
+                    value={formData.phone}
+                    onChangeText={(value) => updateField("phone", value)}
+                    onFocus={() => setFocusedField("phone")}
+                    onBlur={() => setFocusedField(null)}
+                    keyboardType="phone-pad"
+                    editable={!isSaving}
+                  />
+                </View>
+                <Text style={styles.fieldHint}>
+                  Optional - Used for contact purposes
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Save Button (Mobile) */}
+          <View style={styles.mobileButtonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                (!hasChanges || isSaving) && styles.primaryButtonDisabled,
+              ]}
+              onPress={handleSaveProfile}
+              disabled={!hasChanges || isSaving}
+              activeOpacity={0.8}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save Changes</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleCancel}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Bottom Spacing */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center" as const,
@@ -503,7 +508,7 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
     justifyContent: "space-between" as const,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 20, // ✅ Reduced from previous - SafeAreaView handles safe area
     paddingBottom: 16,
     backgroundColor: colors.white,
     borderBottomWidth: 1,

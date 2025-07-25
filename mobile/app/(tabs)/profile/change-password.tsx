@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  SafeAreaView, // ✅ Added SafeAreaView import
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -227,143 +228,150 @@ export default function ChangePasswordScreen() {
   };
 
   return (
-    <ScrollView style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleCancel}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
-        </TouchableOpacity>
-
-        <Text style={[globalStyles.heading2, styles.headerTitle]}>
-          Change Password
-        </Text>
-
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <View style={styles.contentContainer}>
-        {/* Security Info */}
-        <View style={styles.infoContainer}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="shield-checkmark" size={24} color={colors.info} />
-          </View>
-          <Text style={styles.infoText}>
-            For your security, you need to provide your current password to set
-            a new one.
-          </Text>
-        </View>
-
-        {/* Form Section */}
-        <View style={styles.formContainer}>
-          {/* Current Password */}
-          {renderPasswordInput(
-            "currentPassword",
-            "Enter your current password",
-            "current",
-            "Current Password *",
-            "Your existing password for verification"
-          )}
-
-          {/* New Password */}
-          {renderPasswordInput(
-            "newPassword",
-            "Enter your new password",
-            "new",
-            "New Password *",
-            "Must be at least 6 characters long"
-          )}
-
-          {/* Confirm Password */}
-          {renderPasswordInput(
-            "confirmPassword",
-            "Confirm your new password",
-            "confirm",
-            "Confirm New Password *",
-            "Re-enter your new password"
-          )}
-        </View>
-
-        {/* Security Guidelines */}
-        <View style={styles.guidelinesContainer}>
-          <Text style={styles.guidelinesTitle}>Password Guidelines:</Text>
-          <View style={styles.guideline}>
-            <Ionicons
-              name="checkmark-circle"
-              size={16}
-              color={colors.success}
-            />
-            <Text style={styles.guidelineText}>At least 6 characters long</Text>
-          </View>
-          <View style={styles.guideline}>
-            <Ionicons
-              name="checkmark-circle"
-              size={16}
-              color={colors.success}
-            />
-            <Text style={styles.guidelineText}>
-              Different from your current password
-            </Text>
-          </View>
-          <View style={styles.guideline}>
-            <Ionicons
-              name="checkmark-circle"
-              size={16}
-              color={colors.success}
-            />
-            <Text style={styles.guidelineText}>
-              Use a mix of letters, numbers, and symbols
-            </Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              isLoading && styles.primaryButtonDisabled,
-            ]}
-            onPress={handleChangePassword}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={colors.white} />
-            ) : (
-              <Text style={styles.primaryButtonText}>Change Password</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
+            style={styles.backButton}
             onPress={handleCancel}
-            activeOpacity={0.8}
-            disabled={isLoading}
+            activeOpacity={0.7}
           >
-            <Text style={styles.secondaryButtonText}>Cancel</Text>
+            <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
           </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Bottom Spacing */}
-      <View style={styles.bottomSpacing} />
-    </ScrollView>
+          <Text style={[globalStyles.heading2, styles.headerTitle]}>
+            Change Password
+          </Text>
+
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <View style={styles.contentContainer}>
+          {/* Security Info */}
+          <View style={styles.infoContainer}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="shield-checkmark" size={24} color={colors.info} />
+            </View>
+            <Text style={styles.infoText}>
+              For your security, you need to provide your current password to
+              set a new one.
+            </Text>
+          </View>
+
+          {/* Form Section */}
+          <View style={styles.formContainer}>
+            {/* Current Password */}
+            {renderPasswordInput(
+              "currentPassword",
+              "Enter your current password",
+              "current",
+              "Current Password *",
+              "Your existing password for verification"
+            )}
+
+            {/* New Password */}
+            {renderPasswordInput(
+              "newPassword",
+              "Enter your new password",
+              "new",
+              "New Password *",
+              "Must be at least 6 characters long"
+            )}
+
+            {/* Confirm Password */}
+            {renderPasswordInput(
+              "confirmPassword",
+              "Confirm your new password",
+              "confirm",
+              "Confirm New Password *",
+              "Re-enter your new password"
+            )}
+          </View>
+
+          {/* Security Guidelines */}
+          <View style={styles.guidelinesContainer}>
+            <Text style={styles.guidelinesTitle}>Password Guidelines:</Text>
+            <View style={styles.guideline}>
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
+              <Text style={styles.guidelineText}>
+                At least 6 characters long
+              </Text>
+            </View>
+            <View style={styles.guideline}>
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
+              <Text style={styles.guidelineText}>
+                Different from your current password
+              </Text>
+            </View>
+            <View style={styles.guideline}>
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
+              <Text style={styles.guidelineText}>
+                Use a mix of letters, numbers, and symbols
+              </Text>
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                isLoading && styles.primaryButtonDisabled,
+              ]}
+              onPress={handleChangePassword}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Change Password</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleCancel}
+              activeOpacity={0.8}
+              disabled={isLoading}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Bottom Spacing */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+  },
   header: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "space-between" as const,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 20, // ✅ Reduced - SafeAreaView handles safe area
     paddingBottom: 16,
     backgroundColor: colors.white,
     borderBottomWidth: 1,

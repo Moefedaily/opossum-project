@@ -112,7 +112,7 @@ export default function LoginScreen() {
       if (response) {
         Toast.show({
           type: "success",
-          text1: "Welcome back! 👋",
+          text1: "Welcome back!",
           text2: `Hello ${response.user.firstName || response.user.username}!`,
         });
         router.replace("/(tabs)");

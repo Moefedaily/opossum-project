@@ -90,7 +90,7 @@ public class SecurityConfig {
                         // ADD THESE USER PROFILE ENDPOINTS:
                         .requestMatchers("GET", "/api/users/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PUT", "/api/users/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("PATCH", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("PUT", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/deactivate").hasAnyRole("USER", "ADMIN")
 
                         // Announcement management (create, update, delete)

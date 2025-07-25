@@ -61,18 +61,15 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="announcements/[id]"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="announcements/create"
-        options={{
-          href: null,
-        }}
-      />
+
+      {/* ✅ HIDE THESE FROM TAB BAR */}
+      <Tabs.Screen name="profile/edit-profile" options={{ href: null }} />
+      <Tabs.Screen name="profile/my-announcements" options={{ href: null }} />
+      <Tabs.Screen name="profile/settings" options={{ href: null }} />
+      <Tabs.Screen name="profile/change-password" options={{ href: null }} />
+
+      <Tabs.Screen name="announcements/[id]" options={{ href: null }} />
+      <Tabs.Screen name="announcements/create" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,4 +1,3 @@
-// app/(tabs)/profile/index.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  SafeAreaView, // ✅ Added SafeAreaView import
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -125,7 +125,7 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={[globalStyles.container, styles.loadingContainer]}>
+      <SafeAreaView style={[globalStyles.container, styles.loadingContainer]}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
@@ -139,13 +139,13 @@ export default function ProfileScreen() {
         >
           Loading your profile...
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!userProfile) {
     return (
-      <View style={[globalStyles.container, styles.errorContainer]}>
+      <SafeAreaView style={[globalStyles.container, styles.errorContainer]}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
@@ -166,202 +166,211 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.retryButton} onPress={loadUserProfile}>
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView
-      style={globalStyles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          colors={[colors.richOxblood]} // Android
-          tintColor={colors.richOxblood} // iOS
-        />
-      }
-    >
+    <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      {/* Profile Header */}
-      <View style={styles.headerContainer}>
-        <View style={styles.avatarContainer}>
-          {/* TODO: Replace with actual avatar image when avatar upload is implemented */}
-          {userProfile.avatarUrl ? (
-            // When avatar upload is implemented, show actual image here
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={40} color={colors.white} />
-            </View>
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={40} color={colors.white} />
-            </View>
-          )}
+      <ScrollView
+        style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.richOxblood]} // Android
+            tintColor={colors.richOxblood} // iOS
+          />
+        }
+      >
+        {/* Profile Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.avatarContainer}>
+            {/* TODO: Replace with actual avatar image when avatar upload is implemented */}
+            {userProfile.avatarUrl ? (
+              // When avatar upload is implemented, show actual image here
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={40} color={colors.white} />
+              </View>
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={40} color={colors.white} />
+              </View>
+            )}
 
-          {/* TODO: Avatar upload button - implement later */}
+            {/* TODO: Avatar upload button - implement later */}
+            <TouchableOpacity
+              style={styles.avatarUploadButton}
+              onPress={handleUploadAvatar}
+            >
+              <Ionicons name="camera" size={16} color={colors.white} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.userInfoContainer}>
+            <Text style={[globalStyles.heading1, styles.userName]}>
+              {userProfile.firstName && userProfile.lastName
+                ? `${userProfile.firstName} ${userProfile.lastName}`
+                : userProfile.username}
+            </Text>
+
+            <Text style={[globalStyles.bodyText, styles.userEmail]}>
+              {userProfile.email}
+            </Text>
+
+            <View style={styles.verificationContainer}>
+              <Ionicons
+                name={
+                  userProfile.isVerified ? "checkmark-circle" : "time-outline"
+                }
+                size={16}
+                color={userProfile.isVerified ? colors.success : colors.warning}
+              />
+              <Text
+                style={[
+                  globalStyles.caption,
+                  {
+                    color: userProfile.isVerified
+                      ? colors.success
+                      : colors.warning,
+                    marginLeft: 4,
+                  },
+                ]}
+              >
+                {userProfile.isVerified
+                  ? "Verified Account"
+                  : "Pending Verification"}
+              </Text>
+            </View>
+
+            <Text style={[globalStyles.caption, styles.joinDate]}>
+              Member since {formatJoinDate(userProfile.createdAt)}
+            </Text>
+
+            <Text style={[globalStyles.caption, styles.lastSeen]}>
+              Last seen {formatLastSeen(userProfile.lastLogin)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>
+              {userStats.totalAnnouncements}
+            </Text>
+            <Text style={styles.statLabel}>Total Posts</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>
+              {userStats.activeAnnouncements}
+            </Text>
+            <Text style={styles.statLabel}>Active</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>
+              {userStats.resolvedAnnouncements}
+            </Text>
+            <Text style={styles.statLabel}>Resolved</Text>
+          </View>
+        </View>
+
+        {/* Action Cards */}
+        <View style={styles.actionCardsContainer}>
+          {/* Edit Profile Card */}
           <TouchableOpacity
-            style={styles.avatarUploadButton}
-            onPress={handleUploadAvatar}
+            style={styles.actionCard}
+            onPress={handleEditProfile}
+            activeOpacity={0.8}
           >
-            <Ionicons name="camera" size={16} color={colors.white} />
+            <View style={styles.actionCardIcon}>
+              <Ionicons
+                name="person-outline"
+                size={24}
+                color={colors.richOxblood}
+              />
+            </View>
+            <View style={styles.actionCardContent}>
+              <Text style={styles.actionCardTitle}>Edit Profile</Text>
+              <Text style={styles.actionCardSubtitle}>
+                Update your personal information
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.text.secondary}
+            />
+          </TouchableOpacity>
+
+          {/* My Announcements Card */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleMyAnnouncements}
+            activeOpacity={0.8}
+          >
+            <View style={styles.actionCardIcon}>
+              <Ionicons
+                name="list-outline"
+                size={24}
+                color={colors.richOxblood}
+              />
+            </View>
+            <View style={styles.actionCardContent}>
+              <Text style={styles.actionCardTitle}>My Announcements</Text>
+              <Text style={styles.actionCardSubtitle}>
+                Manage your posts and responses
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.text.secondary}
+            />
+          </TouchableOpacity>
+
+          {/* Settings Card */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={handleSettings}
+            activeOpacity={0.8}
+          >
+            <View style={styles.actionCardIcon}>
+              <Ionicons
+                name="settings-outline"
+                size={24}
+                color={colors.richOxblood}
+              />
+            </View>
+            <View style={styles.actionCardContent}>
+              <Text style={styles.actionCardTitle}>Settings</Text>
+              <Text style={styles.actionCardSubtitle}>
+                Account preferences and security
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.text.secondary}
+            />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.userInfoContainer}>
-          <Text style={[globalStyles.heading1, styles.userName]}>
-            {userProfile.firstName && userProfile.lastName
-              ? `${userProfile.firstName} ${userProfile.lastName}`
-              : userProfile.username}
-          </Text>
-
-          <Text style={[globalStyles.bodyText, styles.userEmail]}>
-            {userProfile.email}
-          </Text>
-
-          <View style={styles.verificationContainer}>
-            <Ionicons
-              name={
-                userProfile.isVerified ? "checkmark-circle" : "time-outline"
-              }
-              size={16}
-              color={userProfile.isVerified ? colors.success : colors.warning}
-            />
-            <Text
-              style={[
-                globalStyles.caption,
-                {
-                  color: userProfile.isVerified
-                    ? colors.success
-                    : colors.warning,
-                  marginLeft: 4,
-                },
-              ]}
-            >
-              {userProfile.isVerified
-                ? "Verified Account"
-                : "Pending Verification"}
-            </Text>
-          </View>
-
-          <Text style={[globalStyles.caption, styles.joinDate]}>
-            Member since {formatJoinDate(userProfile.createdAt)}
-          </Text>
-
-          <Text style={[globalStyles.caption, styles.lastSeen]}>
-            Last seen {formatLastSeen(userProfile.lastLogin)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Stats Cards */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userStats.totalAnnouncements}</Text>
-          <Text style={styles.statLabel}>Total Posts</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{userStats.activeAnnouncements}</Text>
-          <Text style={styles.statLabel}>Active</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
-            {userStats.resolvedAnnouncements}
-          </Text>
-          <Text style={styles.statLabel}>Resolved</Text>
-        </View>
-      </View>
-
-      {/* Action Cards */}
-      <View style={styles.actionCardsContainer}>
-        {/* Edit Profile Card */}
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={handleEditProfile}
-          activeOpacity={0.8}
-        >
-          <View style={styles.actionCardIcon}>
-            <Ionicons
-              name="person-outline"
-              size={24}
-              color={colors.richOxblood}
-            />
-          </View>
-          <View style={styles.actionCardContent}>
-            <Text style={styles.actionCardTitle}>Edit Profile</Text>
-            <Text style={styles.actionCardSubtitle}>
-              Update your personal information
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.text.secondary}
-          />
-        </TouchableOpacity>
-
-        {/* My Announcements Card */}
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={handleMyAnnouncements}
-          activeOpacity={0.8}
-        >
-          <View style={styles.actionCardIcon}>
-            <Ionicons
-              name="list-outline"
-              size={24}
-              color={colors.richOxblood}
-            />
-          </View>
-          <View style={styles.actionCardContent}>
-            <Text style={styles.actionCardTitle}>My Announcements</Text>
-            <Text style={styles.actionCardSubtitle}>
-              Manage your posts and responses
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.text.secondary}
-          />
-        </TouchableOpacity>
-
-        {/* Settings Card */}
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={handleSettings}
-          activeOpacity={0.8}
-        >
-          <View style={styles.actionCardIcon}>
-            <Ionicons
-              name="settings-outline"
-              size={24}
-              color={colors.richOxblood}
-            />
-          </View>
-          <View style={styles.actionCardContent}>
-            <Text style={styles.actionCardTitle}>Settings</Text>
-            <Text style={styles.actionCardSubtitle}>
-              Account preferences and security
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.text.secondary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Bottom Spacing */}
-      <View style={styles.bottomSpacing} />
-    </ScrollView>
+        {/* Bottom Spacing */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center" as const,
@@ -390,7 +399,7 @@ const styles = StyleSheet.create({
     flexDirection: "row" as const,
     alignItems: "center" as const,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 50,
     paddingBottom: 24,
     backgroundColor: colors.white,
     borderBottomWidth: 1,

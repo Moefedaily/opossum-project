@@ -66,7 +66,7 @@ export default function RegisterScreen() {
         visibilityTime: 4000,
       });
 
-      setTimeout(() => router.replace("/(auth)/login"), 2000);
+      setTimeout(() => router.replace("/(auth)/login"), 5000);
     } catch (error: any) {
       console.log("Registration error:", error.message);
     }

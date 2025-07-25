@@ -1,5 +1,11 @@
 // contexts/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import Toast from "react-native-toast-message";
 import { authService } from "../services/auth";
 import {
@@ -16,16 +22,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check authentication state on app startup
-  useEffect(() => {
-    checkAuthState();
-  }, []);
-
-  const checkAuthState = async () => {
+  const checkAuthState = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      // STEP 1: Get stored data first (no network calls)
       console.log("🔐 Checking stored auth data...");
       const storedAuthData = await authService.getStoredAuthData();
 
@@ -34,25 +34,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "🔐 Found stored auth data for:",
           storedAuthData.user.username
         );
+        // Set both values at once to minimize re-renders
         setUser(storedAuthData.user);
         setAccessToken(storedAuthData.accessToken);
 
-        // STEP 2: Try to validate with backend (optional, fail silently)
+        // STEP 2: Try to validate with backend
         try {
           console.log("🔐 Validating with backend...");
           const validatedAuthData = await authService.checkAuthState();
 
           if (validatedAuthData.user && validatedAuthData.accessToken) {
             console.log("🔐 Backend validation successful");
-            setUser(validatedAuthData.user);
-            setAccessToken(validatedAuthData.accessToken);
+            // Only update if different from stored data
+            if (
+              validatedAuthData.user.id !== storedAuthData.user.id ||
+              validatedAuthData.accessToken !== storedAuthData.accessToken
+            ) {
+              setUser(validatedAuthData.user);
+              setAccessToken(validatedAuthData.accessToken);
+            }
           }
         } catch (networkError) {
           console.log(
-            "🔐 Backend validation failed (network issue), using stored data:",
+            "🔐 Backend validation failed, using stored data:",
             networkError
           );
-          // Continue with stored data - this is fine for offline use
+          // Continue with stored data
         }
       } else {
         console.log("🔐 No valid stored auth data found");
@@ -66,9 +73,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  // ✅ DEFINE login function
+  // Check authentication state on app startup
+  useEffect(() => {
+    checkAuthState();
+  }, [checkAuthState]);
+
+  // DEFINE login function
   const login = async (loginData: LoginRequest) => {
     try {
       setIsLoading(true);
@@ -111,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ DEFINE register function
+  // DEFINE register function
   const register = async (registerData: RegisterRequest) => {
     try {
       setIsLoading(true);
@@ -149,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ DEFINE logout function
+  // DEFINE logout function
   const logout = async () => {
     try {
       setIsLoading(true);
@@ -174,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ DEFINE resendVerification function
+  // DEFINE resendVerification function
   const resendVerification = async (email: string) => {
     try {
       setIsLoading(true);
@@ -198,7 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // ✅ NOW the value object can use these functions
+  // NOW the value object can use these functions
   const value = {
     user,
     accessToken,

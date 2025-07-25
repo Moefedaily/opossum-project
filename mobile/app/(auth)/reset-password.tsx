@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import { authService } from "../../services/auth";
@@ -77,12 +78,7 @@ export default function ResetPasswordMobileScreen() {
       );
 
       setResetSuccess(true);
-      Toast.show({
-        type: "success",
-        text1: "Password Reset Successfully! ✅",
-        text2: message,
-        visibilityTime: 5000,
-      });
+      // NO MORE TOAST - Clean success state only
     } catch (error: any) {
       console.error("Password reset error:", error);
       Toast.show({
@@ -115,135 +111,205 @@ export default function ResetPasswordMobileScreen() {
   // ERROR CASE: Backend redirect with error
   if (status === "error") {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
         />
+
+        {/* Back Button */}
+        <TouchableOpacity
+          style={globalStyles.backButton}
+          onPress={handleBackToAuth}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+        </TouchableOpacity>
+
         <View style={globalStyles.authContainer}>
-          <View style={styles.content}>
+          <View style={styles.successContainer}>
             <View style={styles.iconContainer}>
-              <Text style={styles.errorIcon}>❌</Text>
+              <Ionicons name="close-circle" size={80} color={colors.danger} />
             </View>
 
-            <Text
-              style={[
-                globalStyles.heading1,
-                { color: colors.danger, textAlign: "center" },
-              ]}
-            >
+            <Text style={[globalStyles.authHeader, { color: colors.danger }]}>
               Invalid Reset Link
             </Text>
 
             <Text
               style={[
                 globalStyles.bodyText,
-                { textAlign: "center", marginBottom: 40 },
+                { textAlign: "center", marginBottom: 20 },
               ]}
             >
               {message || "This password reset link is invalid or has expired."}
             </Text>
 
+            <Text
+              style={[
+                globalStyles.secondaryText,
+                {
+                  textAlign: "center",
+                  marginBottom: 40,
+                  lineHeight: 22,
+                },
+              ]}
+            >
+              Please request a new password reset link from the forgot password
+              page.
+            </Text>
+
             <TouchableOpacity
-              style={globalStyles.authButton}
+              style={styles.primaryButton}
               onPress={handleBackToAuth}
               activeOpacity={0.8}
             >
-              <Text style={globalStyles.authButtonText}>Back to Login</Text>
+              <Text style={styles.primaryButtonText}>Back to Login</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   if (!token) {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
         />
+
+        {/* Back Button */}
+        <TouchableOpacity
+          style={globalStyles.backButton}
+          onPress={handleBackToAuth}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+        </TouchableOpacity>
+
         <View style={globalStyles.authContainer}>
-          <View style={styles.content}>
+          <View style={styles.successContainer}>
             <View style={styles.iconContainer}>
-              <Text style={styles.errorIcon}>❌</Text>
+              <Ionicons name="close-circle" size={80} color={colors.danger} />
             </View>
 
-            <Text
-              style={[
-                globalStyles.heading1,
-                { color: colors.danger, textAlign: "center" },
-              ]}
-            >
+            <Text style={[globalStyles.authHeader, { color: colors.danger }]}>
               Invalid Reset Link
             </Text>
 
             <Text
               style={[
                 globalStyles.bodyText,
-                { textAlign: "center", marginBottom: 40 },
+                { textAlign: "center", marginBottom: 20 },
               ]}
             >
               This password reset link is invalid or missing token.
             </Text>
 
+            <Text
+              style={[
+                globalStyles.secondaryText,
+                {
+                  textAlign: "center",
+                  marginBottom: 40,
+                  lineHeight: 22,
+                },
+              ]}
+            >
+              Please request a new password reset link from the forgot password
+              page.
+            </Text>
+
             <TouchableOpacity
-              style={globalStyles.authButton}
+              style={styles.primaryButton}
               onPress={handleBackToAuth}
               activeOpacity={0.8}
             >
-              <Text style={globalStyles.authButtonText}>Back to Login</Text>
+              <Text style={styles.primaryButtonText}>Back to Login</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   // SUCCESS CASE: Password was reset successfully
   if (resetSuccess) {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <StatusBar
           barStyle="dark-content"
           backgroundColor={colors.background}
         />
+
+        {/* Back Button */}
+        <TouchableOpacity
+          style={globalStyles.backButton}
+          onPress={handleBackToLogin}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+        </TouchableOpacity>
+
         <View style={globalStyles.authContainer}>
-          <View style={styles.content}>
+          <View style={styles.successContainer}>
+            {/* Success Icon */}
             <View style={styles.iconContainer}>
-              <Text style={styles.successIcon}>✅</Text>
+              <Ionicons
+                name="checkmark-circle"
+                size={80}
+                color={colors.success}
+              />
             </View>
 
-            <Text
-              style={[
-                globalStyles.heading1,
-                { color: colors.success, textAlign: "center" },
-              ]}
-            >
+            <Text style={[globalStyles.authHeader, { color: colors.success }]}>
               Password Reset!
             </Text>
 
             <Text
               style={[
                 globalStyles.bodyText,
-                { textAlign: "center", marginBottom: 40 },
+                { textAlign: "center", marginBottom: 20 },
               ]}
             >
               Your password has been successfully reset. You can now login with
               your new password.
             </Text>
 
+            <Text
+              style={[
+                globalStyles.secondaryText,
+                {
+                  textAlign: "center",
+                  marginBottom: 40,
+                  lineHeight: 22,
+                },
+              ]}
+            >
+              Welcome back! Your account is now secure with your new password.
+            </Text>
+
+            {/* Action Button */}
             <TouchableOpacity
-              style={globalStyles.authButton}
+              style={styles.primaryButton}
               onPress={handleBackToLogin}
               activeOpacity={0.8}
             >
-              <Text style={globalStyles.authButtonText}>Continue to Login</Text>
+              <Text style={styles.primaryButtonText}>Continue to Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleBackToAuth}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText}>Back to Home</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -251,6 +317,15 @@ export default function ResetPasswordMobileScreen() {
   return (
     <ScrollView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      {/* Back Button */}
+      <TouchableOpacity
+        style={globalStyles.backButton}
+        onPress={handleBackToLogin}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.deepBurgundy} />
+      </TouchableOpacity>
 
       <View style={globalStyles.authContainer}>
         {/* Header */}
@@ -327,7 +402,7 @@ export default function ResetPasswordMobileScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: {
+  successContainer: {
     flex: 1,
     justifyContent: "center" as const,
     alignItems: "center" as const,
@@ -337,10 +412,33 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: "center" as const,
   },
-  successIcon: {
-    fontSize: 80,
+  primaryButton: {
+    backgroundColor: colors.richOxblood,
+    borderRadius: 25,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    width: "100%",
+    alignItems: "center" as const,
+    marginBottom: 16,
   },
-  errorIcon: {
-    fontSize: 80,
+  primaryButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600" as const,
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: colors.richOxblood,
+    borderRadius: 25,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    width: "100%",
+    alignItems: "center" as const,
+  },
+  secondaryButtonText: {
+    color: colors.richOxblood,
+    fontSize: 16,
+    fontWeight: "600" as const,
   },
 });

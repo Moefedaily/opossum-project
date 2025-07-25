@@ -1,4 +1,3 @@
-// app/(tabs)/profile/settings.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -10,6 +9,7 @@ import {
   Alert,
   Switch,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* Header */}
@@ -389,11 +389,14 @@ export default function SettingsScreen() {
         {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+  },
   header: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
@@ -418,9 +421,6 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     width: 40,
-  },
-  scrollContainer: {
-    flex: 1,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   settingSubtitleDanger: {
-    color: colors.danger + "CC", // Slightly transparent red
+    color: colors.danger + "CC",
   },
   infoText: {
     fontSize: 14,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: "500" as const,
   },
   warningContainer: {
-    backgroundColor: colors.warning + "15", // Light yellow background
+    backgroundColor: colors.warning + "15",
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,

@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       Toast.show({
         type: "success",
-        text1: "Welcome back! 👋",
+        text1: "Welcome back!",
         text2: `Hello ${response.user.firstName || response.user.username}!`,
       });
 

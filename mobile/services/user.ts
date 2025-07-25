@@ -27,11 +27,11 @@ export const userService = {
       // Get current user ID first
       const currentUser = await userService.getCurrentUser();
 
-      const response = await api.patch<UserProfileResponse>(
-        `/api/users/${currentUser.id}/profile`,
+      const response = await api.put<UserProfileResponse>(
+        `/api/users/${currentUser.id}`,
         profileData,
         {
-          timeout: 30000, // 30 seconds for profile updates
+          timeout: 30000,
         }
       );
       return response.data;

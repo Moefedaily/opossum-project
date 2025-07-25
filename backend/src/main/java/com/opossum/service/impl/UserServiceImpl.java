@@ -1,8 +1,9 @@
 package com.opossum.service.impl;
 
-import com.opossum.dto.UserDto;
-import com.opossum.dto.UserStatsDto;
 import com.opossum.dto.auth.CreateUserRequest;
+import com.opossum.dto.user.UpdateProfileDto;
+import com.opossum.dto.user.UserDto;
+import com.opossum.dto.user.UserStatsDto;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
 import com.opossum.entity.announcement.AnnouncementStatus;
@@ -136,17 +137,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUserProfile(Long id, String firstName, String lastName, String phone) {
-        log.info("Updating user profile for ID: {}", id);
+    public UserDto updateUserProfile(Long id, UpdateProfileDto profileDto) {
+        log.info("Updating user profile with ID: {}", id);
 
-        User user = userRepository.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPhone(phone);
+        // Update only the profile fields
+        if (profileDto.getFirstName() != null) {
+            existingUser.setFirstName(profileDto.getFirstName().trim());
+        }
+        if (profileDto.getLastName() != null) {
+            existingUser.setLastName(profileDto.getLastName().trim());
+        }
+        if (profileDto.getPhone() != null) {
+            existingUser.setPhone(profileDto.getPhone().trim());
+        }
+        if (profileDto.getAvatarUrl() != null) {
+            existingUser.setAvatarUrl(profileDto.getAvatarUrl());
+        }
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(existingUser);
+        log.info("User profile updated successfully with ID: {}", updatedUser.getId());
+
         return userMapper.toDto(updatedUser);
     }
 

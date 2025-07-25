@@ -82,7 +82,7 @@ public class SecurityConfig {
 
                         // ADD THESE USER PROFILE ENDPOINTS:
                         .requestMatchers("GET", "/api/users/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("PUT", "/api/users/*").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("PATCH", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/deactivate").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("GET", "/api/users/*/stats").hasAnyRole("USER", "ADMIN")
 
@@ -106,10 +106,10 @@ public class SecurityConfig {
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users").hasRole("ADMIN")
+                        .requestMatchers("PUT", "/api/users/*").hasRole("ADMIN")
                         .requestMatchers("POST", "/api/users").hasRole("ADMIN")
                         .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
-
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

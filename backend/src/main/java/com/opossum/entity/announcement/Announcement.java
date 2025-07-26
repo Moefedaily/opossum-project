@@ -83,7 +83,7 @@ public class Announcement {
 
     // User relationship
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     @NotNull(message = "User is required")
     private User user;
 
@@ -137,4 +137,7 @@ public class Announcement {
         return getImageFiles().size() > 0;
     }
 
+    public String getDisplayUserName() {
+        return user != null ? user.getUsername() : "Anonymous";
+    }
 }

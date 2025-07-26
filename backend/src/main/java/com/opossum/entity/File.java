@@ -49,7 +49,8 @@ public class File {
     private String contentType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by_user_id", nullable = true)
+    @JoinColumn(name = "uploaded_by_user_id", nullable = false)
+    @NotNull(message = "Uploader user is required")
     private User uploadedBy;
 
     @CreationTimestamp
@@ -89,9 +90,5 @@ public class File {
         if (bytes < 1024 * 1024 * 1024)
             return (bytes / (1024 * 1024)) + " MB";
         return (bytes / (1024 * 1024 * 1024)) + " GB";
-    }
-
-    public String getUploaderName() {
-        return uploadedBy != null ? uploadedBy.getUsername() : "Anonymous";
     }
 }

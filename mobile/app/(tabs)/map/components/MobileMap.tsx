@@ -133,8 +133,15 @@ export default function MobileMap({
             }
 
             const isSelected = selectedAnnouncement?.id === announcement.id;
-            const markerColor =
+            const isDeletedUserResolved =
+              announcement.username === "system-deleted-user";
+
+            // Different color for resolved deleted user items
+            let markerColor =
               announcement.type === "LOST" ? "#FF6B6B" : "#4ECDC4";
+            if (isDeletedUserResolved) {
+              markerColor = "#9CA3AF"; // Gray for resolved deleted user items
+            }
 
             return (
               <Marker
@@ -147,7 +154,7 @@ export default function MobileMap({
                 description={`${announcement.type || "ITEM"} • ${announcement.category || "Uncategorized"}`}
                 onPress={() => handleMarkerPress(announcement)}
               >
-                {/* Simple Custom Marker */}
+                {/* Custom Marker with dynamic styling */}
                 <View
                   style={[
                     styles.customMarker,
@@ -160,7 +167,13 @@ export default function MobileMap({
                   ]}
                 >
                   <Ionicons
-                    name={announcement.type === "LOST" ? "close" : "checkmark"}
+                    name={
+                      isDeletedUserResolved
+                        ? "checkmark-done"
+                        : announcement.type === "LOST"
+                          ? "close"
+                          : "checkmark"
+                    }
                     size={14}
                     color="#FFFFFF"
                   />
@@ -198,53 +211,72 @@ export default function MobileMap({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.itemsScrollContainer}
         >
-          {announcements.map((announcement) => (
-            <TouchableOpacity
-              key={announcement.id}
-              style={[
-                styles.itemCard,
-                selectedAnnouncement?.id === announcement.id &&
-                  styles.itemCardSelected,
-              ]}
-              onPress={() => navigateToDetails(announcement)}
-            >
-              <View
+          {announcements.map((announcement) => {
+            const isDeletedUserResolved =
+              announcement.status === "RESOLVED" &&
+              announcement.username === "system-deleted-user";
+
+            return (
+              <TouchableOpacity
+                key={announcement.id}
                 style={[
-                  styles.itemTypeIndicator,
-                  {
-                    backgroundColor:
-                      announcement.type === "LOST" ? "#FF6B6B" : "#4ECDC4",
-                  },
+                  styles.itemCard,
+                  selectedAnnouncement?.id === announcement.id &&
+                    styles.itemCardSelected,
                 ]}
+                onPress={() => navigateToDetails(announcement)}
               >
-                <Ionicons
-                  name={announcement.type === "LOST" ? "close" : "checkmark"}
-                  size={12}
-                  color="#FFFFFF"
-                />
-              </View>
+                <View
+                  style={[
+                    styles.itemTypeIndicator,
+                    {
+                      backgroundColor: isDeletedUserResolved
+                        ? "#9CA3AF"
+                        : announcement.type === "LOST"
+                          ? "#FF6B6B"
+                          : "#4ECDC4",
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={
+                      isDeletedUserResolved
+                        ? "checkmark-done"
+                        : announcement.type === "LOST"
+                          ? "close"
+                          : "checkmark"
+                    }
+                    size={12}
+                    color="#FFFFFF"
+                  />
+                </View>
 
-              <Text style={styles.itemTitle} numberOfLines={1}>
-                {announcement.title || "No Title"}
-              </Text>
+                <Text style={styles.itemTitle} numberOfLines={1}>
+                  {announcement.title || "No Title"}
+                </Text>
 
-              <Text style={styles.itemCategory}>
-                {announcement.category || "Uncategorized"}
-              </Text>
-
-              {announcement.distanceKm !== undefined &&
-                announcement.distanceKm !== null && (
-                  <Text style={styles.itemDistance}>
-                    📍 {announcement.distanceKm}km away
-                  </Text>
+                {isDeletedUserResolved && (
+                  <Text style={styles.resolvedBadge}>✅ Found</Text>
                 )}
 
-              {/* Clear call to action */}
-              <View style={styles.viewButton}>
-                <Text style={styles.viewButtonText}>View</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+                <Text style={styles.itemCategory}>
+                  {announcement.category || "Uncategorized"}
+                </Text>
+
+                {announcement.distanceKm !== undefined &&
+                  announcement.distanceKm !== null && (
+                    <Text style={styles.itemDistance}>
+                      📍 {announcement.distanceKm}km away
+                    </Text>
+                  )}
+
+                {/* Clear call to action */}
+                <View style={styles.viewButton}>
+                  <Text style={styles.viewButtonText}>View</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     </View>
@@ -433,6 +465,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#1F2937",
+    marginBottom: 4,
+  },
+
+  resolvedBadge: {
+    fontSize: 11,
+    color: "#10B981",
+    fontWeight: "600",
     marginBottom: 4,
   },
 

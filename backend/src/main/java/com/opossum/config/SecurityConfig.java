@@ -70,6 +70,7 @@ public class SecurityConfig {
                         // Public file viewing (photos in lost & found announcements)
                         .requestMatchers("GET", "/api/files/{id}").permitAll()
                         .requestMatchers("GET", "/api/files/announcement/*").permitAll()
+                        .requestMatchers("GET", "/api/announcements/nearby").permitAll()
 
                         // Public categories (dropdown values)
                         .requestMatchers("GET", "/api/categories").permitAll()

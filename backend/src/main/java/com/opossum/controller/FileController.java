@@ -2,6 +2,7 @@ package com.opossum.controller;
 
 import com.opossum.dto.file.FileDto;
 import com.opossum.dto.file.FileUploadResponse;
+import com.opossum.service.AnnouncementService;
 import com.opossum.service.FileService;
 import com.opossum.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,7 @@ import java.util.Map;
 public class FileController {
 
     private final FileService fileService;
+    private final AnnouncementService announcementService;
     private final JwtService jwtService;
 
     @PostMapping("/upload")
@@ -117,10 +119,37 @@ public class FileController {
 
     @GetMapping("/announcement/{announcementId}")
     @Operation(summary = "Get announcement photos", description = "Get all photos for a specific announcement")
-    public ResponseEntity<?> getFilesByAnnouncement(@PathVariable Long announcementId) {
+    public ResponseEntity<?> getFilesByAnnouncement(
+            @PathVariable Long announcementId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             List<FileDto> files = fileService.getFilesByAnnouncementId(announcementId);
+
+            // If auth header is provided, add ownership info for editing capabilities
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                try {
+                    String token = authHeader.substring(7);
+                    Long userId = jwtService.extractUserId(token);
+
+                    // Check if user owns this announcement (for edit capabilities)
+                    boolean canEdit = announcementService.isAnnouncementOwner(announcementId, userId);
+
+                    // Add metadata about edit permissions
+                    Map<String, Object> response = Map.of(
+                            "files", files,
+                            "canEdit", canEdit,
+                            "announcementId", announcementId);
+                    return ResponseEntity.ok(response);
+
+                } catch (Exception e) {
+                    // If token is invalid, just return files without edit capabilities
+                    log.debug("Invalid token provided, returning read-only view");
+                }
+            }
+
+            // Default: just return files (read-only)
             return ResponseEntity.ok(files);
+
         } catch (Exception e) {
             log.error("Error getting files for announcement {}: {}", announcementId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

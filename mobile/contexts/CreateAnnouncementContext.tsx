@@ -203,9 +203,8 @@ export const CreateAnnouncementProvider: React.FC<{ children: ReactNode }> = ({
       const { announcementService } = await import("../services/announcement");
 
       // Create announcement
-      const createdAnnouncement = await announcementService.createAnnouncement(
-        createRequest
-      );
+      const createdAnnouncement =
+        await announcementService.createAnnouncement(createRequest);
 
       if (formData.photos.length > 0) {
         try {
@@ -242,9 +241,21 @@ export const CreateAnnouncementProvider: React.FC<{ children: ReactNode }> = ({
 
   // Reset form
   const resetForm = () => {
+    console.log("Resetting create announcement form");
+
+    // Reset all form data to initial state
     setFormData(initialFormData);
+
+    // Always go back to step 1
     setCurrentStep(1);
+
+    // Reset submission state
     setIsSubmitting(false);
+
+    // Clear any validation errors if you have them
+    // setErrors([]) // If you have error state
+
+    console.log("Form reset complete - ready for new announcement");
   };
 
   const contextValue: CreateAnnouncementContextType = {

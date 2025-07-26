@@ -91,13 +91,7 @@ export default function MyAnnouncementsScreen() {
   };
 
   const handleEditAnnouncement = (announcementId: number) => {
-    // TODO: Navigate to edit announcement screen
-    // This will be implemented when we add edit functionality
-    Toast.show({
-      type: "info",
-      text1: "Coming Soon",
-      text2: "Edit functionality will be available soon!",
-    });
+    router.push(`/(tabs)/announcements/edit/${announcementId}`);
   };
 
   const handleDeleteAnnouncement = (announcement: UserAnnouncementResponse) => {
@@ -421,7 +415,7 @@ export default function MyAnnouncementsScreen() {
 
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push("/(tabs)/create")}
+          onPress={() => router.push("/(tabs)/announcements/create/basic-info")}
           activeOpacity={0.8}
         >
           <Ionicons name="add" size={24} color={colors.richOxblood} />
@@ -460,7 +454,9 @@ export default function MyAnnouncementsScreen() {
           </Text>
           <TouchableOpacity
             style={styles.createButton}
-            onPress={() => router.push("/(tabs)/create")}
+            onPress={() =>
+              router.push("/(tabs)/announcements/create/basic-info")
+            }
             activeOpacity={0.8}
           >
             <Ionicons name="add" size={20} color={colors.white} />
@@ -554,7 +550,7 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    backgroundColor: colors.softRose,
+    backgroundColor: colors.warmTaupe + "15",
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,

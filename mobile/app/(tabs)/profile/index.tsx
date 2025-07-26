@@ -7,9 +7,8 @@ import {
   StatusBar,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   RefreshControl,
-  SafeAreaView, // ✅ Added SafeAreaView import
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -494,7 +493,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.softRose,
+    backgroundColor: colors.warmTaupe + "15",
     justifyContent: "center" as const,
     alignItems: "center" as const,
     marginRight: 16,

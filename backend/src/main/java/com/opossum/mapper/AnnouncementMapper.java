@@ -42,7 +42,7 @@ public class AnnouncementMapper {
         // User info
         if (announcement.getUser() != null) {
             dto.setUserId(announcement.getUser().getId());
-            dto.setUsername(announcement.getUser().getUsername());
+            dto.setUsername(announcement.getDisplayUserName());
             dto.setUserEmail(announcement.getUser().getEmail());
             dto.setUserFullName(announcement.getUser().getFullName());
         }

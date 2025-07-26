@@ -27,7 +27,7 @@ export interface UserAnnouncementResponse {
   description: string;
   type: "LOST" | "FOUND";
   category: string;
-  status: "ACTIVE" | "RESOLVED" | "EXPIRED";
+  status: "ACTIVE" | "RESOLVED" | "ARCHIVED";
   createdAt: string;
   updatedAt: string;
   latitude?: number;

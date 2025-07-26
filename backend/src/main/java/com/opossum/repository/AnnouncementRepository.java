@@ -129,6 +129,7 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
                         "a.latitude BETWEEN :minLat AND :maxLat AND " +
                         "a.longitude BETWEEN :minLng AND :maxLng AND " +
                         "a.isActive = true AND " +
+                        "a.status = 'ACTIVE' AND " +
                         "(:type IS NULL OR a.type = :type) AND " +
                         "(:category IS NULL OR a.category = :category) " +
                         "ORDER BY a.createdAt DESC")

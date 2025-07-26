@@ -21,7 +21,7 @@ import { FileDto } from "../../../types/announcement";
 import { UserAnnouncementResponse } from "../../../types/profile";
 import { announcementService } from "../../../services/announcement";
 
-type FilterStatus = "ALL" | "ACTIVE" | "RESOLVED" | "EXPIRED";
+type FilterStatus = "ALL" | "ACTIVE" | "RESOLVED" | "ARCHIVED";
 
 export default function MyAnnouncementsScreen() {
   const [announcements, setAnnouncements] = useState<
@@ -140,7 +140,7 @@ export default function MyAnnouncementsScreen() {
         return colors.success;
       case "RESOLVED":
         return colors.info;
-      case "EXPIRED":
+      case "ARCHIVED":
         return colors.text.secondary;
       default:
         return colors.text.secondary;
@@ -153,7 +153,7 @@ export default function MyAnnouncementsScreen() {
         return "checkmark-circle";
       case "RESOLVED":
         return "checkmark-done-circle";
-      case "EXPIRED":
+      case "ARCHIVED":
         return "time-outline";
       default:
         return "help-circle";
@@ -369,7 +369,7 @@ export default function MyAnnouncementsScreen() {
       all: announcements.length,
       active: announcements.filter((a) => a.status === "ACTIVE").length,
       resolved: announcements.filter((a) => a.status === "RESOLVED").length,
-      expired: announcements.filter((a) => a.status === "EXPIRED").length,
+      ARCHIVED: announcements.filter((a) => a.status === "ARCHIVED").length,
     };
   };
 
@@ -432,7 +432,7 @@ export default function MyAnnouncementsScreen() {
           {renderFilterButton("ALL", "All", filterCounts.all)}
           {renderFilterButton("ACTIVE", "Active", filterCounts.active)}
           {renderFilterButton("RESOLVED", "Resolved", filterCounts.resolved)}
-          {renderFilterButton("EXPIRED", "Expired", filterCounts.expired)}
+          {renderFilterButton("ARCHIVED", "ARCHIVED", filterCounts.ARCHIVED)}
         </ScrollView>
       </View>
 

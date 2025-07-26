@@ -60,11 +60,14 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
                         "(:type IS NULL OR a.type = :type) AND " +
                         "(:status IS NULL OR a.status = :status) AND " +
                         "(:category IS NULL OR a.category = :category) AND " +
-                        "a.isActive = true " +
+                        "a.isActive = true AND " +
+                        "a.status = 'ACTIVE' " +
                         "ORDER BY a.createdAt DESC")
         List<Announcement> findWithFilters(@Param("type") AnnouncementType type,
                         @Param("status") AnnouncementStatus status,
                         @Param("category") AnnouncementCategory category);
+
+        List<Announcement> findByIsActiveTrueAndStatusOrderByCreatedAtDesc(AnnouncementStatus status);
 
         // Count methods
         long countByType(AnnouncementType type);

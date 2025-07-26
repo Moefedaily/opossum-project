@@ -196,12 +196,13 @@ public class UserServiceImpl implements UserService {
         log.debug("User found: {}", user.getUsername());
 
         try {
-            // 1. Handle user's announcements (soft delete approach)
+            // 1. Handle user's announcements - REMOVE USER REFERENCE
             List<Announcement> userAnnouncements = announcementRepository.findByUserId(id);
             log.info("Found {} announcements for user {}", userAnnouncements.size(), id);
 
             for (Announcement announcement : userAnnouncements) {
-                // Keep announcements but anonymize them
+                // Keep announcements but remove user reference and anonymize
+                announcement.setUser(null);
                 announcement.setContactInfo("Contact unavailable - User account deleted");
                 announcement.setIsActive(false); // Hide from public search
                 announcement.setStatus(AnnouncementStatus.ARCHIVED); // Mark as archived
@@ -210,37 +211,45 @@ public class UserServiceImpl implements UserService {
                 log.debug("Anonymized announcement: {}", announcement.getId());
             }
 
-            // 2. Handle user's uploaded files
-            // Note: Keep files since announcements reference them, but they're now orphaned
-            // safely
+            // Handle user's uploaded files - REMOVE USER REFERENCE
             List<File> userFiles = fileRepository.findByUploadedById(id);
             log.info("Found {} files for user {}", userFiles.size(), id);
 
-            // Optional: Mark files as orphaned or delete if you prefer
-            // fileRepository.deleteAll(userFiles); // Uncomment if you want to delete files
+            for (File file : userFiles) {
+                file.setUploadedBy(null);
+                fileRepository.save(file);
+            }
 
-            // 3. Handle conversations and messages
-            // Find conversations where user participated
+            // Handle conversations and messages - REMOVE USER REFERENCES
             List<Conversation> userConversations = conversationRepository.findByUserId(id);
             log.info("Found {} conversations for user {}", userConversations.size(), id);
 
             for (Conversation conversation : userConversations) {
-                // Mark conversation as inactive (keep for other participant)
+                // Remove user references from conversation
+                if (conversation.getStarterUser() != null && conversation.getStarterUser().getId().equals(id)) {
+                    conversation.setStarterUser(null);
+                }
+                if (conversation.getRecipientUser() != null && conversation.getRecipientUser().getId().equals(id)) {
+                    conversation.setRecipientUser(null);
+                }
+
+                // Mark conversation as archived
                 conversation.setStatus(ConversationStatus.ARCHIVED);
                 conversationRepository.save(conversation);
 
-                // Find and anonymize user's messages in this conversation
+                // Find and anonymize user's messages
                 List<Message> userMessages = messageRepository.findBySenderId(id);
                 for (Message message : userMessages) {
                     if (message.getConversation().getId().equals(conversation.getId())) {
+                        message.setSender(null);
                         message.setMessageText("[Message from deleted user account]");
-                        message.setIsRead(true); // Mark as read to avoid notifications
+                        message.setIsRead(true);
                         messageRepository.save(message);
                     }
                 }
             }
 
-            // 4. Finally delete the user account
+            // safely delete the user (no foreign key references left)
             userRepository.deleteById(id);
             log.info("User deleted successfully with ID: {} - {} announcements anonymized, {} conversations handled",
                     id, userAnnouncements.size(), userConversations.size());

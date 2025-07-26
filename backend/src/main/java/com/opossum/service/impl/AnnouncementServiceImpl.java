@@ -56,7 +56,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public List<AnnouncementDto> getAllAnnouncements() {
         log.debug("Getting all active announcements");
-        List<Announcement> announcements = announcementRepository.findByIsActiveTrueOrderByCreatedAtDesc();
+        List<Announcement> announcements = announcementRepository
+                .findByIsActiveTrueAndStatusOrderByCreatedAtDesc(AnnouncementStatus.ACTIVE);
         return announcementMapper.toDtoList(announcements);
     }
 

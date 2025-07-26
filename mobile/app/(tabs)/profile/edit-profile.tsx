@@ -202,7 +202,7 @@ export default function EditProfileScreen() {
           {
             text: "Discard",
             style: "destructive",
-            onPress: () => router.back(),
+            onPress: () => router.push("/(tabs)/profile/index"),
           },
         ]
       );

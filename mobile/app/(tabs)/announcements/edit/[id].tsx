@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  TextInput,
   StatusBar,
   Alert,
   ActivityIndicator,
@@ -15,10 +16,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from "expo-image-picker";
 import { globalStyles, colors } from "../../../../styles";
 import {
   announcementService,
   updateAnnouncement,
+  updateAnnouncementStatus,
   deleteAnnouncement,
 } from "../../../../services/announcement";
 import { fileUploadService } from "../../../../services/fileUpload";
@@ -69,6 +72,7 @@ export default function EditAnnouncementScreen() {
   const [photos, setPhotos] = useState<FileDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -172,6 +176,75 @@ export default function EditAnnouncementScreen() {
         },
       },
     ]);
+  };
+
+  // Add photos
+  const handleAddPhotos = async () => {
+    try {
+      // Request permissions
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please grant photo library permission to add photos"
+        );
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        aspect: [1, 1],
+      });
+
+      if (!result.canceled && result.assets) {
+        const remainingSlots = 5 - photos.length;
+        const selectedPhotos = result.assets.slice(0, remainingSlots);
+
+        if (selectedPhotos.length > 0) {
+          setIsUploadingPhotos(true);
+
+          try {
+            const photoUris = selectedPhotos.map((asset) => asset.uri);
+            const uploadedPhotos =
+              await fileUploadService.uploadMultiplePhotosAtOnce(
+                photoUris,
+                announcementId,
+                (uploaded, total) => {
+                  console.log(`Uploading photos: ${uploaded}/${total}`);
+                }
+              );
+
+            // Add uploaded photos to state
+            setPhotos((prev) => [...prev, ...uploadedPhotos]);
+
+            Toast.show({
+              type: "success",
+              text1: `${uploadedPhotos.length} photo(s) added successfully`,
+            });
+          } catch (uploadError: any) {
+            console.error("Failed to upload photos:", uploadError);
+            Toast.show({
+              type: "error",
+              text1: "Failed to upload photos",
+              text2: uploadError.message,
+            });
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("Error adding photos:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to add photos",
+        text2: error.message,
+      });
+    } finally {
+      setIsUploadingPhotos(false);
+    }
   };
 
   // Save changes
@@ -376,19 +449,216 @@ export default function EditAnnouncementScreen() {
             </View>
           </View>
 
-          {/* Rest of the form fields... */}
-          {/* Title, Description, Category, Date, Contact Info, Photos */}
-          {/* (Same structure as create screen but pre-filled) */}
+          {/* Category */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>Category</Text>
+            <View style={styles.categoryGrid}>
+              {CATEGORIES.map((category) => (
+                <TouchableOpacity
+                  key={category.key}
+                  style={[
+                    styles.categoryButton,
+                    formData.category === category.key &&
+                      styles.categoryButtonActive,
+                  ]}
+                  onPress={() => updateField("category", category.key)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={category.icon as any}
+                    size={24}
+                    color={
+                      formData.category === category.key
+                        ? colors.white
+                        : colors.text.secondary
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      formData.category === category.key &&
+                        styles.categoryButtonTextActive,
+                    ]}
+                  >
+                    {category.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Title */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>Title</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="What did you lose/find?"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.title}
+              onChangeText={(text) => updateField("title", text)}
+              maxLength={200}
+            />
+            <Text style={styles.characterCount}>
+              {formData.title.length}/200
+            </Text>
+          </View>
+
+          {/* Description */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>Description</Text>
+            <TextInput
+              style={[styles.textInput, styles.textArea]}
+              placeholder="Provide more details about the item..."
+              placeholderTextColor={colors.text.secondary}
+              value={formData.description}
+              onChangeText={(text) => updateField("description", text)}
+              multiline
+              numberOfLines={4}
+              maxLength={2000}
+              textAlignVertical="top"
+            />
+            <Text style={styles.characterCount}>
+              {formData.description.length}/2000
+            </Text>
+          </View>
+
+          {/* Photos Management */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>Photos</Text>
+
+            {photos.length > 0 ? (
+              <View>
+                <View style={styles.photoGrid}>
+                  {photos.map((photo) => (
+                    <View key={photo.id} style={styles.photoContainer}>
+                      <Image
+                        source={{ uri: photo.url }}
+                        style={styles.photoImage}
+                        resizeMode="cover"
+                      />
+
+                      {/* Delete Photo Button */}
+                      <TouchableOpacity
+                        style={styles.deletePhotoButton}
+                        onPress={() => handleDeletePhoto(photo.id)}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="close" size={16} color={colors.white} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  {/* Add More Photos Button */}
+                  {photos.length < 5 && (
+                    <TouchableOpacity
+                      style={styles.addPhotoButton}
+                      onPress={handleAddPhotos}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={32}
+                        color={colors.text.secondary}
+                      />
+                      <Text style={styles.addPhotoText}>Add Photo</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <Text style={styles.photoHint}>
+                  {photos.length}/5 photos • Tap × to remove
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.emptyPhotoContainer}
+                onPress={handleAddPhotos}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name="camera-outline"
+                  size={48}
+                  color={colors.text.secondary}
+                />
+                <Text style={styles.emptyPhotoText}>Add Photos</Text>
+                <Text style={styles.emptyPhotoHint}>
+                  Help others identify your item
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Incident Date */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>When did this happen?</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={20}
+                color={colors.text.secondary}
+              />
+              <Text style={styles.dateButtonText}>
+                {formatDate(formData.incidentDate)}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={colors.text.secondary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Contact Info */}
+          <View style={{ marginBottom: 24 }}>
+            <Text style={styles.sectionTitle}>
+              Contact Information
+              <Text style={styles.optionalText}> (Optional)</Text>
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="How should people contact you?"
+              placeholderTextColor={colors.text.secondary}
+              value={formData.contactInfo}
+              onChangeText={(text) => updateField("contactInfo", text)}
+              maxLength={500}
+            />
+            <Text style={styles.characterCount}>
+              {formData.contactInfo.length}/500
+            </Text>
+          </View>
+
+          {/* Error Display */}
+          {errors.length > 0 && (
+            <View style={styles.errorContainer}>
+              {errors.map((error, index) => (
+                <Text key={index} style={styles.errorText}>
+                  • {error}
+                </Text>
+              ))}
+            </View>
+          )}
 
           {/* Save Button */}
           <TouchableOpacity
-            style={[styles.saveButton, isSaving && { opacity: 0.7 }]}
+            style={[
+              styles.saveButton,
+              (isSaving || isUploadingPhotos) && { opacity: 0.7 },
+            ]}
             onPress={handleSave}
-            disabled={isSaving}
+            disabled={isSaving || isUploadingPhotos}
             activeOpacity={0.8}
           >
             {isSaving ? (
               <ActivityIndicator size="small" color={colors.white} />
+            ) : isUploadingPhotos ? (
+              <>
+                <ActivityIndicator size="small" color={colors.white} />
+                <Text style={styles.saveButtonText}>Uploading Photos...</Text>
+              </>
             ) : (
               <>
                 <Text style={styles.saveButtonText}>Save Changes</Text>
@@ -450,6 +720,174 @@ const styles = {
     fontWeight: "500" as const,
     fontFamily: "Nunito",
     color: colors.text.primary,
+  },
+  categoryGrid: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 12,
+  },
+  categoryButton: {
+    width: "30%",
+    aspectRatio: 1,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    backgroundColor: colors.surface,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  categoryButtonActive: {
+    borderColor: colors.richOxblood,
+    backgroundColor: colors.richOxblood,
+  },
+  categoryButtonText: {
+    fontSize: 12,
+    fontWeight: "500" as const,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    textAlign: "center" as const,
+    marginTop: 4,
+  },
+  categoryButtonTextActive: {
+    color: colors.white,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontFamily: "Nunito",
+    color: colors.text.primary,
+    backgroundColor: colors.surface,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top" as const,
+  },
+  characterCount: {
+    fontSize: 12,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    textAlign: "right" as const,
+    marginTop: 4,
+  },
+  optionalText: {
+    fontSize: 14,
+    fontWeight: "400" as const,
+    color: colors.text.secondary,
+  },
+  dateButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    gap: 12,
+  },
+  dateButtonText: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "Nunito",
+    color: colors.text.primary,
+  },
+  // Photo Styles
+  photoGrid: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 12,
+    marginBottom: 8,
+  },
+  photoContainer: {
+    position: "relative" as const,
+    width: 80,
+    height: 80,
+  },
+  photoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+  },
+  deletePhotoButton: {
+    position: "absolute" as const,
+    top: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#dc2626",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addPhotoButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.border.light,
+    borderStyle: "dashed" as const,
+    backgroundColor: colors.surface,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    gap: 4,
+  },
+  addPhotoText: {
+    fontSize: 10,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    textAlign: "center" as const,
+  },
+  photoHint: {
+    fontSize: 12,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    textAlign: "center" as const,
+  },
+  emptyPhotoContainer: {
+    padding: 32,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.border.light,
+    borderStyle: "dashed" as const,
+    backgroundColor: colors.surface,
+    alignItems: "center" as const,
+    gap: 8,
+  },
+  emptyPhotoText: {
+    fontSize: 16,
+    fontWeight: "500" as const,
+    fontFamily: "DMSans",
+    color: colors.text.primary,
+  },
+  emptyPhotoHint: {
+    fontSize: 14,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    textAlign: "center" as const,
+  },
+  errorContainer: {
+    backgroundColor: "#fef2f2",
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: "Nunito",
+    color: "#dc2626",
+    marginBottom: 4,
   },
   saveButton: {
     flexDirection: "row" as const,

@@ -19,7 +19,7 @@ import { globalStyles, colors } from "../../../../styles";
 import { PhotoData } from "../../../../types/announcement";
 
 const { width } = Dimensions.get("window");
-const photoSize = (width - 60) / 3; // 3 photos per row with padding
+const photoSize = (width - 60) / 3;
 
 export default function PhotosScreen() {
   const {
@@ -68,7 +68,7 @@ export default function PhotosScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
+        quality: 0.6,
       });
 
       if (!result.canceled && result.assets[0]) {

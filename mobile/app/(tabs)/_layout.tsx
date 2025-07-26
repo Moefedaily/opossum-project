@@ -69,6 +69,7 @@ export default function TabLayout() {
       <Tabs.Screen name="profile/change-password" options={{ href: null }} />
 
       <Tabs.Screen name="announcements/[id]" options={{ href: null }} />
+      <Tabs.Screen name="announcements/edit/[id]" options={{ href: null }} />
       <Tabs.Screen name="announcements/create" options={{ href: null }} />
     </Tabs>
   );

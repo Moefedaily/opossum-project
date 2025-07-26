@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useCreateAnnouncement } from "../../../../contexts/CreateAnnouncementContext";
 import { globalStyles, colors } from "../../../../styles";
@@ -33,11 +33,23 @@ const CATEGORIES = [
 ] as const;
 
 export default function BasicInfoScreen() {
-  const { formData, updateBasicInfo, validateStep1, canProceedToStep } =
+  const { formData, updateBasicInfo, validateStep1, currentStep, resetForm } =
     useCreateAnnouncement();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // If we're not on step 1, it means we completed a flow and came back
+      if (currentStep !== 1) {
+        console.log(
+          "🔄 Completed flow detected - resetting for new announcement"
+        );
+        resetForm(); // This will set currentStep back to 1 and clear all data
+      }
+    }, [currentStep, resetForm])
+  );
 
   // Handle back navigation
   const handleBack = () => {

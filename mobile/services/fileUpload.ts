@@ -1,6 +1,5 @@
-import api from "./api";
+import api, { handleApiError } from "./api";
 import { FileDto } from "../types/announcement";
-import { Platform } from "react-native";
 
 export const fileUploadService = {
   uploadAnnouncementPhoto: async (
@@ -13,93 +12,24 @@ export const fileUploadService = {
         photoUri.substring(0, 50) + "..."
       );
 
-      // Create FormData for multipart upload
       const formData = new FormData();
-      console.log("Debug FormData entries:");
-      formData.forEach((value, key) => {
-        console.log(`  ${key}:`, value);
-        console.log(`  ${key} type:`, typeof value);
-        console.log(`  ${key} constructor:`, value.constructor.name);
-      });
-
       const filename = `photo_${Date.now()}.jpg`;
 
-      let fileObject: any;
+      const fileObject = {
+        uri: photoUri,
+        type: "image/jpeg",
+        name: filename,
+      } as any;
 
-      if (Platform.OS === "web") {
-        //  WEB: Convert data URL to Blob
-        if (photoUri.startsWith("data:")) {
-          const response = await fetch(photoUri);
-          const blob = await response.blob();
-          fileObject = new File([blob], filename, { type: "image/jpeg" });
-          console.log(" Debug fileObject:", fileObject);
-          console.log(
-            " Debug fileObject constructor:",
-            fileObject.constructor.name
-          );
-          console.log(
-            " Debug fileObject instanceof File:",
-            fileObject instanceof File
-          );
-        } else {
-          // Handle file URI for web
-          throw new Error("Web platform expects data URLs, got file URI");
-        }
-      } else {
-        //  MOBILE: Use React Native format
-        if (photoUri.startsWith("data:")) {
-          // Convert data URL to file URI first
-          const FileSystem = require("expo-file-system");
-          const tempFileUri = `${FileSystem.documentDirectory}temp_${filename}`;
-          const base64Data = photoUri.split(",")[1];
-          await FileSystem.writeAsStringAsync(tempFileUri, base64Data, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-
-          fileObject = {
-            uri: tempFileUri,
-            type: "image/jpeg",
-            name: filename,
-          };
-        } else {
-          fileObject = {
-            uri: photoUri,
-            type: "image/jpeg",
-            name: filename,
-          };
-        }
-      }
-
-      // Append to FormData
       formData.append("file", fileObject);
       formData.append("announcementId", announcementId.toString());
 
-      console.log(" Platform:", Platform.OS);
-      console.log(" FormData Debug:");
-      console.log("  fileObject type:", typeof fileObject);
-      console.log("  announcementId:", announcementId);
-      console.log("  filename:", filename);
-
       console.log("Sending file upload request...");
 
-      const uploadConfig: any = {
+      const response = await api.post("/api/files/upload", formData, {
         timeout: 45000,
-      };
-
-      if (Platform.OS === "web") {
-        //  WEB: browser will set Content-Type with boundary
-        uploadConfig.headers = {};
-      } else {
-        //  MOBILE: React will Native handle it
-        uploadConfig.headers = {};
-      }
-
-      // Upload request
-      const response = await api.post(
-        "/api/files/upload",
-        formData,
-        uploadConfig
-      );
+        headers: {},
+      });
 
       console.log("Photo uploaded successfully:", response.data);
       return response.data;
@@ -154,5 +84,93 @@ export const fileUploadService = {
     }
 
     return uploadedFiles;
+  },
+
+  uploadMultiplePhotosAtOnce: async (
+    photoUris: string[],
+    announcementId: number,
+    onProgress?: (uploaded: number, total: number) => void
+  ): Promise<FileDto[]> => {
+    try {
+      console.log(
+        `Uploading ${photoUris.length} photos at once for announcement ${announcementId}`
+      );
+
+      const formData = new FormData();
+
+      for (let i = 0; i < photoUris.length; i++) {
+        const photoUri = photoUris[i];
+        const filename = `photo_${Date.now()}_${i}.jpg`;
+
+        const fileObject = {
+          uri: photoUri,
+          type: "image/jpeg",
+          name: filename,
+        } as any;
+
+        formData.append("files", fileObject);
+      }
+
+      formData.append("announcementId", announcementId.toString());
+
+      const response = await api.post("/api/files/upload-multiple", formData, {
+        headers: {},
+        timeout: 60000,
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            const estimatedUploaded = Math.floor(
+              (percentCompleted / 100) * photoUris.length
+            );
+            onProgress(estimatedUploaded, photoUris.length);
+          }
+        },
+      });
+
+      console.log(`Successfully uploaded ${photoUris.length} photos at once`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error uploading multiple photos at once:", error);
+      const apiError = handleApiError(error);
+      throw new Error(apiError.error);
+    }
+  },
+
+  getAnnouncementPhotosForEdit: async (
+    announcementId: number
+  ): Promise<{
+    files: FileDto[];
+    canEdit: boolean;
+    announcementId: number;
+  }> => {
+    try {
+      const response = await api.get(
+        `/api/files/announcement/${announcementId}`
+      );
+
+      if (typeof response.data === "object" && "files" in response.data) {
+        return response.data;
+      } else {
+        return {
+          files: response.data,
+          canEdit: true,
+          announcementId,
+        };
+      }
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      throw new Error(apiError.error);
+    }
+  },
+
+  deletePhoto: async (fileId: number): Promise<void> => {
+    try {
+      await api.delete(`/api/files/${fileId}`);
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      throw new Error(apiError.error);
+    }
   },
 };

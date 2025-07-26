@@ -48,6 +48,31 @@ export interface CreateAnnouncementRequest {
   contactInfo?: string;
 }
 
+export interface UpdateAnnouncementRequest {
+  title?: string;
+  description?: string;
+  status?: "ACTIVE" | "RESOLVED" | "ARCHIVED";
+  category?:
+    | "ELECTRONICS"
+    | "CLOTHING"
+    | "DOCUMENTS"
+    | "BAGS"
+    | "KEYS"
+    | "JEWELRY"
+    | "BOOKS"
+    | "HOUSEHOLD"
+    | "VEHICLE"
+    | "SPORTS"
+    | "PETS"
+    | "WALLET";
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  isLocationApproximate?: boolean;
+  incidentDate?: string;
+  contactInfo?: string;
+}
+
 export interface PhotoData {
   id: string;
   uri: string;

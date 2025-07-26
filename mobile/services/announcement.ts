@@ -2,6 +2,7 @@ import api, { handleApiError } from "./api";
 import {
   AnnouncementDto,
   CreateAnnouncementRequest,
+  UpdateAnnouncementRequest,
 } from "../types/announcement";
 
 export const announcementService = {
@@ -105,6 +106,63 @@ export const announcementService = {
       throw new Error(apiError.error || "Failed to delete announcement");
     }
   },
+};
+
+// Update announcement
+export const updateAnnouncement = async (
+  announcementId: number,
+  updateData: UpdateAnnouncementRequest
+): Promise<AnnouncementDto> => {
+  try {
+    console.log(`Updating announcement ${announcementId}:`, updateData);
+
+    const response = await api.put(
+      `/api/announcements/${announcementId}`,
+      updateData
+    );
+    return response.data;
+  } catch (error: any) {
+    const apiError = handleApiError(error);
+    console.error("Error updating announcement:", apiError);
+    throw new Error(apiError.error);
+  }
+};
+
+export const deleteAnnouncement = async (
+  announcementId: number
+): Promise<void> => {
+  try {
+    console.log(`Deleting announcement ${announcementId}`);
+
+    await api.delete(`/api/announcements/${announcementId}`);
+    console.log(`Announcement ${announcementId} deleted successfully`);
+  } catch (error: any) {
+    const apiError = handleApiError(error);
+    console.error("Error deleting announcement:", apiError);
+    throw new Error(apiError.error);
+  }
+};
+
+// Update announcement status only
+export const updateAnnouncementStatus = async (
+  announcementId: number,
+  status: "ACTIVE" | "RESOLVED" | "ARCHIVED"
+): Promise<AnnouncementDto> => {
+  try {
+    console.log(`Updating announcement ${announcementId} status to:`, status);
+
+    const response = await api.patch(
+      `/api/announcements/${announcementId}/status`,
+      {
+        status,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    const apiError = handleApiError(error);
+    console.error("Error updating announcement status:", apiError);
+    throw new Error(apiError.error);
+  }
 };
 
 // Helper function to get category icon name

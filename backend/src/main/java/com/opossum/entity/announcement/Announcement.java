@@ -84,7 +84,6 @@ public class Announcement {
     // User relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
-    @NotNull(message = "User is required")
     private User user;
 
     // File relationship - One-to-Many

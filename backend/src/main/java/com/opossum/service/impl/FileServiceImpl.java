@@ -66,7 +66,7 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new RuntimeException("Announcement not found: " + announcementId));
 
         // Check if user owns the announcement
-        if (!announcement.getUser().getId().equals(userId)) {
+        if (announcement.getUser() == null || !announcement.getUser().getId().equals(userId)) {
             throw new SecurityException("You can only upload files to your own announcements.");
         }
 

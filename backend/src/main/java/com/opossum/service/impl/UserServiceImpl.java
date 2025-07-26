@@ -4,11 +4,19 @@ import com.opossum.dto.auth.CreateUserRequest;
 import com.opossum.dto.user.UpdateProfileDto;
 import com.opossum.dto.user.UserDto;
 import com.opossum.dto.user.UserStatsDto;
+import com.opossum.entity.File;
 import com.opossum.entity.User;
 import com.opossum.entity.UserRole;
+import com.opossum.entity.announcement.Announcement;
 import com.opossum.entity.announcement.AnnouncementStatus;
+import com.opossum.entity.messaging.Conversation;
+import com.opossum.entity.messaging.ConversationStatus;
+import com.opossum.entity.messaging.Message;
 import com.opossum.mapper.UserMapper;
 import com.opossum.repository.AnnouncementRepository;
+import com.opossum.repository.ConversationRepository;
+import com.opossum.repository.FileRepository;
+import com.opossum.repository.MessageRepository;
 import com.opossum.repository.UserRepository;
 import com.opossum.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +41,9 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AnnouncementRepository announcementRepository;
+    private final FileRepository fileRepository;
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public UserDto createUser(CreateUserRequest request) {
@@ -175,15 +186,69 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         log.info("Deleting user with ID: {}", id);
 
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with ID: " + id);
-        }
+        // Check if user exists
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        log.debug("User found: {}", user.getUsername());
 
-        userRepository.deleteById(id);
-        log.info("User deleted successfully with ID: {}", id);
+        try {
+            // 1. Handle user's announcements (soft delete approach)
+            List<Announcement> userAnnouncements = announcementRepository.findByUserId(id);
+            log.info("Found {} announcements for user {}", userAnnouncements.size(), id);
+
+            for (Announcement announcement : userAnnouncements) {
+                // Keep announcements but anonymize them
+                announcement.setContactInfo("Contact unavailable - User account deleted");
+                announcement.setIsActive(false); // Hide from public search
+                announcement.setStatus(AnnouncementStatus.ARCHIVED); // Mark as archived
+
+                announcementRepository.save(announcement);
+                log.debug("Anonymized announcement: {}", announcement.getId());
+            }
+
+            // 2. Handle user's uploaded files
+            // Note: Keep files since announcements reference them, but they're now orphaned
+            // safely
+            List<File> userFiles = fileRepository.findByUploadedById(id);
+            log.info("Found {} files for user {}", userFiles.size(), id);
+
+            // Optional: Mark files as orphaned or delete if you prefer
+            // fileRepository.deleteAll(userFiles); // Uncomment if you want to delete files
+
+            // 3. Handle conversations and messages
+            // Find conversations where user participated
+            List<Conversation> userConversations = conversationRepository.findByUserId(id);
+            log.info("Found {} conversations for user {}", userConversations.size(), id);
+
+            for (Conversation conversation : userConversations) {
+                // Mark conversation as inactive (keep for other participant)
+                conversation.setStatus(ConversationStatus.ARCHIVED);
+                conversationRepository.save(conversation);
+
+                // Find and anonymize user's messages in this conversation
+                List<Message> userMessages = messageRepository.findBySenderId(id);
+                for (Message message : userMessages) {
+                    if (message.getConversation().getId().equals(conversation.getId())) {
+                        message.setMessageText("[Message from deleted user account]");
+                        message.setIsRead(true); // Mark as read to avoid notifications
+                        messageRepository.save(message);
+                    }
+                }
+            }
+
+            // 4. Finally delete the user account
+            userRepository.deleteById(id);
+            log.info("User deleted successfully with ID: {} - {} announcements anonymized, {} conversations handled",
+                    id, userAnnouncements.size(), userConversations.size());
+
+        } catch (Exception e) {
+            log.error("Error during user deletion process for ID {}: {}", id, e.getMessage());
+            throw new RuntimeException("Failed to delete user account. Please try again or contact support.", e);
+        }
     }
 
     @Override

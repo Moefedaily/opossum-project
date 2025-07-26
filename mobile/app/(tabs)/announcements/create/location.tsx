@@ -32,8 +32,12 @@ export default function LocationScreen() {
   );
   const [manualAddress, setManualAddress] = useState("");
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [addressValidation, setAddressValidation] = useState<{
+    isValid: boolean | null;
+    message: string;
+  }>({ isValid: null, message: "" });
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
 
   // Initialize manual address from form data
   useEffect(() => {
@@ -55,7 +59,7 @@ export default function LocationScreen() {
 
       if (foregroundStatus !== "granted") {
         Alert.alert(
-          "Location Permission Required",
+          "Permission Required",
           "Please enable location access to use your current location.",
           [{ text: "OK" }]
         );
@@ -94,16 +98,17 @@ export default function LocationScreen() {
       });
 
       let address = "";
+      let city = "";
       if (reverseGeocode.length > 0) {
         const addr = reverseGeocode[0];
         const parts = [
           addr.streetNumber,
           addr.street,
           addr.city,
-          addr.region,
           addr.postalCode,
         ].filter(Boolean);
         address = parts.join(", ");
+        city = addr.city || addr.region || "";
       }
 
       const locationData: LocationData = {
@@ -114,68 +119,90 @@ export default function LocationScreen() {
       };
 
       setCurrentLocation(locationData);
-      setUseCurrentLocation(true);
       updateLocation(locationData);
+
+      // Clear manual address when GPS is used
+      setManualAddress("");
+      setAddressValidation({ isValid: null, message: "" });
     } catch (error: any) {
       console.error("Error getting current location:", error);
       setLocationError(
-        "Failed to get current location. Please try again or enter manually."
+        "Failed to get current location. Please try again or enter address manually."
       );
     } finally {
       setIsGettingLocation(false);
     }
   };
 
-  // Handle manual address change
-  const handleAddressChange = (address: string) => {
-    setManualAddress(address);
+  // Validate manual address with debounce
+  const validateAddress = async (address: string) => {
+    if (address.length < 10) {
+      setAddressValidation({ isValid: null, message: "" });
+      return;
+    }
 
-    if (useCurrentLocation) {
-      // Update current location with new address
-      if (currentLocation) {
-        const updatedLocation: LocationData = {
-          ...currentLocation,
-          address: address || undefined,
-        };
-        updateLocation(updatedLocation);
-      }
-    } else {
-      // Manual address only (no coordinates)
-      if (address.trim()) {
+    try {
+      setIsValidatingAddress(true);
+
+      // Try to geocode the address to see if it's valid
+      const result = await Location.geocodeAsync(address);
+
+      if (result.length > 0) {
+        const coords = result[0];
+        setAddressValidation({
+          isValid: true,
+          message: "Valid address format",
+        });
+
+        // Update location with geocoded coordinates
         const locationData: LocationData = {
-          latitude: 0, // Placeholder - backend should handle manual addresses
-          longitude: 0, // Placeholder - backend should handle manual addresses
+          latitude: coords.latitude,
+          longitude: coords.longitude,
           address: address.trim(),
           isLocationApproximate: true,
         };
+
         updateLocation(locationData);
+        setCurrentLocation(null); // Clear GPS location
       } else {
+        setAddressValidation({
+          isValid: false,
+          message: "Address not found. Try: Street, City, Postal Code",
+        });
         updateLocation(null);
       }
+    } catch (error) {
+      setAddressValidation({
+        isValid: false,
+        message: "Invalid address format",
+      });
+      updateLocation(null);
+    } finally {
+      setIsValidatingAddress(false);
     }
   };
 
-  // Toggle between GPS and manual address
-  const handleLocationModeToggle = () => {
-    if (useCurrentLocation) {
-      // Switch to manual address only
-      setUseCurrentLocation(false);
-      setCurrentLocation(null);
-
+  // Handle manual address change with debounced validation
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
       if (manualAddress.trim()) {
-        const locationData: LocationData = {
-          latitude: 0,
-          longitude: 0,
-          address: manualAddress.trim(),
-          isLocationApproximate: true,
-        };
-        updateLocation(locationData);
+        validateAddress(manualAddress.trim());
       } else {
+        setAddressValidation({ isValid: null, message: "" });
         updateLocation(null);
       }
-    } else {
-      // Switch to GPS location
-      getCurrentLocation();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [manualAddress]);
+
+  // Handle manual address input
+  const handleAddressChange = (address: string) => {
+    setManualAddress(address);
+
+    // Clear GPS location when user types manually
+    if (address.trim() && currentLocation) {
+      setCurrentLocation(null);
     }
   };
 
@@ -203,7 +230,6 @@ export default function LocationScreen() {
               text: "OK",
               onPress: () => {
                 resetForm();
-                // Navigate back to announcements list
                 router.replace("/announcements");
               },
             },
@@ -298,132 +324,93 @@ export default function LocationScreen() {
             </Text>
           </View>
 
-          {/* Location Options */}
+          {/* Primary: Current Location Button */}
           <View style={locationStyles.section}>
-            <Text style={locationStyles.sectionTitle}>Location Options</Text>
-
-            {/* GPS Location Button */}
             <TouchableOpacity
               style={[
-                locationStyles.locationOption,
-                useCurrentLocation && locationStyles.locationOptionActive,
+                locationStyles.primaryLocationButton,
+                currentLocation && locationStyles.primaryLocationButtonActive,
               ]}
-              onPress={handleLocationModeToggle}
+              onPress={getCurrentLocation}
               disabled={isGettingLocation}
               activeOpacity={0.8}
             >
-              <View style={locationStyles.locationOptionContent}>
-                <Ionicons
-                  name="navigate"
-                  size={24}
-                  color={useCurrentLocation ? colors.white : colors.richOxblood}
-                />
-                <View style={locationStyles.locationOptionText}>
-                  <Text
-                    style={[
-                      locationStyles.locationOptionTitle,
-                      useCurrentLocation &&
-                        locationStyles.locationOptionTitleActive,
-                    ]}
-                  >
-                    Use Current Location
-                  </Text>
-                  <Text
-                    style={[
-                      locationStyles.locationOptionSubtitle,
-                      useCurrentLocation &&
-                        locationStyles.locationOptionSubtitleActive,
-                    ]}
-                  >
-                    Get your precise GPS coordinates
-                  </Text>
-                </View>
+              <Ionicons
+                name="navigate"
+                size={24}
+                color={currentLocation ? colors.white : colors.richOxblood}
+              />
+              <View style={locationStyles.buttonTextContainer}>
+                <Text
+                  style={[
+                    locationStyles.primaryButtonText,
+                    currentLocation && locationStyles.primaryButtonTextActive,
+                  ]}
+                >
+                  Use My Current Location
+                </Text>
+                <Text
+                  style={[
+                    locationStyles.primaryButtonHint,
+                    currentLocation && locationStyles.primaryButtonHintActive,
+                  ]}
+                >
+                  Most accurate option
+                </Text>
               </View>
-
               {isGettingLocation && (
-                <ActivityIndicator size="small" color={colors.white} />
+                <ActivityIndicator
+                  size="small"
+                  color={currentLocation ? colors.white : colors.richOxblood}
+                />
               )}
             </TouchableOpacity>
 
-            {/* Manual Address Option */}
-            <TouchableOpacity
-              style={[
-                locationStyles.locationOption,
-                !useCurrentLocation && locationStyles.locationOptionActive,
-              ]}
-              onPress={() => !useCurrentLocation && handleLocationModeToggle()}
-              activeOpacity={0.8}
-            >
-              <View style={locationStyles.locationOptionContent}>
-                <Ionicons
-                  name="create"
-                  size={24}
-                  color={
-                    !useCurrentLocation ? colors.white : colors.richOxblood
-                  }
-                />
-                <View style={locationStyles.locationOptionText}>
-                  <Text
-                    style={[
-                      locationStyles.locationOptionTitle,
-                      !useCurrentLocation &&
-                        locationStyles.locationOptionTitleActive,
-                    ]}
-                  >
-                    Enter Manually
-                  </Text>
-                  <Text
-                    style={[
-                      locationStyles.locationOptionSubtitle,
-                      !useCurrentLocation &&
-                        locationStyles.locationOptionSubtitleActive,
-                    ]}
-                  >
-                    Type the address or area
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Current Location Display */}
-          {currentLocation && useCurrentLocation && (
-            <View style={locationStyles.section}>
-              <Text style={locationStyles.sectionTitle}>Current Location</Text>
-              <View style={locationStyles.locationDisplay}>
+            {/* GPS Success Display */}
+            {currentLocation && (
+              <View style={locationStyles.gpsSuccess}>
                 <Ionicons
                   name="checkmark-circle"
                   size={20}
                   color={colors.success}
                 />
-                <Text style={locationStyles.locationDisplayText}>
-                  Location acquired successfully
+                <Text style={locationStyles.gpsSuccessText}>
+                  Location detected successfully
                 </Text>
               </View>
-              <Text style={locationStyles.coordinatesText}>
-                📍 {currentLocation.latitude.toFixed(6)},{" "}
-                {currentLocation.longitude.toFixed(6)}
-              </Text>
-            </View>
-          )}
+            )}
 
-          {/* Location Error */}
-          {locationError && (
-            <View style={locationStyles.errorContainer}>
-              <Ionicons name="warning" size={20} color={colors.danger} />
-              <Text style={locationStyles.errorText}>{locationError}</Text>
-            </View>
-          )}
+            {/* Location Error */}
+            {locationError && (
+              <View style={locationStyles.errorContainer}>
+                <Ionicons name="warning" size={20} color={colors.danger} />
+                <Text style={locationStyles.errorText}>{locationError}</Text>
+              </View>
+            )}
+          </View>
 
-          {/* Address Input */}
+          {/* OR Divider */}
+          <View style={locationStyles.orDivider}>
+            <View style={locationStyles.orLine} />
+            <Text style={locationStyles.orText}>OR</Text>
+            <View style={locationStyles.orLine} />
+          </View>
+
+          {/* Manual Address Section */}
           <View style={locationStyles.section}>
             <Text style={locationStyles.sectionTitle}>
-              Address
-              <Text style={locationStyles.optionalText}> (Optional)</Text>
+              Enter Address Manually
             </Text>
+
             <TextInput
-              style={locationStyles.addressInput}
-              placeholder="Enter address, street, or area description..."
+              style={[
+                locationStyles.addressInput,
+                addressValidation.isValid === true &&
+                  locationStyles.addressInputValid,
+                addressValidation.isValid === false &&
+                  locationStyles.addressInputInvalid,
+              ]}
+              placeholder="5 Boulevard Édouard Rey, Grenoble, 38000"
               placeholderTextColor={colors.text.secondary}
               value={manualAddress}
               onChangeText={handleAddressChange}
@@ -432,6 +419,70 @@ export default function LocationScreen() {
               maxLength={500}
               textAlignVertical="top"
             />
+
+            {/* Address Validation Feedback */}
+            {isValidatingAddress && (
+              <View style={locationStyles.validationContainer}>
+                <ActivityIndicator size="small" color={colors.richOxblood} />
+                <Text style={locationStyles.validatingText}>
+                  Checking address...
+                </Text>
+              </View>
+            )}
+
+            {addressValidation.message && !isValidatingAddress && (
+              <View style={locationStyles.validationContainer}>
+                {addressValidation.isValid === true ? (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={16}
+                    color={colors.success}
+                  />
+                ) : (
+                  <Ionicons
+                    name="close-circle"
+                    size={16}
+                    color={colors.danger}
+                  />
+                )}
+                <Text
+                  style={[
+                    locationStyles.validationText,
+                    addressValidation.isValid === true &&
+                      locationStyles.validationTextSuccess,
+                    addressValidation.isValid === false &&
+                      locationStyles.validationTextError,
+                  ]}
+                >
+                  {addressValidation.isValid === true
+                    ? "Valid address format"
+                    : "Invalid address format"}
+                </Text>
+              </View>
+            )}
+
+            {/* Format Hint */}
+            <View style={locationStyles.hintContainer}>
+              <Ionicons
+                name="information-circle-outline"
+                size={16}
+                color={colors.richOxblood}
+              />
+              <Text style={locationStyles.formatHint}>
+                Format: Number, Street Name, City, Postal Code
+              </Text>
+            </View>
+            <View style={locationStyles.exampleContainer}>
+              <Ionicons
+                name="document-text-outline"
+                size={14}
+                color={colors.text.secondary}
+              />
+              <Text style={locationStyles.exampleText}>
+                Exemple: 5 Boulevard Édouard Rey, Grenoble, 38000
+              </Text>
+            </View>
+
             <Text style={locationStyles.characterCount}>
               {manualAddress.length}/500
             </Text>
@@ -463,11 +514,42 @@ export default function LocationScreen() {
 
             <View style={locationStyles.summaryItem}>
               <Text style={locationStyles.summaryLabel}>Location:</Text>
-              <Text style={locationStyles.summaryValue}>
-                {formData.location
-                  ? formData.location.address || "GPS coordinates provided"
-                  : "No location provided"}
-              </Text>
+              <View style={locationStyles.summaryValueContainer}>
+                {currentLocation ? (
+                  <>
+                    <Ionicons
+                      name="navigate"
+                      size={14}
+                      color={colors.success}
+                    />
+                    <Text style={locationStyles.summaryValue}>
+                      GPS location detected
+                    </Text>
+                  </>
+                ) : manualAddress && addressValidation.isValid === true ? (
+                  <>
+                    <Ionicons
+                      name="create-outline"
+                      size={14}
+                      color={colors.success}
+                    />
+                    <Text style={locationStyles.summaryValue}>
+                      Manual address entered
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons
+                      name="location-outline"
+                      size={14}
+                      color={colors.text.secondary}
+                    />
+                    <Text style={locationStyles.summaryValue}>
+                      No location provided
+                    </Text>
+                  </>
+                )}
+              </View>
             </View>
           </View>
 
@@ -573,91 +655,80 @@ const locationStyles = {
     color: colors.text.primary,
     marginBottom: 12,
   },
-  optionalText: {
-    fontSize: 14,
-    fontWeight: "400" as const,
-    color: colors.text.secondary,
-  },
 
-  // Location Options
-  locationOption: {
-    borderWidth: 2,
-    borderColor: colors.border.light,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: colors.surface,
-  },
-  locationOptionActive: {
-    borderColor: colors.richOxblood,
-    backgroundColor: colors.richOxblood,
-  },
-  locationOptionContent: {
+  // Primary Location Button
+  primaryLocationButton: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    gap: 12,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.richOxblood,
+    backgroundColor: colors.surface,
+    gap: 16,
+    marginBottom: 12,
   },
-  locationOptionText: {
+  primaryLocationButtonActive: {
+    backgroundColor: colors.richOxblood,
+    borderColor: colors.richOxblood,
+  },
+  buttonTextContainer: {
     flex: 1,
   },
-  locationOptionTitle: {
-    fontSize: 16,
+  primaryButtonText: {
+    fontSize: 18,
     fontWeight: "600" as const,
     fontFamily: "DMSans",
-    color: colors.text.primary,
+    color: colors.richOxblood,
     marginBottom: 4,
   },
-  locationOptionTitleActive: {
+  primaryButtonTextActive: {
     color: colors.white,
   },
-  locationOptionSubtitle: {
+  primaryButtonHint: {
     fontSize: 14,
     fontFamily: "Nunito",
     color: colors.text.secondary,
   },
-  locationOptionSubtitleActive: {
+  primaryButtonHintActive: {
     color: colors.white,
   },
 
-  // Location Display
-  locationDisplay: {
+  // GPS Success Display
+  gpsSuccess: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
     gap: 8,
-    backgroundColor: colors.softRose,
-    padding: 12,
+    backgroundColor: "#f0f9ff",
+    borderWidth: 1,
+    borderColor: "#bae6fd",
     borderRadius: 8,
-    marginBottom: 8,
+    padding: 12,
   },
-  locationDisplayText: {
+  gpsSuccessText: {
     fontSize: 14,
     fontFamily: "Nunito",
     color: colors.success,
     fontWeight: "500" as const,
   },
-  coordinatesText: {
-    fontSize: 12,
-    fontFamily: "Nunito",
-    color: colors.text.secondary,
-  },
 
-  // Error Display
-  errorContainer: {
+  // OR Divider
+  orDivider: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    gap: 8,
-    backgroundColor: "#fef2f2",
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    marginVertical: 24,
   },
-  errorText: {
+  orLine: {
     flex: 1,
+    height: 1,
+    backgroundColor: colors.border.light,
+  },
+  orText: {
     fontSize: 14,
     fontFamily: "Nunito",
-    color: colors.danger,
+    color: colors.text.secondary,
+    paddingHorizontal: 16,
+    backgroundColor: colors.background,
   },
 
   // Address Input
@@ -671,15 +742,92 @@ const locationStyles = {
     fontFamily: "Nunito",
     color: colors.text.primary,
     backgroundColor: colors.surface,
-    height: 80,
+    height: 100,
     textAlignVertical: "top" as const,
+    marginBottom: 8,
+  },
+  addressInputValid: {
+    borderColor: colors.success,
+    backgroundColor: "#f0f9ff",
+  },
+  addressInputInvalid: {
+    borderColor: colors.danger,
+    backgroundColor: "#fef2f2",
+  },
+
+  // Validation Feedback
+  validationContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+    marginBottom: 8,
+  },
+  validatingText: {
+    fontSize: 14,
+    fontFamily: "Nunito",
+    color: colors.richOxblood,
+  },
+  validationText: {
+    fontSize: 14,
+    fontFamily: "Nunito",
+    fontWeight: "500" as const,
+  },
+  validationTextSuccess: {
+    color: colors.success,
+  },
+  validationTextError: {
+    color: colors.danger,
+  },
+
+  // Format Hints
+  hintContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+    marginBottom: 4,
+  },
+  formatHint: {
+    fontSize: 12,
+    fontFamily: "Nunito",
+    color: colors.richOxblood,
+    fontWeight: "500" as const,
+  },
+  exampleContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+    marginBottom: 8,
+  },
+  exampleText: {
+    fontSize: 12,
+    fontFamily: "Nunito",
+    color: colors.text.secondary,
+    fontStyle: "italic" as const,
   },
   characterCount: {
     fontSize: 12,
     fontFamily: "Nunito",
     color: colors.text.secondary,
     textAlign: "right" as const,
-    marginTop: 4,
+  },
+
+  // Error Display
+  errorContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+    backgroundColor: "#fef2f2",
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Nunito",
+    color: colors.danger,
   },
 
   // Summary Section
@@ -698,6 +846,7 @@ const locationStyles = {
   },
   summaryItem: {
     flexDirection: "row" as const,
+    alignItems: "flex-start" as const,
     marginBottom: 8,
   },
   summaryLabel: {
@@ -712,6 +861,13 @@ const locationStyles = {
     fontSize: 14,
     fontFamily: "Nunito",
     color: colors.text.primary,
+    marginLeft: 4,
+  },
+  summaryValueContainer: {
+    flex: 1,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
   },
 
   // Submit Button

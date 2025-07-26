@@ -5,6 +5,7 @@ import com.opossum.dto.user.UpdateProfileDto;
 import com.opossum.dto.user.UserDto;
 import com.opossum.dto.user.UserStatsDto;
 import com.opossum.entity.UserRole;
+import com.opossum.service.JwtService;
 import com.opossum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +33,7 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
     @PostMapping
     @Operation(summary = "Create a new user", description = "Creates a new user account with validation")
@@ -192,17 +194,24 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user", description = "Permanently deletes a user account")
     @ApiResponse(responseCode = "204", description = "User deleted successfully")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        log.info("Deleting user with ID: {}", id);
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication auth) {
+        String username = auth.getName();
+        Optional<UserDto> currentUserOpt = userService.getUserByUsername(username);
 
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            log.error("Error deleting user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
+        if (!currentUserOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Authentication failed"));
         }
+
+        UserDto currentUser = currentUserOpt.get();
+
+        if (!currentUser.getId().equals(id) && !currentUser.getRole().equals(UserRole.ADMIN)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You can only delete your own account"));
+        }
+
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/stats")

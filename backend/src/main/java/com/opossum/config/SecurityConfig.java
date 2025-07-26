@@ -80,11 +80,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/change-password").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/auth/logout").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/auth/refresh").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("DELETE", "/api/users/**").hasAnyRole("USER", "ADMIN")
 
                         // ADD THESE USER PROFILE ENDPOINTS:
                         .requestMatchers("GET", "/api/users/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/profile").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("PATCH", "/api/users/*/deactivate").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("GET", "/api/users/*/stats").hasAnyRole("USER", "ADMIN")
 
                         // Announcement management (create, update, delete)
@@ -109,8 +109,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .requestMatchers("PUT", "/api/users/*").hasRole("ADMIN")
                         .requestMatchers("POST", "/api/users").hasRole("ADMIN")
-                        .requestMatchers("DELETE", "/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
+                        .requestMatchers("PATCH", "/api/users/*/deactivate").hasRole("ADMIN")
+                        .requestMatchers("PATCH", "/api/users/*/activate").hasRole("ADMIN")
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

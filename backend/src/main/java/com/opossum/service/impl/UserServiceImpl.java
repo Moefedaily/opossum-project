@@ -189,74 +189,99 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(Long id) {
         log.info("Deleting user with ID: {}", id);
-
-        // Check if user exists
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-        log.debug("User found: {}", user.getUsername());
+        log.info("Found user: {} - {}", user.getUsername(), user.getEmail());
 
         try {
-            // 1. Handle user's announcements - REMOVE USER REFERENCE
+            // Get or create the anonymous user
+            User anonymousUser = userRepository.findById(999999L)
+                    .orElseGet(() -> {
+                        log.warn("Anonymous user not found, creating it now");
+                        return createAnonymousUser();
+                    });
+
+            // 1. Handle announcements - KEEP VISIBLE but mark as resolved
             List<Announcement> userAnnouncements = announcementRepository.findByUserId(id);
             log.info("Found {} announcements for user {}", userAnnouncements.size(), id);
 
             for (Announcement announcement : userAnnouncements) {
-                // Keep announcements but remove user reference and anonymize
-                announcement.setUser(null);
-                announcement.setContactInfo("Contact unavailable - User account deleted");
-                announcement.setIsActive(false); // Hide from public search
-                announcement.setStatus(AnnouncementStatus.ARCHIVED); // Mark as archived
-
+                announcement.setUser(anonymousUser); // Transfer to anonymous user
+                announcement.setContactInfo("Contact no longer available - Original poster account deleted");
+                announcement.setIsActive(true);
+                announcement.setStatus(AnnouncementStatus.ACTIVE);
                 announcementRepository.save(announcement);
-                log.debug("Anonymized announcement: {}", announcement.getId());
             }
 
-            // Handle user's uploaded files - REMOVE USER REFERENCE
+            // 2. Handle files
             List<File> userFiles = fileRepository.findByUploadedById(id);
             log.info("Found {} files for user {}", userFiles.size(), id);
 
             for (File file : userFiles) {
-                file.setUploadedBy(null);
+                file.setUploadedBy(anonymousUser); // Transfer to anonymous user
                 fileRepository.save(file);
             }
 
-            // Handle conversations and messages - REMOVE USER REFERENCES
+            // 3. Handle conversations
             List<Conversation> userConversations = conversationRepository.findByUserId(id);
             log.info("Found {} conversations for user {}", userConversations.size(), id);
 
             for (Conversation conversation : userConversations) {
-                // Remove user references from conversation
+                // Replace user references with anonymous user
                 if (conversation.getStarterUser() != null && conversation.getStarterUser().getId().equals(id)) {
-                    conversation.setStarterUser(null);
+                    conversation.setStarterUser(anonymousUser);
                 }
                 if (conversation.getRecipientUser() != null && conversation.getRecipientUser().getId().equals(id)) {
-                    conversation.setRecipientUser(null);
+                    conversation.setRecipientUser(anonymousUser);
                 }
-
-                // Mark conversation as archived
                 conversation.setStatus(ConversationStatus.ARCHIVED);
                 conversationRepository.save(conversation);
-
-                // Find and anonymize user's messages
-                List<Message> userMessages = messageRepository.findBySenderId(id);
-                for (Message message : userMessages) {
-                    if (message.getConversation().getId().equals(conversation.getId())) {
-                        message.setSender(null);
-                        message.setMessageText("[Message from deleted user account]");
-                        message.setIsRead(true);
-                        messageRepository.save(message);
-                    }
-                }
             }
 
-            // safely delete the user (no foreign key references left)
+            // 4. Handle messages - Query once, process all
+            List<Message> userMessages = messageRepository.findBySenderId(id);
+            log.info("Found {} messages for user {}", userMessages.size(), id);
+
+            for (Message message : userMessages) {
+                message.setSender(anonymousUser); // Transfer to anonymous user
+                message.setMessageText("[Message from deleted user account]");
+                message.setIsRead(true);
+                messageRepository.save(message);
+            }
+
+            // 5. Now safely delete the actual user
             userRepository.deleteById(id);
-            log.info("User deleted successfully with ID: {} - {} announcements anonymized, {} conversations handled",
-                    id, userAnnouncements.size(), userConversations.size());
+            log.info("User deleted successfully with ID: {} - {} announcements preserved, {} messages anonymized",
+                    id, userAnnouncements.size(), userMessages.size());
 
         } catch (Exception e) {
             log.error("Error during user deletion process for ID {}: {}", id, e.getMessage());
             throw new RuntimeException("Failed to delete user account. Please try again or contact support.", e);
+        }
+    }
+
+    private User createAnonymousUser() {
+        try {
+            User anonymous = new User();
+            anonymous.setId(999999L);
+            anonymous.setUsername("system-deleted-user");
+            anonymous.setEmail("deleted@system.internal");
+            anonymous.setFirstName("Deleted");
+            anonymous.setLastName("User");
+            anonymous.setPasswordHash("$2a$10$dummy.hash.for.deleted.user");
+            anonymous.setRole(UserRole.USER);
+            anonymous.setIsActive(false);
+            anonymous.setIsVerified(true);
+            anonymous.setCreatedAt(LocalDateTime.now());
+            anonymous.setUpdatedAt(LocalDateTime.now());
+
+            User savedUser = userRepository.save(anonymous);
+            log.info("Created anonymous user with ID: {}", savedUser.getId());
+            return savedUser;
+
+        } catch (Exception e) {
+            log.error("Failed to create anonymous user: {}", e.getMessage());
+            throw new RuntimeException("Failed to create anonymous user - please contact admin", e);
         }
     }
 

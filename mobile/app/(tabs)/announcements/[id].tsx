@@ -31,6 +31,10 @@ export default function AnnouncementDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Check if this is a deleted user's resolved announcement
+  const isDeletedUserResolved =
+    announcement?.username === "system-deleted-user";
+
   // Fetch announcement details
   const fetchAnnouncementDetails = async () => {
     if (!id) return;
@@ -229,9 +233,14 @@ export default function AnnouncementDetailScreen() {
             <Text style={detailStyles.title}>{announcement.title}</Text>
 
             <View style={detailStyles.metaRow}>
-              <View style={detailStyles.typeBadge}>
+              <View
+                style={[
+                  detailStyles.typeBadge,
+                  isDeletedUserResolved && detailStyles.resolvedBadge,
+                ]}
+              >
                 <Text style={detailStyles.typeBadgeText}>
-                  {announcement.type}
+                  {isDeletedUserResolved ? "FOUND" : announcement.type}
                 </Text>
               </View>
               <Text style={detailStyles.timeText}>
@@ -293,43 +302,72 @@ export default function AnnouncementDetailScreen() {
           {/* Posted By */}
           <View style={detailStyles.section}>
             <Text style={detailStyles.sectionTitle}>Posted by</Text>
-            <View style={detailStyles.userInfo}>
-              <View style={detailStyles.userAvatar}>
-                <Ionicons name="person" size={24} color={colors.warmTaupe} />
+            {isDeletedUserResolved ? (
+              <View style={detailStyles.deletedUserInfo}>
+                <View style={detailStyles.userAvatar}>
+                  <Ionicons
+                    name="person-outline"
+                    size={24}
+                    color={colors.text.secondary}
+                  />
+                </View>
+                <View style={detailStyles.userDetails}>
+                  <Text style={detailStyles.deletedUserName}>Deleted User</Text>
+                  <Text style={detailStyles.userMeta}>
+                    Item was found • Original poster account deleted
+                  </Text>
+                </View>
               </View>
-              <View style={detailStyles.userDetails}>
-                <Text style={detailStyles.userName}>
-                  {announcement.userFullName || announcement.username}
-                </Text>
-                <Text style={detailStyles.userMeta}>
-                  Posted {getTimeAgo(announcement.createdAt)}
-                </Text>
+            ) : (
+              <View style={detailStyles.userInfo}>
+                <View style={detailStyles.userAvatar}>
+                  <Ionicons name="person" size={24} color={colors.warmTaupe} />
+                </View>
+                <View style={detailStyles.userDetails}>
+                  <Text style={detailStyles.userName}>
+                    {announcement.userFullName || announcement.username}
+                  </Text>
+                  <Text style={detailStyles.userMeta}>
+                    Posted {getTimeAgo(announcement.createdAt)}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </View>
         </View>
       </ScrollView>
 
       {/* Action Buttons */}
       <View style={detailStyles.actionContainer}>
-        <TouchableOpacity
-          style={detailStyles.contactButton}
-          onPress={handleContactOwner}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="chatbubble" size={22} color={colors.white} />
-          <Text style={detailStyles.contactButtonText}>Send Message</Text>
-        </TouchableOpacity>
+        {isDeletedUserResolved ? (
+          <View style={detailStyles.noContactContainer}>
+            <Ionicons name="information-circle" size={20} color={colors.info} />
+            <Text style={detailStyles.noContactText}>
+              This item was found, but contact is no longer available
+            </Text>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={detailStyles.contactButton}
+              onPress={handleContactOwner}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="chatbubble" size={22} color={colors.white} />
+              <Text style={detailStyles.contactButtonText}>Send Message</Text>
+            </TouchableOpacity>
 
-        {announcement.contactInfo && (
-          <TouchableOpacity
-            style={detailStyles.callButton}
-            onPress={handleCallOwner}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="call" size={20} color={colors.deepBurgundy} />
-            <Text style={detailStyles.callButtonText}>Call Owner</Text>
-          </TouchableOpacity>
+            {announcement.contactInfo && (
+              <TouchableOpacity
+                style={detailStyles.callButton}
+                onPress={handleCallOwner}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="call" size={20} color={colors.deepBurgundy} />
+                <Text style={detailStyles.callButtonText}>Call Owner</Text>
+              </TouchableOpacity>
+            )}
+          </>
         )}
       </View>
     </SafeAreaView>
@@ -341,10 +379,10 @@ const detailStyles = {
   imageContainer: {
     height: 300,
     backgroundColor: colors.border.light,
-    marginHorizontal: 20, // Add horizontal margins to reduce width
+    marginHorizontal: 20,
     marginTop: 10,
-    borderRadius: 16, // Add border radius to image container
-    overflow: "hidden" as const, // Ensure image respects border radius
+    borderRadius: 16,
+    overflow: "hidden" as const,
   },
   mainImage: {
     flex: 1,
@@ -356,9 +394,9 @@ const detailStyles = {
     justifyContent: "center" as const,
     alignItems: "center" as const,
     backgroundColor: colors.softRose,
-    marginHorizontal: 20, // Add horizontal margins
+    marginHorizontal: 20,
     marginTop: 10,
-    borderRadius: 16, // Add border radius
+    borderRadius: 16,
   },
   placeholderText: {
     fontSize: 16,
@@ -416,6 +454,9 @@ const detailStyles = {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  resolvedBadge: {
+    backgroundColor: "#10B981", // Green for resolved items
   },
   typeBadgeText: {
     fontSize: 12,
@@ -492,6 +533,11 @@ const detailStyles = {
     flexDirection: "row" as const,
     alignItems: "center" as const,
   },
+  deletedUserInfo: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    opacity: 0.7,
+  },
   userAvatar: {
     width: 48,
     height: 48,
@@ -511,6 +557,13 @@ const detailStyles = {
     color: colors.text.primary,
     marginBottom: 4,
   },
+  deletedUserName: {
+    fontSize: 16,
+    fontWeight: "500" as const,
+    fontFamily: "DMSans",
+    color: colors.text.secondary,
+    marginBottom: 4,
+  },
   userMeta: {
     fontSize: 14,
     fontFamily: "Nunito",
@@ -528,15 +581,15 @@ const detailStyles = {
     gap: 12,
   },
   contactButton: {
-    flex: 1, // Equal space with call button
+    flex: 1,
     backgroundColor: colors.richOxblood,
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "center" as const,
-    paddingVertical: 16, // More vertical padding for better spacing
-    paddingHorizontal: 20, // More horizontal padding for icon/text space
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    gap: 12, // Bigger gap between icon and text
+    gap: 12,
   },
   contactButtonText: {
     fontSize: 16,
@@ -545,15 +598,15 @@ const detailStyles = {
     color: colors.white,
   },
   callButton: {
-    flex: 1, // Equal space with contact button
+    flex: 1,
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.richOxblood,
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "center" as const,
-    paddingVertical: 16, // Matched with contact button
-    paddingHorizontal: 20, // More horizontal padding
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderRadius: 8,
     gap: 8,
   },
@@ -562,5 +615,21 @@ const detailStyles = {
     fontWeight: "600" as const,
     fontFamily: "DMSans",
     color: colors.deepBurgundy,
+  },
+  noContactContainer: {
+    flex: 1,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    padding: 16,
+    backgroundColor: colors.info + "10",
+    borderRadius: 8,
+    gap: 8,
+  },
+  noContactText: {
+    fontSize: 14,
+    fontFamily: "Nunito",
+    color: colors.info,
+    textAlign: "center" as const,
   },
 };

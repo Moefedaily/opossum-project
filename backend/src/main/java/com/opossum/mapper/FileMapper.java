@@ -36,8 +36,10 @@ public class FileMapper {
             dto.setAnnouncementTitle(file.getAnnouncement().getTitle());
         }
 
-        dto.setUploadedByUserId(file.getUploadedBy() != null ? file.getUploadedBy().getId() : null);
-        dto.setUploadedByUsername(file.getUploaderName());
+        if (file.getUploadedBy() != null) {
+            dto.setUploadedByUserId(file.getUploadedBy().getId());
+            dto.setUploadedByUsername(file.getUploadedBy().getUsername());
+        }
 
         // Computed fields
         dto.setFileExtension(calculateFileExtension(file.getOriginalFilename()));

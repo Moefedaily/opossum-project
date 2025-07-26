@@ -5,7 +5,6 @@ import com.opossum.dto.user.UpdateProfileDto;
 import com.opossum.dto.user.UserDto;
 import com.opossum.dto.user.UserStatsDto;
 import com.opossum.entity.UserRole;
-import com.opossum.service.JwtService;
 import com.opossum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +32,6 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private final JwtService jwtService;
 
     @PostMapping
     @Operation(summary = "Create a new user", description = "Creates a new user account with validation")

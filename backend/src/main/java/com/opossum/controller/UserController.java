@@ -256,4 +256,23 @@ public class UserController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PatchMapping("/{id}/role")
+    @Operation(summary = "Update user role", description = "Updates a user's role")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Role updated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public ResponseEntity<?> updateUserRole(@PathVariable Long id, @RequestBody UserRole role) {
+        log.info("Updating role for user ID: {}", id);
+        try {
+            UserDto updatedUser = userService.assignRole(id, role);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            log.error("Error updating user role: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }

@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
-        user.setRole(UserRole.ADMIN);
+        user.setRole(UserRole.USER);
         user.setIsActive(true);
         user.setIsVerified(true);
         user.setVerificationToken(UUID.randomUUID().toString());

@@ -489,28 +489,3 @@
     background: rgba($primary, 0.4);
   }
 }
-
-// Dark mode support (if needed later)
-@media (prefers-color-scheme: dark) {
-  .sidenav-container {
-    background: $gray-900;
-  }
-
-  .sidenav {
-    background: linear-gradient(
-      180deg,
-      $gray-800 0%,
-      color.adjust($gray-800, $lightness: 5%) 100%
-    );
-    border-right-color: rgba($primary, 0.2);
-  }
-
-  .toolbar {
-    background: $gray-800 !important;
-    border-bottom-color: rgba($primary, 0.2);
-  }
-
-  .page-content {
-    background: $gray-900;
-  }
-}

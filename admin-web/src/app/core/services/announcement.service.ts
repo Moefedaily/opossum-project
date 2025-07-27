@@ -39,13 +39,11 @@ export interface FileItem {
 }
 
 export interface AnnouncementStats {
-  totalAnnouncements: number;
-  activeAnnouncements: number;
-  resolvedAnnouncements: number;
-  archivedAnnouncements: number;
-  lostItems: number;
-  foundItems: number;
-  recentAnnouncements: number; // Last 30 days
+  total: number;
+  lost: number;
+  found: number;
+  active: number;
+  resolved: number;
 }
 
 @Injectable({

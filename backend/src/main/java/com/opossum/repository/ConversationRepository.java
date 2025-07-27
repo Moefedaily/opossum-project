@@ -13,35 +13,39 @@ import java.util.Optional;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-    // Find conversations for a user
-    @Query("SELECT c FROM Conversation c WHERE " +
-            "(c.starterUser.id = :userId OR c.recipientUser.id = :userId) " +
-            "AND c.status = :status " +
-            "ORDER BY c.lastMessageAt DESC, c.createdAt DESC")
-    List<Conversation> findByUserIdAndStatus(@Param("userId") Long userId,
-            @Param("status") ConversationStatus status);
+        // Find conversations for a user
+        @Query("SELECT c FROM Conversation c WHERE " +
+                        "(c.starterUser.id = :userId OR c.recipientUser.id = :userId) " +
+                        "AND c.status = :status " +
+                        "ORDER BY c.lastMessageAt DESC, c.createdAt DESC")
+        List<Conversation> findByUserIdAndStatus(@Param("userId") Long userId,
+                        @Param("status") ConversationStatus status);
 
-    // Find all conversations for a user
-    @Query("SELECT c FROM Conversation c WHERE " +
-            "c.starterUser.id = :userId OR c.recipientUser.id = :userId " +
-            "ORDER BY c.lastMessageAt DESC, c.createdAt DESC")
-    List<Conversation> findByUserId(@Param("userId") Long userId);
+        // Find all conversations for a user
+        @Query("SELECT c FROM Conversation c WHERE " +
+                        "c.starterUser.id = :userId OR c.recipientUser.id = :userId " +
+                        "ORDER BY c.lastMessageAt DESC, c.createdAt DESC")
+        List<Conversation> findByUserId(@Param("userId") Long userId);
 
-    // Find existing conversation between two users about specific announcement
-    @Query("SELECT c FROM Conversation c WHERE " +
-            "c.announcement.id = :announcementId AND " +
-            "((c.starterUser.id = :userId1 AND c.recipientUser.id = :userId2) OR " +
-            " (c.starterUser.id = :userId2 AND c.recipientUser.id = :userId1))")
-    Optional<Conversation> findByAnnouncementAndUsers(@Param("announcementId") Long announcementId,
-            @Param("userId1") Long userId1,
-            @Param("userId2") Long userId2);
+        // Find existing conversation between two users about specific announcement
+        @Query("SELECT c FROM Conversation c WHERE " +
+                        "c.announcement.id = :announcementId AND " +
+                        "((c.starterUser.id = :userId1 AND c.recipientUser.id = :userId2) OR " +
+                        " (c.starterUser.id = :userId2 AND c.recipientUser.id = :userId1))")
+        Optional<Conversation> findByAnnouncementAndUsers(@Param("announcementId") Long announcementId,
+                        @Param("userId1") Long userId1,
+                        @Param("userId2") Long userId2);
 
-    // Find conversations by announcement
-    List<Conversation> findByAnnouncementId(Long announcementId);
+        // Find conversations by announcement
+        List<Conversation> findByAnnouncementId(Long announcementId);
 
-    // Count conversations for user
-    @Query("SELECT COUNT(c) FROM Conversation c WHERE " +
-            "(c.starterUser.id = :userId OR c.recipientUser.id = :userId) " +
-            "AND c.status = :status")
-    long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ConversationStatus status);
+        // Count conversations for user
+        @Query("SELECT COUNT(c) FROM Conversation c WHERE " +
+                        "(c.starterUser.id = :userId OR c.recipientUser.id = :userId) " +
+                        "AND c.status = :status")
+        long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ConversationStatus status);
+
+        List<Conversation> findAllOrderByLastMessageAtDesc();
+
+        long countByStatus(ConversationStatus status);
 }

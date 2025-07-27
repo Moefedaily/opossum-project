@@ -1,6 +1,7 @@
 package com.opossum.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.opossum.dto.messaging.ConversationDto;
@@ -27,4 +28,10 @@ public interface ConversationService {
     boolean isUserParticipant(Long conversationId, Long userId);
 
     long getUnreadConversationsCount(Long userId);
+
+    List<ConversationDto> getAllConversationsForAdmin();
+
+    Map<String, Object> getConversationStatistics();
+
+    void deleteConversationAsAdmin(Long conversationId);
 }

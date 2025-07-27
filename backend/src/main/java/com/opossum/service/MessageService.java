@@ -30,4 +30,6 @@ public interface MessageService {
 
         // Validation
         boolean canAccessMessage(Long messageId, Long userId);
+
+        void deleteMessageAsAdmin(Long messageId);
 }

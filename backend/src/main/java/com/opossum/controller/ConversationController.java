@@ -175,4 +175,41 @@ public class ConversationController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    // Add to existing ConversationController.java
+
+    @GetMapping("/admin/all")
+    @Operation(summary = "Get all conversations (Admin)", description = "Admin view of all conversations in system")
+    public ResponseEntity<?> getAllConversationsAdmin() {
+        try {
+            List<ConversationDto> conversations = conversationService.getAllConversationsForAdmin();
+            return ResponseEntity.ok(conversations);
+        } catch (Exception e) {
+            log.error("Error getting all conversations for admin: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/admin/stats")
+    @Operation(summary = "Get conversation statistics (Admin)")
+    public ResponseEntity<?> getConversationStatsAdmin() {
+        try {
+            Map<String, Object> stats = conversationService.getConversationStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            log.error("Error getting conversation stats: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/admin/{id}")
+    @Operation(summary = "Delete conversation (Admin)", description = "Admin delete any conversation")
+    public ResponseEntity<?> deleteConversationAdmin(@PathVariable Long id) {
+        try {
+            conversationService.deleteConversationAsAdmin(id);
+            return ResponseEntity.ok(Map.of("message", "Conversation deleted successfully"));
+        } catch (Exception e) {
+            log.error("Error deleting conversation {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

@@ -211,9 +211,9 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
         const searchableText = [
           announcement.title,
           announcement.description,
-          announcement.user?.username || '',
-          announcement.user?.firstName || '',
-          announcement.user?.lastName || '',
+          announcement.username || '',
+          announcement.userFullName || '',
+          announcement.userEmail || '',
           announcement.address,
         ]
           .filter(Boolean)
@@ -312,23 +312,17 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
   }
 
   getUserDisplayName(announcement: AnnouncementListItem): string {
-    const user = announcement.user;
-
-    if (!user) {
-      return 'Unknown User';
-    }
-
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    } else if (user.firstName) {
-      return user.firstName;
-    } else if (user.username) {
-      return user.username;
+    if (
+      announcement.userFullName &&
+      announcement.userFullName !== 'Deleted User'
+    ) {
+      return announcement.userFullName;
+    } else if (announcement.username) {
+      return announcement.username;
     } else {
       return 'Unknown User';
     }
   }
-
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();

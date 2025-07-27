@@ -17,13 +17,11 @@ export interface AnnouncementListItem {
   incidentDate?: string;
   createdAt: string;
   updatedAt: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-  };
+  userId: number;
+  username: string;
+  userEmail: string;
+  userFullName: string;
+
   files: FileItem[];
 }
 
@@ -56,7 +54,9 @@ export class AnnouncementService {
 
   // Get all announcements (for admin view)
   getAllAnnouncements(): Observable<AnnouncementListItem[]> {
-    return this.apiService.get<AnnouncementListItem[]>('/api/announcements');
+    return this.apiService.get<AnnouncementListItem[]>(
+      '/api/announcements/admin/all'
+    );
   }
 
   // Get single announcement details
@@ -109,8 +109,8 @@ export class AnnouncementService {
       (announcement) =>
         announcement.title.toLowerCase().includes(term) ||
         announcement.description.toLowerCase().includes(term) ||
-        announcement.user.username.toLowerCase().includes(term) ||
-        announcement.user.email.toLowerCase().includes(term) ||
+        announcement.username.toLowerCase().includes(term) ||
+        announcement.userEmail.toLowerCase().includes(term) ||
         (announcement.address &&
           announcement.address.toLowerCase().includes(term))
     );
@@ -184,8 +184,8 @@ export class AnnouncementService {
           valueB = new Date(b.createdAt);
           break;
         case 'username':
-          valueA = a.user.username.toLowerCase();
-          valueB = b.user.username.toLowerCase();
+          valueA = a.username.toLowerCase();
+          valueB = b.username.toLowerCase();
           break;
         case 'type':
           valueA = a.type;

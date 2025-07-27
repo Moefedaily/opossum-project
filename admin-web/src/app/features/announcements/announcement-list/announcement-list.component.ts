@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -25,6 +26,7 @@ import {
   AnnouncementStats,
 } from '../../../core/services/announcement.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { MatDivider } from '@angular/material/divider';
 
 @Component({
   selector: 'app-announcement-list',
@@ -46,6 +48,7 @@ import { ToastService } from '../../../core/services/toast.service';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTabsModule,
+    MatMenuModule,
   ],
   templateUrl: './announcement-list.component.html',
   styleUrl: './announcement-list.component.scss',
@@ -83,6 +86,9 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
     found: 0,
     resolved: 0,
   };
+
+  // Action states - track which announcements are being processed
+  processingActions = new Set<number>();
 
   // Filter options
   typeOptions = [
@@ -249,6 +255,7 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
       return true;
     };
   }
+
   private applyFilters() {
     const formValue = this.filterForm.value;
 
@@ -280,9 +287,10 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
         `Are you sure you want to delete "${announcement.title}"? This action cannot be undone.`
       )
     ) {
+      this.processingActions.add(announcement.id);
+
       this.announcementService.deleteAnnouncement(announcement.id).subscribe({
         next: () => {
-          // Remove announcement from local data
           this.dataSource.data = this.dataSource.data.filter(
             (a) => a.id !== announcement.id
           );
@@ -290,19 +298,107 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
             `Announcement "${announcement.title}" deleted successfully`
           );
           this.loadAnnouncementStats(); // Refresh stats
+          this.processingActions.delete(announcement.id);
         },
         error: (error) => {
           console.error('Error deleting announcement:', error);
           this.toastService.error('Failed to delete announcement');
+          this.processingActions.delete(announcement.id);
         },
       });
     }
   }
 
+  activateAnnouncement(announcement: AnnouncementListItem) {
+    if (this.processingActions.has(announcement.id)) return;
+
+    this.processingActions.add(announcement.id);
+
+    this.announcementService.activateAnnouncement(announcement.id).subscribe({
+      next: () => {
+        // Update local data
+        const index = this.dataSource.data.findIndex(
+          (a) => a.id === announcement.id
+        );
+        if (index >= 0) {
+          this.dataSource.data[index].isActive = true;
+          this.dataSource.data[index].status = 'ACTIVE';
+          this.dataSource._updateChangeSubscription();
+        }
+
+        this.toastService.success(
+          `Announcement "${announcement.title}" activated successfully`
+        );
+        this.loadAnnouncementStats(); // Refresh stats
+        this.processingActions.delete(announcement.id);
+      },
+      error: (error) => {
+        console.error('Error activating announcement:', error);
+        this.toastService.error('Failed to activate announcement');
+        this.processingActions.delete(announcement.id);
+      },
+    });
+  }
+
+  deactivateAnnouncement(announcement: AnnouncementListItem) {
+    if (this.processingActions.has(announcement.id)) return;
+
+    if (
+      confirm(
+        `Are you sure you want to deactivate "${announcement.title}"? This will hide it from public view.`
+      )
+    ) {
+      this.processingActions.add(announcement.id);
+
+      this.announcementService
+        .deactivateAnnouncement(announcement.id)
+        .subscribe({
+          next: () => {
+            // Update local data
+            const index = this.dataSource.data.findIndex(
+              (a) => a.id === announcement.id
+            );
+            if (index >= 0) {
+              this.dataSource.data[index].isActive = false;
+              this.dataSource.data[index].status = 'ARCHIVED';
+              // Trigger table update
+              this.dataSource._updateChangeSubscription();
+            }
+
+            this.toastService.success(
+              `Announcement "${announcement.title}" deactivated successfully`
+            );
+            this.loadAnnouncementStats(); // Refresh stats
+            this.processingActions.delete(announcement.id);
+          },
+          error: (error) => {
+            console.error('Error deactivating announcement:', error);
+            this.toastService.error('Failed to deactivate announcement');
+            this.processingActions.delete(announcement.id);
+          },
+        });
+    }
+  }
+
+  // Check if action is being processed
+  isProcessing(announcementId: number): boolean {
+    return this.processingActions.has(announcementId);
+  }
+
+  // Check if announcement can be activated
+  canActivate(announcement: AnnouncementListItem): boolean {
+    return !announcement.isActive && announcement.status !== 'ACTIVE';
+  }
+
+  // Check if announcement can be deactivated
+  canDeactivate(announcement: AnnouncementListItem): boolean {
+    return announcement.isActive && announcement.status === 'ACTIVE';
+  }
+
   // Utility methods
   getAnnouncementImage(announcement: AnnouncementListItem): string {
     if (announcement.files && announcement.files.length > 0) {
-      return announcement.files[0].url;
+      return announcement.files[0].thumbnailUrl || announcement.files[0].url;
     }
     return 'assets/images/no-image-placeholder.png';
   }
@@ -323,6 +419,7 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
       return 'Unknown User';
     }
   }
+
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -346,6 +443,23 @@ export class AnnouncementListComponent implements OnInit, OnDestroy {
       )}, ${announcement.longitude.toFixed(4)}`;
     }
     return 'No location';
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'ACTIVE':
+        return '#4a0001'; // Rich oxblood
+      case 'RESOLVED':
+        return '#2d5a3d'; // Success green
+      case 'ARCHIVED':
+        return '#b69a99'; // Warm taupe
+      default:
+        return '#6b7280'; // Gray
+    }
+  }
+
+  getTypeColor(type: string): string {
+    return type === 'LOST' ? '#4a0001' : '#2d5a3d'; // Oxblood for lost, green for found
   }
 
   clearFilters() {

@@ -1,0 +1,131 @@
+@import "./variables.scss";
+
+// Global reset and base styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+  background-color: $background;
+  color: $text-primary;
+  line-height: 1.6;
+}
+
+// Utility classes
+.text-primary {
+  color: $text-primary;
+}
+.text-secondary {
+  color: $text-secondary;
+}
+.text-success {
+  color: $success;
+}
+.text-warning {
+  color: $warning;
+}
+.text-danger {
+  color: $danger;
+}
+
+.bg-primary {
+  background-color: $primary;
+}
+.bg-secondary {
+  background-color: $secondary;
+}
+.bg-surface {
+  background-color: $surface;
+}
+
+// Common layout classes
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+// Button styles
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: $border-radius;
+  cursor: pointer;
+  font-weight: 500;
+  transition: $transition-fast;
+
+  &.btn-primary {
+    background-color: $primary;
+    color: $white;
+
+    &:hover {
+      background-color: darken($primary, 10%);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: $gray-200;
+    color: $text-primary;
+
+    &:hover {
+      background-color: $gray-300;
+    }
+  }
+
+  &.btn-danger {
+    background-color: $danger;
+    color: $white;
+
+    &:hover {
+      background-color: darken($danger, 10%);
+    }
+  }
+}
+
+// Card styles
+.card {
+  background-color: $surface;
+  border-radius: $border-radius-large;
+  box-shadow: $shadow;
+  padding: 24px;
+
+  .card-header {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid $border-light;
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $text-primary;
+    }
+  }
+
+  .card-content {
+    margin-bottom: 16px;
+  }
+}

@@ -1,0 +1,205 @@
+<mat-sidenav-container class="sidenav-container">
+  <!-- Side Navigation -->
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    fixedInViewport
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="sidenavOpened && !(isHandset$ | async)"
+  >
+    <!-- Sidebar Header -->
+    <div class="sidenav-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <mat-icon class="logo-icon">pets</mat-icon>
+        </div>
+        <div class="brand-text" *ngIf="sidenavOpened">
+          <h2 class="brand-title">OPOSSUM</h2>
+          <p class="brand-subtitle">Admin Panel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <mat-nav-list class="navigation-list">
+      <ng-container *ngFor="let item of navigationItems">
+        <!-- Main Navigation Item -->
+        <mat-list-item
+          class="nav-item"
+          [class.active]="isActiveRoute(item.route)"
+          (click)="navigateToRoute(item.route)"
+          matRipple
+        >
+          <mat-icon matListItemIcon class="nav-icon">{{ item.icon }}</mat-icon>
+
+          <span matListItemTitle class="nav-label" *ngIf="sidenavOpened">
+            {{ item.label }}
+          </span>
+
+          <!-- Badge for notifications -->
+          <span matListItemMeta *ngIf="item.badge && sidenavOpened">
+            <span
+              class="nav-badge"
+              [matBadge]="item.badge"
+              matBadgeSize="small"
+              matBadgeColor="accent"
+            >
+            </span>
+          </span>
+
+          <!-- Tooltip for collapsed state -->
+          <div
+            *ngIf="!sidenavOpened"
+            [matTooltip]="item.label"
+            matTooltipPosition="right"
+            class="tooltip-target"
+          ></div>
+        </mat-list-item>
+
+        <!-- Sub-navigation items (if any) -->
+        <ng-container
+          *ngIf="item.children && isActiveRoute(item.route) && sidenavOpened"
+        >
+          <mat-list-item
+            *ngFor="let child of item.children"
+            class="nav-item child-nav-item"
+            [class.active]="isActiveRoute(child.route)"
+            (click)="navigateToRoute(child.route)"
+            matRipple
+          >
+            <mat-icon matListItemIcon class="nav-icon child-icon">{{
+              child.icon
+            }}</mat-icon>
+            <span matListItemTitle class="nav-label">{{ child.label }}</span>
+          </mat-list-item>
+        </ng-container>
+      </ng-container>
+    </mat-nav-list>
+
+    <!-- Sidebar Footer -->
+    <div class="sidenav-footer" *ngIf="sidenavOpened">
+      <div class="user-info" *ngIf="currentUser$ | async as user">
+        <div class="user-avatar">
+          <span class="avatar-text">{{ getUserInitials(user) }}</span>
+        </div>
+        <div class="user-details">
+          <p class="user-name">{{ getUserDisplayName(user) }}</p>
+          <p class="user-role">{{ user.role }}</p>
+        </div>
+
+        <!-- User Menu -->
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="userMenu"
+          class="user-menu-trigger"
+        >
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item disabled>
+            <mat-icon>person</mat-icon>
+            <span>Profile Settings</span>
+          </button>
+          <button mat-menu-item disabled>
+            <mat-icon>settings</mat-icon>
+            <span>Admin Settings</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()" class="logout-item">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <!-- Main Content Area -->
+  <mat-sidenav-content class="main-content">
+    <!-- Top Toolbar -->
+    <mat-toolbar class="toolbar" color="primary">
+      <!-- Menu Toggle Button -->
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="toggleSidenav()"
+        class="menu-toggle"
+      >
+        <mat-icon aria-label="Side nav toggle icon">
+          {{ sidenavOpened ? "menu_open" : "menu" }}
+        </mat-icon>
+      </button>
+
+      <!-- Page Title -->
+      <span class="page-title">{{ pageTitle }}</span>
+
+      <!-- Toolbar Actions -->
+      <div class="toolbar-spacer"></div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <!-- Notifications -->
+        <button
+          mat-icon-button
+          class="action-button"
+          matTooltip="Notifications"
+        >
+          <mat-icon matBadge="5" matBadgeSize="small" matBadgeColor="accent"
+            >notifications</mat-icon
+          >
+        </button>
+
+        <!-- Quick Search -->
+        <button mat-icon-button class="action-button" matTooltip="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+
+        <!-- Settings -->
+        <button mat-icon-button class="action-button" matTooltip="Settings">
+          <mat-icon>settings</mat-icon>
+        </button>
+
+        <!-- User Avatar (Mobile) -->
+        <div class="mobile-user-avatar" *ngIf="isHandset$ | async">
+          <ng-container *ngIf="currentUser$ | async as user">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="mobileUserMenu"
+              class="mobile-avatar-button"
+            >
+              <div class="mobile-avatar">
+                <span class="mobile-avatar-text">{{
+                  getUserInitials(user)
+                }}</span>
+              </div>
+            </button>
+
+            <mat-menu #mobileUserMenu="matMenu">
+              <div class="mobile-user-info">
+                <p class="mobile-user-name">{{ getUserDisplayName(user) }}</p>
+                <p class="mobile-user-role">{{ user.role }}</p>
+              </div>
+              <mat-divider></mat-divider>
+              <button mat-menu-item disabled>
+                <mat-icon>person</mat-icon>
+                <span>Profile Settings</span>
+              </button>
+              <button mat-menu-item disabled>
+                <mat-icon>settings</mat-icon>
+                <span>Admin Settings</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="logout()" class="logout-item">
+                <mat-icon>logout</mat-icon>
+                <span>Logout</span>
+              </button>
+            </mat-menu>
+          </ng-container>
+        </div>
+      </div></mat-toolbar
+    ></mat-sidenav-content
+  ></mat-sidenav-container
+>

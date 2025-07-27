@@ -253,30 +253,19 @@
           <ng-container matColumnDef="user">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Posted By</th>
             <td mat-cell *matCellDef="let announcement" class="user-cell">
-              <div class="user-info" *ngIf="announcement.user; else noUserInfo">
+              <div class="user-info">
                 <div class="user-avatar">
                   <span class="avatar-text">{{
-                    announcement.user.username?.charAt(0).toUpperCase() || "U"
+                    announcement.username?.charAt(0).toUpperCase() || "U"
                   }}</span>
                 </div>
                 <div class="user-details">
                   <span class="user-name">{{
                     getUserDisplayName(announcement)
                   }}</span>
-                  <span class="username">{{ announcement.user.username }}</span>
+                  <span class="username">{{ announcement.username }}</span>
                 </div>
               </div>
-              <ng-template #noUserInfo>
-                <div class="user-info">
-                  <div class="user-avatar">
-                    <span class="avatar-text">U</span>
-                  </div>
-                  <div class="user-details">
-                    <span class="user-name">Unknown User</span>
-                    <span class="username">unknown</span>
-                  </div>
-                </div>
-              </ng-template>
             </td>
           </ng-container>
           <!-- Location Column -->

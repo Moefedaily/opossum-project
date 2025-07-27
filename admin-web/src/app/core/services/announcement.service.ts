@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 
 export interface AnnouncementListItem {
@@ -17,27 +18,34 @@ export interface AnnouncementListItem {
   incidentDate?: string;
   createdAt: string;
   updatedAt: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-  };
+  userId: number;
+  username: string;
+  userEmail: string;
+  userFullName: string;
   files: FileItem[];
 }
 
 export interface FileItem {
   id: number;
-  publicId: string;
+  filename: string;
+  originalFilename: string;
+  storedFilename: string;
+  filePath: string;
+  mimeType: string;
+  fileSize: number;
+  formattedFileSize: string;
+  uploadedBy: number;
+  uploadedByUsername: string;
+  createdAt: string;
   url: string;
   thumbnailUrl?: string;
   optimizedUrl?: string;
-  originalFilename: string;
-  fileSize: number;
+  isImage: boolean;
   contentType: string;
+  publicId: string;
   isActive: boolean;
-  createdAt: string;
+  announcementId: number;
+  announcementTitle: string;
 }
 
 export interface AnnouncementStats {
@@ -54,47 +62,275 @@ export interface AnnouncementStats {
 export class AnnouncementService {
   constructor(private apiService: ApiService) {}
 
-  // Get all announcements (for admin view)
+  // Get all announcements (for admin view) WITH FILES
   getAllAnnouncements(): Observable<AnnouncementListItem[]> {
-    return this.apiService.get<AnnouncementListItem[]>('/api/announcements');
+    return this.apiService
+      .get<AnnouncementListItem[]>('/api/announcements/admin/all')
+      .pipe(
+        switchMap((announcements) => {
+          // If no announcements, return empty array
+          if (!announcements || announcements.length === 0) {
+            return of([]);
+          }
+
+          // For each announcement, fetch its files
+          const announcementsWithFiles$ = announcements.map((announcement) =>
+            this.apiService
+              .get<any>(`/api/files/announcement/${announcement.id}`)
+              .pipe(
+                map((filesResponse) => {
+                  // Handle nested response structure from backend
+                  let files: FileItem[] = [];
+
+                  if (filesResponse) {
+                    if (Array.isArray(filesResponse)) {
+                      // Direct array response
+                      files = filesResponse;
+                    } else if (
+                      filesResponse.files &&
+                      Array.isArray(filesResponse.files)
+                    ) {
+                      // Nested response with files property
+                      files = filesResponse.files;
+                    }
+                  }
+
+                  return {
+                    ...announcement,
+                    files: files || [],
+                  };
+                }),
+                catchError((fileError) => {
+                  // If files fail for this announcement, continue with empty files
+                  console.warn(
+                    `No files found for announcement ${announcement.id}:`,
+                    fileError
+                  );
+                  return of({
+                    ...announcement,
+                    files: [],
+                  });
+                })
+              )
+          );
+
+          return forkJoin(announcementsWithFiles$);
+        }),
+        catchError((error) => {
+          console.error('Error fetching announcements:', error);
+          throw error;
+        })
+      );
   }
 
-  // Get single announcement details
+  // Get single announcement details WITH FILES
   getAnnouncementById(
     announcementId: number
   ): Observable<AnnouncementListItem> {
-    return this.apiService.get<AnnouncementListItem>(
-      `/api/announcements/${announcementId}`
+    return this.apiService
+      .get<AnnouncementListItem>(`/api/announcements/${announcementId}`)
+      .pipe(
+        switchMap((announcement) => {
+          // First get the announcement, then get its files
+          return this.apiService
+            .get<any>(`/api/files/announcement/${announcementId}`)
+            .pipe(
+              map((filesResponse) => {
+                // Handle nested response structure from backend
+                let files: FileItem[] = [];
+
+                if (filesResponse) {
+                  if (Array.isArray(filesResponse)) {
+                    // Direct array response
+                    files = filesResponse;
+                  } else if (
+                    filesResponse.files &&
+                    Array.isArray(filesResponse.files)
+                  ) {
+                    // Nested response with files property
+                    files = filesResponse.files;
+                  }
+                }
+
+                return {
+                  ...announcement,
+                  files: files || [],
+                };
+              }),
+              catchError((fileError) => {
+                // If files endpoint fails, continue with announcement but empty files array
+                console.warn(
+                  `No files found for announcement ${announcementId}:`,
+                  fileError
+                );
+                return of({
+                  ...announcement,
+                  files: [],
+                });
+              })
+            );
+        }),
+        catchError((error) => {
+          console.error('Error fetching announcement:', error);
+          throw error;
+        })
+      );
+  }
+
+  // Get recent announcements WITH FILES (for dashboard)
+  getRecentAnnouncements(
+    limit: number = 10
+  ): Observable<AnnouncementListItem[]> {
+    return this.apiService
+      .get<AnnouncementListItem[]>('/api/announcements/recent', { limit })
+      .pipe(
+        switchMap((announcements) => {
+          // If no announcements, return empty array
+          if (!announcements || announcements.length === 0) {
+            return of([]);
+          }
+
+          // For each announcement, fetch its files
+          const announcementsWithFiles$ = announcements.map((announcement) =>
+            this.apiService
+              .get<any>(`/api/files/announcement/${announcement.id}`)
+              .pipe(
+                map((filesResponse) => {
+                  // Handle nested response structure from backend
+                  let files: FileItem[] = [];
+
+                  if (filesResponse) {
+                    if (Array.isArray(filesResponse)) {
+                      // Direct array response
+                      files = filesResponse;
+                    } else if (
+                      filesResponse.files &&
+                      Array.isArray(filesResponse.files)
+                    ) {
+                      // Nested response with files property
+                      files = filesResponse.files;
+                    }
+                  }
+
+                  return {
+                    ...announcement,
+                    files: files || [],
+                  };
+                }),
+                catchError((fileError) => {
+                  // If files fail for this announcement, continue with empty files
+                  console.warn(
+                    `No files found for announcement ${announcement.id}:`,
+                    fileError
+                  );
+                  return of({
+                    ...announcement,
+                    files: [],
+                  });
+                })
+              )
+          );
+
+          return forkJoin(announcementsWithFiles$);
+        }),
+        catchError((error) => {
+          console.error('Error fetching recent announcements:', error);
+          throw error;
+        })
+      );
+  }
+
+  // Get announcements by user WITH FILES (for user detail page)
+  getAnnouncementsByUser(userId: number): Observable<AnnouncementListItem[]> {
+    return this.apiService
+      .get<AnnouncementListItem[]>('/api/announcements', { userId })
+      .pipe(
+        switchMap((announcements) => {
+          // If no announcements, return empty array
+          if (!announcements || announcements.length === 0) {
+            return of([]);
+          }
+
+          // For each announcement, fetch its files
+          const announcementsWithFiles$ = announcements.map((announcement) =>
+            this.apiService
+              .get<any>(`/api/files/announcement/${announcement.id}`)
+              .pipe(
+                map((filesResponse) => {
+                  // Handle nested response structure from backend
+                  let files: FileItem[] = [];
+
+                  if (filesResponse) {
+                    if (Array.isArray(filesResponse)) {
+                      // Direct array response
+                      files = filesResponse;
+                    } else if (
+                      filesResponse.files &&
+                      Array.isArray(filesResponse.files)
+                    ) {
+                      // Nested response with files property
+                      files = filesResponse.files;
+                    }
+                  }
+
+                  return {
+                    ...announcement,
+                    files: files || [],
+                  };
+                }),
+                catchError((fileError) => {
+                  // If files fail for this announcement, continue with empty files
+                  console.warn(
+                    `No files found for announcement ${announcement.id}:`,
+                    fileError
+                  );
+                  return of({
+                    ...announcement,
+                    files: [],
+                  });
+                })
+              )
+          );
+
+          return forkJoin(announcementsWithFiles$);
+        }),
+        catchError((error) => {
+          console.error('Error fetching user announcements:', error);
+          throw error;
+        })
+      );
+  }
+  // Delete announcement (admin can delete any announcement)
+  deleteAnnouncement(announcementId: number): Observable<{ message: string }> {
+    // Use admin endpoint for deletion since admin should be able to delete any announcement
+    return this.apiService.delete<{ message: string }>(
+      `/api/announcements/admin/${announcementId}`
     );
   }
 
-  // Delete announcement (admin can delete any announcement)
-  deleteAnnouncement(announcementId: number): Observable<{ message: string }> {
-    return this.apiService.delete<{ message: string }>(
-      `/api/announcements/${announcementId}`
+  // Activate announcement (admin can activate any announcement)
+  activateAnnouncement(
+    announcementId: number
+  ): Observable<{ message: string }> {
+    return this.apiService.patch<{ message: string }>(
+      `/api/announcements/${announcementId}/activate`,
+      {}
+    );
+  }
+
+  // Deactivate announcement (admin can deactivate any announcement)
+  deactivateAnnouncement(
+    announcementId: number
+  ): Observable<{ message: string }> {
+    return this.apiService.patch<{ message: string }>(
+      `/api/announcements/${announcementId}/deactivate`,
+      {}
     );
   }
 
   // Get announcement statistics (for admin dashboard)
   getAnnouncementStats(): Observable<AnnouncementStats> {
     return this.apiService.get<AnnouncementStats>('/api/announcements/stats');
-  }
-
-  // Get recent announcements (for dashboard)
-  getRecentAnnouncements(
-    limit: number = 10
-  ): Observable<AnnouncementListItem[]> {
-    return this.apiService.get<AnnouncementListItem[]>(
-      '/api/announcements/recent',
-      { limit }
-    );
-  }
-
-  // Get announcements by user (for user detail page)
-  getAnnouncementsByUser(userId: number): Observable<AnnouncementListItem[]> {
-    return this.apiService.get<AnnouncementListItem[]>('/api/announcements', {
-      userId,
-    });
   }
 
   // Helper methods for frontend filtering and searching
@@ -109,8 +345,8 @@ export class AnnouncementService {
       (announcement) =>
         announcement.title.toLowerCase().includes(term) ||
         announcement.description.toLowerCase().includes(term) ||
-        announcement.user.username.toLowerCase().includes(term) ||
-        announcement.user.email.toLowerCase().includes(term) ||
+        announcement.username.toLowerCase().includes(term) ||
+        announcement.userEmail.toLowerCase().includes(term) ||
         (announcement.address &&
           announcement.address.toLowerCase().includes(term))
     );
@@ -184,8 +420,8 @@ export class AnnouncementService {
           valueB = new Date(b.createdAt);
           break;
         case 'username':
-          valueA = a.user.username.toLowerCase();
-          valueB = b.user.username.toLowerCase();
+          valueA = a.username.toLowerCase();
+          valueB = b.username.toLowerCase();
           break;
         case 'type':
           valueA = a.type;

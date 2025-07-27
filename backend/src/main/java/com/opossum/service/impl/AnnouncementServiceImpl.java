@@ -284,8 +284,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public void adminDeleteAnnouncement(Long id) {
         log.info("Admin deleting announcement ID: {}", id);
-        announcementRepository.deleteById(id);
-        log.info("Announcement deleted by admin with ID: {}", id);
+
+        Announcement announcement = announcementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Announcement not found with ID: " + id));
+
+        announcementRepository.delete(announcement);
+        log.info("Announcement deleted successfully by admin with ID: {}", id);
     }
 
     @Override

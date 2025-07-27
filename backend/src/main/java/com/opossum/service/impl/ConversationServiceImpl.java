@@ -169,7 +169,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional(readOnly = true)
     public List<ConversationDto> getAllConversationsForAdmin() {
         log.debug("Admin getting all conversations");
-        List<Conversation> conversations = conversationRepository.findAllOrderByLastMessageAtDesc();
+        List<Conversation> conversations = conversationRepository.findAllByOrderByLastMessageAtDesc();
         // Note: Pass null as userId since admin sees all
         return conversationMapper.toDtoListForAdmin(conversations);
     }

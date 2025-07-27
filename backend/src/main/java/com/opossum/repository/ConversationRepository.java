@@ -45,7 +45,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
                         "AND c.status = :status")
         long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ConversationStatus status);
 
-        List<Conversation> findAllOrderByLastMessageAtDesc();
+        List<Conversation> findAllByOrderByLastMessageAtDesc();
 
         long countByStatus(ConversationStatus status);
 }

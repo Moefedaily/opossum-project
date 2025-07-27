@@ -1,0 +1,403 @@
+@use "sass:color";
+@use "../../../../styles/variables.scss" as *;
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, $background 0%, #f0f2f5 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-card {
+  border-radius: $border-radius-large !important;
+  box-shadow: 0 10px 40px rgba($primary, 0.1), 0 4px 25px rgba($primary, 0.05) !important;
+  border: 1px solid rgba($primary, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  background: rgba($surface, 0.95) !important;
+
+  .mat-mdc-card-header {
+    padding: 32px 32px 0 32px !important;
+    background: transparent;
+  }
+
+  .mat-mdc-card-content {
+    padding: 24px 32px !important;
+  }
+
+  .mat-mdc-card-footer {
+    padding: 0 32px 24px 32px !important;
+    background: transparent;
+  }
+}
+
+// Brand Section
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.brand-logo {
+  .logo-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: $primary;
+    background: linear-gradient(
+      135deg,
+      $primary,
+      color.adjust($primary, $lightness: 10%)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.brand-text {
+  text-align: left;
+
+  .brand-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $primary;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-subtitle {
+    font-size: 14px;
+    color: $text-secondary;
+    margin: 4px 0 0 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+// Form Styling
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // Increased gap for error messages
+  margin-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Material Form Field Customization - FIXED VALIDATION STYLING
+.mat-mdc-form-field {
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-form-field-outline {
+      color: rgba($primary, 0.2);
+    }
+
+    &.mat-focused .mat-mdc-form-field-outline-thick {
+      color: $primary;
+    }
+
+    .mat-mdc-form-field-label {
+      color: $text-secondary;
+      font-weight: 500;
+    }
+
+    &.mat-focused .mat-mdc-form-field-label {
+      color: $primary;
+    }
+  }
+
+  .mat-mdc-input-element {
+    color: $text-primary;
+    font-size: 16px;
+    font-weight: 500;
+
+    &::placeholder {
+      color: $text-light;
+      opacity: 0.6;
+      font-weight: 400;
+    }
+
+    // When field has value, hide placeholder
+    &:not(:placeholder-shown) {
+      &::placeholder {
+        opacity: 0;
+      }
+    }
+  }
+
+  // Enhanced error state styling
+  &.mat-form-field-invalid {
+    .mat-mdc-form-field-outline-thick {
+      color: $danger;
+      border-width: 2px;
+    }
+
+    .mat-mdc-form-field-label {
+      color: $danger;
+    }
+
+    // Make input text more visible when error
+    .mat-mdc-input-element {
+      color: $text-primary;
+
+      &::placeholder {
+        color: rgba($danger, 0.5);
+        opacity: 0.4;
+      }
+    }
+  }
+
+  // Suffix icon styling
+  .mat-mdc-form-field-icon-suffix {
+    .mat-icon {
+      color: $text-secondary;
+      transition: $transition;
+    }
+  }
+
+  &.mat-focused .mat-mdc-form-field-icon-suffix .mat-icon {
+    color: $primary;
+  }
+
+  // Error message styling - FIXED
+  .mat-mdc-form-field-error-wrapper {
+    padding-top: 4px;
+
+    .mat-mdc-form-field-error {
+      font-size: 12px;
+      color: $danger;
+      font-weight: 500;
+      line-height: 1.2;
+      display: block;
+      margin-top: 4px;
+    }
+  }
+
+  // Increase field height for better visibility
+  .mat-mdc-form-field-infix {
+    min-height: 48px;
+    padding: 12px 0;
+  }
+
+  // Label positioning
+  .mat-mdc-form-field-label-wrapper {
+    .mat-mdc-form-field-label {
+      font-size: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  // Focused label
+  &.mat-form-field-should-float .mat-mdc-form-field-label {
+    transform: translateY(-50%) scale(0.75);
+    top: -8px;
+  }
+}
+
+// Login Button
+.login-button {
+  height: 48px;
+  border-radius: $border-radius !important;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+
+  background: linear-gradient(
+    135deg,
+    $primary 0%,
+    color.adjust($primary, $lightness: -5%) 100%
+  ) !important;
+  color: $text-white !important;
+  box-shadow: 0 4px 15px rgba($primary, 0.3);
+
+  transition: $transition;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(
+      135deg,
+      color.adjust($primary, $lightness: -5%) 0%,
+      color.adjust($primary, $lightness: -10%) 100%
+    ) !important;
+    box-shadow: 0 6px 20px rgba($primary, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background: rgba($text-secondary, 0.3) !important;
+    color: rgba($text-secondary, 0.7) !important;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .loading-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .button-spinner {
+    ::ng-deep .mat-mdc-progress-spinner circle {
+      stroke: $text-white;
+    }
+  }
+}
+
+// Security Notice Footer
+.login-footer {
+  border-top: 1px solid $border-light;
+  margin-top: 16px;
+}
+
+.security-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 0;
+
+  .security-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: $success;
+  }
+
+  .security-text {
+    font-size: 12px;
+    color: $text-secondary;
+    font-weight: 500;
+  }
+}
+
+// Background Pattern
+.background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pattern-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba($primary, 0.05),
+    rgba($secondary, 0.03)
+  );
+  animation: float 6s ease-in-out infinite;
+
+  &.circle-1 {
+    width: 120px;
+    height: 120px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  &.circle-2 {
+    width: 80px;
+    height: 80px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
+  }
+
+  &.circle-3 {
+    width: 60px;
+    height: 60px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+// Error State Animation
+.error {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .login-container {
+    padding: 16px;
+  }
+
+  .login-card {
+    .mat-mdc-card-header {
+      padding: 24px 24px 0 24px !important;
+    }
+
+    .mat-mdc-card-content {
+      padding: 20px 24px !important;
+    }
+
+    .mat-mdc-card-footer {
+      padding: 0 24px 20px 24px !important;
+    }
+  }
+
+  .brand-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .brand-text {
+    text-align: center;
+
+    .brand-title {
+      font-size: 28px;
+    }
+  }
+}
+
+// Dark mode support (if needed later)

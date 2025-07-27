@@ -197,4 +197,21 @@ public class MessageController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/admin/{id}")
+    @Operation(summary = "Delete message (Admin)", description = "Admin delete any message")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Message deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Message not found"),
+            @ApiResponse(responseCode = "403", description = "Admin access required")
+    })
+    public ResponseEntity<?> deleteMessageAdmin(@PathVariable Long id) {
+        try {
+            messageService.deleteMessageAsAdmin(id);
+            return ResponseEntity.ok(Map.of("message", "Message deleted successfully"));
+        } catch (Exception e) {
+            log.error("Error deleting message {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

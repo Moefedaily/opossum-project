@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -159,5 +161,52 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional(readOnly = true)
     public long getUnreadConversationsCount(Long userId) {
         return conversationRepository.countByUserIdAndStatus(userId, ConversationStatus.ACTIVE);
+    }
+
+    // Add to existing ConversationServiceImpl.java
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ConversationDto> getAllConversationsForAdmin() {
+        log.debug("Admin getting all conversations");
+        List<Conversation> conversations = conversationRepository.findAllOrderByLastMessageAtDesc();
+        // Note: Pass null as userId since admin sees all
+        return conversationMapper.toDtoListForAdmin(conversations);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getConversationStatistics() {
+        log.debug("Getting conversation statistics for admin");
+
+        long totalConversations = conversationRepository.count();
+        long activeConversations = conversationRepository.countByStatus(ConversationStatus.ACTIVE);
+        long archivedConversations = conversationRepository.countByStatus(ConversationStatus.ARCHIVED);
+        long totalMessages = messageRepository.count();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalConversations", totalConversations);
+        stats.put("activeConversations", activeConversations);
+        stats.put("archivedConversations", archivedConversations);
+        stats.put("totalMessages", totalMessages);
+
+        return stats;
+    }
+
+    @Override
+    @Transactional
+    public void deleteConversationAsAdmin(Long conversationId) {
+        log.info("Admin deleting conversation with ID: {}", conversationId);
+
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found with ID: " + conversationId));
+
+        // Delete all messages in conversation first
+        messageRepository.deleteByConversationId(conversationId);
+
+        // Delete conversation
+        conversationRepository.delete(conversation);
+
+        log.info("Conversation and all messages deleted successfully by admin: {}", conversationId);
     }
 }

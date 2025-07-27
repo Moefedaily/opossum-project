@@ -115,6 +115,8 @@ public class SecurityConfig {
                         .requestMatchers("PATCH", "/api/users/*/role").hasRole("ADMIN")
                         .requestMatchers("/api/announcements/admin/**").hasRole("ADMIN")
                         .requestMatchers("DELETE", "/api/announcements/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/conversations/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/messages/admin/**").hasRole("ADMIN")
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

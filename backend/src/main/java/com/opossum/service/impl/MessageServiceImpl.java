@@ -178,4 +178,17 @@ public class MessageServiceImpl implements MessageService {
         Optional<Conversation> conversation = conversationRepository.findById(conversationId);
         return conversation.isPresent() && conversation.get().isParticipant(userId);
     }
+
+    @Override
+    @Transactional
+    public void deleteMessageAsAdmin(Long messageId) {
+        log.info("Admin deleting message with ID: {}", messageId);
+
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found with ID: " + messageId));
+
+        messageRepository.delete(message);
+
+        log.info("Message deleted successfully by admin: {}", messageId);
+    }
 }

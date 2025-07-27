@@ -1,0 +1,182 @@
+<div class="edit-user-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="page-info">
+        <h1 class="page-title" *ngIf="currentUser">
+          Edit User: {{ currentUser.username }}
+        </h1>
+        <h1 class="page-title" *ngIf="!currentUser">Edit User</h1>
+        <p class="page-subtitle">Update user information and permissions</p>
+      </div>
+
+      <div class="header-actions">
+        <button
+          mat-stroked-button
+          (click)="onCancel()"
+          [disabled]="isSubmitting"
+        >
+          <mat-icon>arrow_back</mat-icon>
+          Back to Users
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p class="loading-text">Loading user details...</p>
+  </div>
+
+  <!-- Edit User Form -->
+  <div *ngIf="!isLoading && currentUser" class="form-section">
+    <!-- User Info Card -->
+    <mat-card class="info-card">
+      <mat-card-content class="info-content">
+        <div class="user-info-header">
+          <div class="user-avatar">
+            <span class="avatar-text">{{
+              currentUser.username.charAt(0).toUpperCase()
+            }}</span>
+          </div>
+          <div class="user-details">
+            <h3 class="user-name">{{ getUserDisplayName() }}</h3>
+            <p class="user-meta">
+              {{ currentUser.username }} • #{{ currentUser.id }}
+            </p>
+            <div class="user-badges">
+              <mat-chip
+                [class]="'role-chip role-' + currentUser.role.toLowerCase()"
+              >
+                <mat-icon>{{
+                  currentUser.role === "ADMIN"
+                    ? "admin_panel_settings"
+                    : "person"
+                }}</mat-icon>
+                {{ currentUser.role }}
+              </mat-chip>
+              <mat-chip
+                [class]="
+                  'status-chip status-' +
+                  (currentUser.isActive ? 'active' : 'inactive')
+                "
+              >
+                <div
+                  class="status-indicator"
+                  [class.active]="currentUser.isActive"
+                ></div>
+                {{ currentUser.isActive ? "Active" : "Inactive" }}
+              </mat-chip>
+              <mat-chip
+                [class]="
+                  currentUser.isVerified ? 'verified-chip' : 'unverified-chip'
+                "
+              >
+                <mat-icon>{{
+                  currentUser.isVerified ? "verified" : "cancel"
+                }}</mat-icon>
+                {{ currentUser.isVerified ? "Verified" : "Unverified" }}
+              </mat-chip>
+            </div>
+            <div class="user-timestamps">
+              <span class="timestamp">Joined: {{ formatJoinDate() }}</span>
+              <span class="timestamp">Last Login: {{ formatLastLogin() }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Edit Form Card -->
+    <mat-card class="form-card">
+      <mat-card-content class="form-content">
+        <h2 class="form-title">Edit User Information</h2>
+
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Username</mat-label>
+              <input matInput formControlName="username" readonly />
+              <mat-hint>Username cannot be changed</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" readonly />
+              <mat-hint>Email cannot be changed</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>First Name</mat-label>
+              <input
+                matInput
+                formControlName="firstName"
+                placeholder="Enter first name"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input
+                matInput
+                formControlName="lastName"
+                placeholder="Enter last name"
+              />
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Phone</mat-label>
+              <input
+                matInput
+                formControlName="phone"
+                placeholder="Enter phone number"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Role *</mat-label>
+              <mat-select formControlName="role">
+                <mat-option
+                  *ngFor="let option of roleOptions"
+                  [value]="option.value"
+                >
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              mat-stroked-button
+              (click)="onCancel()"
+              [disabled]="isSubmitting"
+              class="cancel-button"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              mat-raised-button
+              color="primary"
+              [disabled]="userForm.invalid || isSubmitting"
+              class="submit-button"
+            >
+              <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+              <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+              <span *ngIf="!isSubmitting">Save Changes</span>
+              <span *ngIf="isSubmitting">Saving...</span>
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

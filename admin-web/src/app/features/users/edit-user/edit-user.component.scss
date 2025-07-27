@@ -1,0 +1,421 @@
+@use "sass:color";
+@use "../../../../styles/variables.scss" as *;
+
+.edit-user-container {
+  padding: 0;
+  background: $background;
+  min-height: calc(100vh - #{$header-height});
+}
+
+// Page Header
+.page-header {
+  background: $surface;
+  border-bottom: 1px solid $border-light;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .page-info {
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: $text-primary;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.3px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: $text-secondary;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  .header-actions {
+    button {
+      height: 40px;
+      border-radius: $border-radius !important;
+      font-weight: 500;
+      text-transform: none;
+      color: $text-primary;
+
+      .mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+
+  .mat-mdc-progress-spinner {
+    ::ng-deep circle {
+      stroke: $primary;
+    }
+  }
+
+  .loading-text {
+    margin-top: 16px;
+    color: $text-secondary;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+// Form Section
+.form-section {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// User Info Card
+.info-card {
+  border-radius: $border-radius-large !important;
+  border: 1px solid $border-light;
+  background: $surface !important;
+  box-shadow: $shadow;
+
+  .info-content {
+    padding: 24px !important;
+  }
+
+  .user-info-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .user-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      $primary,
+      color.adjust($primary, $lightness: 10%)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .avatar-text {
+      color: $text-white;
+      font-weight: 700;
+      font-size: 24px;
+    }
+  }
+
+  .user-details {
+    flex: 1;
+
+    .user-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: $text-primary;
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+    }
+
+    .user-meta {
+      font-size: 14px;
+      color: $text-secondary;
+      margin: 0 0 16px 0;
+      font-weight: 500;
+    }
+
+    .user-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      .mat-mdc-chip {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 6px 12px !important;
+        border-radius: 16px !important;
+
+        .mat-icon {
+          font-size: 14px !important;
+          width: 14px !important;
+          height: 14px !important;
+        }
+
+        .status-indicator {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: $text-secondary;
+
+          &.active {
+            background: $success;
+          }
+        }
+
+        &.role-chip {
+          &.role-admin {
+            background: rgba($primary, 0.1) !important;
+            color: $primary !important;
+          }
+
+          &.role-user {
+            background: rgba($info, 0.1) !important;
+            color: $info !important;
+          }
+        }
+
+        &.status-chip {
+          &.status-active {
+            background: rgba($success, 0.1) !important;
+            color: $success !important;
+          }
+
+          &.status-inactive {
+            background: rgba($text-secondary, 0.1) !important;
+            color: $text-secondary !important;
+          }
+        }
+
+        &.verified-chip {
+          background: rgba($success, 0.1) !important;
+          color: $success !important;
+        }
+
+        &.unverified-chip {
+          background: rgba($warning, 0.1) !important;
+          color: $warning !important;
+        }
+      }
+    }
+
+    .user-timestamps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .timestamp {
+        font-size: 12px;
+        color: $text-secondary;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Form Card
+.form-card {
+  border-radius: $border-radius-large !important;
+  border: 1px solid $border-light;
+  background: $surface !important;
+  box-shadow: $shadow;
+
+  .form-content {
+    padding: 32px !important;
+  }
+
+  .form-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 24px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid $border-light;
+  }
+}
+
+// Form Layout
+.user-form {
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+
+    .form-field {
+      width: 100%;
+
+      // Disabled field styling
+      &.mat-form-field-disabled {
+        .mat-mdc-form-field-outline {
+          color: rgba($border-medium, 0.5);
+        }
+
+        .mat-mdc-input-element {
+          color: $text-secondary;
+          background: rgba($background, 0.5);
+        }
+      }
+
+      // Focus styling
+      &.mat-focused .mat-mdc-form-field-outline-thick {
+        color: $primary;
+      }
+
+      // Hint styling
+      .mat-mdc-form-field-hint {
+        color: $text-secondary;
+        font-size: 11px;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid $border-light;
+
+    .cancel-button {
+      min-width: 120px;
+      height: 44px;
+      color: $text-secondary;
+      border-color: $border-medium;
+
+      &:hover {
+        background: rgba($text-secondary, 0.04);
+        border-color: $text-secondary;
+      }
+    }
+
+    .submit-button {
+      min-width: 120px;
+      height: 44px;
+      color: $text-primary;
+      border-color: $border-medium;
+
+      .mat-icon {
+        margin-right: 8px;
+      }
+
+      .mat-mdc-progress-spinner {
+        margin-right: 8px;
+
+        ::ng-deep circle {
+          stroke: currentColor;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .page-header {
+    padding: 16px 20px;
+
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+
+  .form-section {
+    margin: 0 16px;
+  }
+
+  .info-card .info-content {
+    padding: 20px !important;
+  }
+
+  .form-card .form-content {
+    padding: 24px !important;
+  }
+
+  .user-info-header {
+    flex-direction: column;
+    text-align: center;
+
+    .user-avatar {
+      align-self: center;
+    }
+
+    .user-details {
+      .user-badges {
+        justify-content: center;
+      }
+
+      .user-timestamps {
+        justify-content: center;
+      }
+    }
+  }
+
+  .user-form {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .form-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: 12px 16px;
+  }
+
+  .form-section {
+    margin: 0 12px;
+  }
+
+  .info-card .info-content {
+    padding: 16px !important;
+  }
+
+  .form-card .form-content {
+    padding: 20px !important;
+  }
+
+  .user-info-header {
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+
+      .avatar-text {
+        font-size: 20px;
+      }
+    }
+
+    .user-details {
+      .user-name {
+        font-size: 20px;
+      }
+
+      .user-badges .mat-mdc-chip {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 @use "sass:color";
-@import "../../../../styles/variables.scss";
+@use "../../../../styles/variables.scss" as *;
 
 .user-management-container {
   padding: 0;
@@ -43,11 +43,16 @@
       height: 40px;
       border-radius: $border-radius !important;
       font-weight: 500;
+      margin-left: 10px;
       text-transform: none;
       color: $text-primary;
       transition: $transition;
       .mat-icon {
         margin-right: 8px;
+      }
+
+      &:hover {
+        background: rgba($primary, 0.04);
       }
     }
   }

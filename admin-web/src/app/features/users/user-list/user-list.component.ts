@@ -325,7 +325,43 @@ export class UserListComponent implements OnInit, OnDestroy {
       });
     }
   }
+  createUser() {
+    this.router.navigate(['/users/create']);
+  }
 
+  editUser(user: UserListItem) {
+    this.router.navigate(['/users/edit', user.id]);
+  }
+
+  changeUserRole(user: UserListItem) {
+    const newRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN';
+    const actionText =
+      user.role === 'ADMIN' ? 'demote to User' : 'promote to Admin';
+
+    if (confirm(`Are you sure you want to ${actionText} "${user.username}"?`)) {
+      this.userService.assignRole(user.id, newRole).subscribe({
+        next: (updatedUser) => {
+          // Update the user in the local data
+          const index = this.dataSource.data.findIndex((u) => u.id === user.id);
+          if (index !== -1) {
+            this.dataSource.data[index] = updatedUser;
+            this.dataSource._updateChangeSubscription();
+          }
+
+          this.toastService.success(
+            `User ${user.username} ${
+              newRole === 'ADMIN' ? 'promoted to Admin' : 'demoted to User'
+            }`
+          );
+          this.loadUserStats();
+        },
+        error: (error) => {
+          console.error('Error changing user role:', error);
+          this.toastService.error('Failed to change user role');
+        },
+      });
+    }
+  }
   // Utility methods
   getUserInitials(user: UserListItem): string {
     const firstName = user.firstName || user.username || '';

@@ -7,21 +7,23 @@ export interface AnnouncementListItem {
   title: string;
   description: string;
   type: 'LOST' | 'FOUND';
-  status: 'ACTIVE' | 'RESOLVED' | 'ARCHIVED';
   category: string;
+  status: 'ACTIVE' | 'RESOLVED' | 'ARCHIVED';
+  isActive: boolean;
   latitude?: number;
   longitude?: number;
   address?: string;
-  incidentDate: string;
   contactInfo?: string;
-  isActive: boolean;
+  incidentDate?: string;
   createdAt: string;
   updatedAt: string;
-  userId: number;
-  username: string;
-  userEmail: string;
-  userFullName: string;
-  distanceKm?: number;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
   files: FileItem[];
 }
 
@@ -107,8 +109,8 @@ export class AnnouncementService {
       (announcement) =>
         announcement.title.toLowerCase().includes(term) ||
         announcement.description.toLowerCase().includes(term) ||
-        announcement.username.toLowerCase().includes(term) ||
-        announcement.userEmail.toLowerCase().includes(term) ||
+        announcement.user.username.toLowerCase().includes(term) ||
+        announcement.user.email.toLowerCase().includes(term) ||
         (announcement.address &&
           announcement.address.toLowerCase().includes(term))
     );
@@ -182,8 +184,8 @@ export class AnnouncementService {
           valueB = new Date(b.createdAt);
           break;
         case 'username':
-          valueA = a.username.toLowerCase();
-          valueB = b.username.toLowerCase();
+          valueA = a.user.username.toLowerCase();
+          valueB = b.user.username.toLowerCase();
           break;
         case 'type':
           valueA = a.type;

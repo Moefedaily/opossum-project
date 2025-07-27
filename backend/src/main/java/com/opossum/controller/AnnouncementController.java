@@ -88,6 +88,23 @@ public class AnnouncementController {
         }
     }
 
+    @GetMapping("/admin/all")
+    @Operation(summary = "Get all announcements for admin", description = "Get ALL announcements including inactive ones (Admin only)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Announcements retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin only")
+    })
+    public ResponseEntity<?> getAllAnnouncementsForAdmin() {
+        try {
+            log.debug("Admin requesting all announcements");
+            List<AnnouncementDto> announcements = announcementService.getAllAnnouncementsForAdmin();
+            return ResponseEntity.ok(announcements);
+        } catch (Exception e) {
+            log.error("Error getting all announcements for admin: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get announcement by ID", description = "Get specific announcement details")
     public ResponseEntity<?> getAnnouncementById(@PathVariable Long id) {
@@ -274,7 +291,6 @@ public class AnnouncementController {
             @Parameter(description = "User's latitude") @RequestParam @NotNull BigDecimal latitude,
             @Parameter(description = "User's longitude") @RequestParam @NotNull BigDecimal longitude,
             @Parameter(description = "Search radius in kilometers") @RequestParam @NotNull Double radiusKm,
-            // 🆕 NEW: Optional filter parameters
             @Parameter(description = "Filter by announcement type") @RequestParam(required = false) AnnouncementType type,
             @Parameter(description = "Filter by announcement category") @RequestParam(required = false) AnnouncementCategory category) {
 

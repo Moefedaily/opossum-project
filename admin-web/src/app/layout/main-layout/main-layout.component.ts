@@ -28,6 +28,7 @@ export interface NavigationItem {
   selector: 'app-main-layout',
   standalone: true,
   imports: [
+    RouterOutlet,
     CommonModule,
     MatSidenavModule,
     MatToolbarModule,

@@ -112,6 +112,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/files/admin/**").hasRole("ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/deactivate").hasRole("ADMIN")
                         .requestMatchers("PATCH", "/api/users/*/activate").hasRole("ADMIN")
+                        .requestMatchers("PATCH", "/api/users/*/role").hasRole("ADMIN")
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

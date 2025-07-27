@@ -19,63 +19,68 @@ export const routes: Routes = [
     title: 'Admin Login - OPOSSUM',
   },
 
-  // Dashboard route (with layout and auth guard)
+  // Admin routes with main layout wrapper
   {
-    path: 'dashboard',
+    path: '',
     loadComponent: () =>
       import('./layout/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent
       ),
     canActivate: [authGuard],
-    title: 'Dashboard - OPOSSUM Admin',
-    data: { title: 'Dashboard' },
-  },
+    children: [
+      // Dashboard route
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent
+          ),
+        title: 'Dashboard - OPOSSUM Admin',
+        data: { title: 'Dashboard' },
+      },
 
-  // Users routes (with layout and auth guard)
-  {
-    path: 'users',
-    loadComponent: () =>
-      import('./layout/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent
-      ),
-    canActivate: [authGuard],
-    title: 'User Management - OPOSSUM Admin',
-    data: { title: 'User Management' },
-  },
+      // Users routes
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/user-list/user-list.component').then(
+            (m) => m.UserListComponent
+          ),
+        title: 'User Management - OPOSSUM Admin',
+        data: { title: 'User Management' },
+      },
+      // {
+      //   path: 'users/detail/:id',
+      //   loadComponent: () =>
+      //     import('./features/users/user-detail/user-detail.component').then(
+      //       (m) => m.UserDetailComponent
+      //     ),
+      //   title: 'User Details - OPOSSUM Admin',
+      //   data: { title: 'User Details' },
+      // },
 
-  {
-    path: 'users/detail/:id',
-    loadComponent: () =>
-      import('./layout/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent
-      ),
-    canActivate: [authGuard],
-    title: 'User Details - OPOSSUM Admin',
-    data: { title: 'User Details' },
-  },
+      // // Announcements route
+      // {
+      //   path: 'announcements',
+      //   loadComponent: () =>
+      //     import('./features/announcements/announcement-list.component').then(
+      //       (m) => m.AnnouncementListComponent
+      //     ),
+      //   title: 'Announcements - OPOSSUM Admin',
+      //   data: { title: 'Announcements' },
+      // },
 
-  // Announcements route (with layout and auth guard)
-  {
-    path: 'announcements',
-    loadComponent: () =>
-      import('./layout/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent
-      ),
-    canActivate: [authGuard],
-    title: 'Announcements - OPOSSUM Admin',
-    data: { title: 'Announcements' },
-  },
-
-  // Messages route (with layout and auth guard)
-  {
-    path: 'messages',
-    loadComponent: () =>
-      import('./layout/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent
-      ),
-    canActivate: [authGuard],
-    title: 'Messages - OPOSSUM Admin',
-    data: { title: 'Messages' },
+      // // Messages route
+      // {
+      //   path: 'messages',
+      //   loadComponent: () =>
+      //     import('./features/messages/message-list.component').then(
+      //       (m) => m.MessageListComponent
+      //     ),
+      //   title: 'Messages - OPOSSUM Admin',
+      //   data: { title: 'Messages' },
+      // },
+    ],
   },
 
   // Catch-all route

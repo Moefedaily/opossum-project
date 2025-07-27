@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      login: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
@@ -57,19 +57,22 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  async onSubmit() {
+  onSubmit() {
     if (this.loginForm.valid && !this.loading) {
       this.loading = true;
 
+      console.log('Login attempt with:', this.loginForm.value);
+
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
+          console.log('Login success:', response);
           // Check if user has admin role
           if (response.user.role === 'ADMIN') {
             this.toastService.success('Welcome to OPOSSUM Admin!');
             this.router.navigate(['/dashboard']);
           } else {
             // User is not admin
-            this.authService.logout(); // Clear any stored tokens
+            this.authService.logout();
             this.toastService.error(
               'Access denied. Admin privileges required.'
             );
@@ -77,11 +80,14 @@ export class LoginComponent implements OnInit {
           this.loading = false;
         },
         error: (error: any) => {
-          console.error('Login error:', error);
+          console.error('Full login error:', error);
+          console.error('Error status:', error.status);
+          console.error('Error message:', error.message);
+          console.error('Error response body:', error.error);
 
           // Handle specific error types
           if (error.status === 401) {
-            this.toastService.error('Invalid email or password.');
+            this.toastService.error('Invalid login credentials.');
           } else if (error.status === 403) {
             this.toastService.error(
               'Access denied. Admin privileges required.'
@@ -113,22 +119,19 @@ export class LoginComponent implements OnInit {
     this.hidePassword = !this.hidePassword;
   }
 
-  // Getter methods for easy access to form controls in template
-  get email() {
-    return this.loginForm.get('email');
+  // Getter methods for correct form controls
+  get login() {
+    return this.loginForm.get('login');
   }
 
   get password() {
     return this.loginForm.get('password');
   }
 
-  // Helper methods for validation messages
-  getEmailErrorMessage() {
-    if (this.email?.hasError('required')) {
-      return 'Email is required';
-    }
-    if (this.email?.hasError('email')) {
-      return 'Please enter a valid email address';
+  //Helper methods for validation messages
+  getLoginErrorMessage() {
+    if (this.login?.hasError('required')) {
+      return 'Email or Username is required';
     }
     return '';
   }

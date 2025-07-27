@@ -165,11 +165,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public void deactivateAnnouncement(Long id, Long userId) {
         log.info("Deactivating announcement ID: {} by user ID: {}", id, userId);
 
-        // Check ownership first
-        if (!isAnnouncementOwner(id, userId)) {
-            throw new RuntimeException("User not authorized to deactivate this announcement");
-        }
-
         // Find announcement
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Announcement not found with ID: " + id));
@@ -187,11 +182,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         // Find announcement
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Announcement not found with ID: " + id));
-
-        // Check ownership
-        if (!isAnnouncementOwner(id, userId)) {
-            throw new RuntimeException("User not authorized to update this announcement");
-        }
 
         // Activate announcement
         announcement.setIsActive(true);

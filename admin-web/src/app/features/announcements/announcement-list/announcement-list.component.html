@@ -315,6 +315,41 @@
                 >
                   <mat-icon>delete</mat-icon>
                 </button>
+
+                <button
+                  *ngIf="canActivate(announcement)"
+                  mat-icon-button
+                  [disabled]="isProcessing(announcement.id)"
+                  (click)="activateAnnouncement(announcement)"
+                  matTooltip="Activate Announcement"
+                  color="primary"
+                  class="action-button"
+                >
+                  <mat-icon *ngIf="!isProcessing(announcement.id)"
+                    >lock_open</mat-icon
+                  >
+                  <mat-spinner
+                    *ngIf="isProcessing(announcement.id)"
+                    diameter="18"
+                  ></mat-spinner>
+                </button>
+                <button
+                  *ngIf="canDeactivate(announcement)"
+                  mat-icon-button
+                  [disabled]="isProcessing(announcement.id)"
+                  (click)="deactivateAnnouncement(announcement)"
+                  matTooltip="Deactivate Announcement"
+                  color="warn"
+                  class="action-button"
+                >
+                  <mat-icon *ngIf="!isProcessing(announcement.id)"
+                    >lock</mat-icon
+                  >
+                  <mat-spinner
+                    *ngIf="isProcessing(announcement.id)"
+                    diameter="18"
+                  ></mat-spinner>
+                </button>
               </div>
             </td>
           </ng-container>

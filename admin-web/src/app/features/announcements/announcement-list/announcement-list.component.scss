@@ -524,11 +524,19 @@
         background: rgba($danger, 0.1);
       }
     }
-
     .mat-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
+    }
+    &:disabled {
+      opacity: 0.6;
+    }
+
+    .mat-mdc-progress-spinner {
+      ::ng-deep circle {
+        stroke: currentColor;
+      }
     }
   }
 }

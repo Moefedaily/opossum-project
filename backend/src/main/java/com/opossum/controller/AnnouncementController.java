@@ -207,6 +207,18 @@ public class AnnouncementController {
         }
     }
 
+    @DeleteMapping("/admin/{id}")
+    @Operation(summary = "Delete announcement (Admin)", description = "Admin can delete any announcement")
+    public ResponseEntity<?> adminDeleteAnnouncement(@PathVariable Long id) {
+        try {
+            announcementService.adminDeleteAnnouncement(id);
+            return ResponseEntity.ok(Map.of("message", "Announcement deleted successfully"));
+        } catch (Exception e) {
+            log.error("Error deleting announcement {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PatchMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate announcement", description = "Deactivate announcement (owner only)")
     public ResponseEntity<?> deactivateAnnouncement(

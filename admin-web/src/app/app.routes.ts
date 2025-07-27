@@ -78,6 +78,15 @@ export const routes: Routes = [
         title: 'Announcements - OPOSSUM Admin',
         data: { title: 'Announcements' },
       },
+      {
+        path: 'announcements/detail/:id',
+        loadComponent: () =>
+          import(
+            './features/announcements/announcement-detail/announcement-detail.component'
+          ).then((m) => m.AnnouncementDetailComponent),
+        title: 'Announcement Details - OPOSSUM Admin',
+        data: { title: 'Announcement Details' },
+      },
 
       // // Messages route
       // {

@@ -68,16 +68,16 @@ export const routes: Routes = [
         data: { title: 'Edit User' },
       },
 
-      // // Announcements route
-      // {
-      //   path: 'announcements',
-      //   loadComponent: () =>
-      //     import('./features/announcements/announcement-list.component').then(
-      //       (m) => m.AnnouncementListComponent
-      //     ),
-      //   title: 'Announcements - OPOSSUM Admin',
-      //   data: { title: 'Announcements' },
-      // },
+      // Announcements route
+      {
+        path: 'announcements',
+        loadComponent: () =>
+          import(
+            './features/announcements/announcement-list/announcement-list.component'
+          ).then((m) => m.AnnouncementListComponent),
+        title: 'Announcements - OPOSSUM Admin',
+        data: { title: 'Announcements' },
+      },
 
       // // Messages route
       // {

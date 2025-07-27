@@ -19,6 +19,8 @@ import {
   getTimeAgo,
 } from "../../../services/announcement";
 import { AnnouncementDto } from "../../../types/announcement";
+import Toast from "react-native-toast-message";
+import { messagingService } from "../../../services/messaging";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -62,10 +64,29 @@ export default function AnnouncementDetailScreen() {
   };
 
   // Handle contact owner
-  const handleContactOwner = () => {
+  const handleContactOwner = async () => {
     if (!announcement) return;
-    console.log("Contact owner:", announcement.username);
-    // TODO: Navigate to messaging screen
+
+    try {
+      console.log("Starting conversation with owner:", announcement.username);
+
+      const conversation = await messagingService.startConversation({
+        announcementId: announcement.id,
+        initialMessage: `Hi! I'm interested in your ${announcement.type.toLowerCase()} item: "${announcement.title}". Can we discuss the details?`,
+      });
+
+      console.log("Conversation created:", conversation.id);
+
+      router.push(`/messages/${conversation.id}`);
+    } catch (error: any) {
+      console.error("Failed to start conversation:", error);
+
+      Toast.show({
+        type: "error",
+        text1: "Failed to Start Conversation",
+        text2: error.message || "Please try again",
+      });
+    }
   };
 
   // Handle call owner

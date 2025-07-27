@@ -44,7 +44,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="messages/index"
         options={{
           title: "Messages",
           tabBarIcon: ({ color, size }) => (
@@ -61,16 +61,14 @@ export default function TabLayout() {
           ),
         }}
       />
-
-      {/* ✅ HIDE THESE FROM TAB BAR */}
       <Tabs.Screen name="profile/edit-profile" options={{ href: null }} />
       <Tabs.Screen name="profile/my-announcements" options={{ href: null }} />
       <Tabs.Screen name="profile/settings" options={{ href: null }} />
       <Tabs.Screen name="profile/change-password" options={{ href: null }} />
-
       <Tabs.Screen name="announcements/[id]" options={{ href: null }} />
       <Tabs.Screen name="announcements/edit/[id]" options={{ href: null }} />
       <Tabs.Screen name="announcements/create" options={{ href: null }} />
+      <Tabs.Screen name="messages/[conversationId]" options={{ href: null }} />
     </Tabs>
   );
 }

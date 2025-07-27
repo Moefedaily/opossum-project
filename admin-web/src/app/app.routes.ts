@@ -49,15 +49,24 @@ export const routes: Routes = [
         title: 'User Management - OPOSSUM Admin',
         data: { title: 'User Management' },
       },
-      // {
-      //   path: 'users/detail/:id',
-      //   loadComponent: () =>
-      //     import('./features/users/user-detail/user-detail.component').then(
-      //       (m) => m.UserDetailComponent
-      //     ),
-      //   title: 'User Details - OPOSSUM Admin',
-      //   data: { title: 'User Details' },
-      // },
+      {
+        path: 'users/create', // Add this route
+        loadComponent: () =>
+          import('./features/users/create-user/create-user.component').then(
+            (m) => m.CreateUserComponent
+          ),
+        title: 'Create User - OPOSSUM Admin',
+        data: { title: 'Create User' },
+      },
+      {
+        path: 'users/edit/:id',
+        loadComponent: () =>
+          import('./features/users/edit-user/edit-user.component').then(
+            (m) => m.EditUserComponent
+          ),
+        title: 'Edit User - OPOSSUM Admin',
+        data: { title: 'Edit User' },
+      },
 
       // // Announcements route
       // {

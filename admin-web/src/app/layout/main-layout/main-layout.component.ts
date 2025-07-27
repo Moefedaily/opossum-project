@@ -65,10 +65,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       label: 'User Management',
       icon: 'people',
       route: '/users',
-      children: [
-        { label: 'All Users', icon: 'list', route: '/users' },
-        { label: 'User Details', icon: 'person', route: '/users/detail' },
-      ],
+      children: [{ label: 'All Users', icon: 'list', route: '/users' }],
     },
     {
       label: 'Announcements',

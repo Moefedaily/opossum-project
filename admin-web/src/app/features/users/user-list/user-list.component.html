@@ -12,6 +12,16 @@
           mat-raised-button
           color="primary"
           class="refresh-button"
+          (click)="createUser()"
+        >
+          <mat-icon>person_add</mat-icon>
+          Create User
+        </button>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="refresh-button"
           (click)="refreshUsers()"
           [disabled]="loading"
         >
@@ -264,10 +274,10 @@
                 <button
                   mat-icon-button
                   class="action-button view-button"
-                  (click)="viewUser(user)"
+                  (click)="editUser(user)"
                   matTooltip="View Details"
                 >
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon>edit</mat-icon>
                 </button>
 
                 <!-- Toggle Status Button -->
@@ -284,6 +294,22 @@
                 >
                   <mat-icon>{{
                     user.isActive ? "block" : "check_circle"
+                  }}</mat-icon>
+                </button>
+
+                <!-- Change Role Button -->
+                <button
+                  mat-icon-button
+                  class="action-button role-button"
+                  (click)="changeUserRole(user)"
+                  [matTooltip]="
+                    user.role === 'ADMIN'
+                      ? 'Demote to User'
+                      : 'Promote to Admin'
+                  "
+                >
+                  <mat-icon>{{
+                    user.role === "ADMIN" ? "person" : "admin_panel_settings"
                   }}</mat-icon>
                 </button>
 

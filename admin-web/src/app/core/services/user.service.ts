@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface UserListItem {
   id: number;
@@ -8,11 +10,14 @@ export interface UserListItem {
   email: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
   role: 'USER' | 'ADMIN';
   isActive: boolean;
   isVerified: boolean;
   createdAt: string;
-  lastLoginAt?: string;
+  updatedAt: string;
+  lastLogin?: string;
+  avatarUrl?: string;
 }
 
 export interface UserDetail {
@@ -45,7 +50,7 @@ export interface UserStats {
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private http: HttpClient) {}
 
   // Get all users (your existing endpoint)
   getUsers(): Observable<UserListItem[]> {
@@ -107,5 +112,23 @@ export class UserService {
   ): UserListItem[] {
     if (isActive === undefined) return users;
     return users.filter((user) => user.isActive === isActive);
+  }
+  createUser(userData: any): Observable<UserListItem> {
+    return this.apiService.post<UserListItem>('/api/users', userData);
+  }
+
+  // Assign role to user
+  assignRole(userId: number, role: 'USER' | 'ADMIN'): Observable<UserListItem> {
+    return this.http.patch<UserListItem>(
+      `${environment.apiBaseUrl}/api/users/${userId}/role`,
+      `"${role}"`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  updateUser(userId: number, userData: any): Observable<UserListItem> {
+    return this.apiService.put<UserListItem>(`/api/users/${userId}`, userData);
   }
 }

@@ -18,7 +18,7 @@ public class ConversationDto {
     private AnnouncementDto announcement;
     private UserDto starterUser;
     private UserDto recipientUser;
-    private UserDto otherUser; // The other participant from current user's perspective
+    private UserDto otherUser;
     private ConversationStatus status;
     private LocalDateTime lastMessageAt;
     private LocalDateTime createdAt;

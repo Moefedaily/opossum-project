@@ -4,6 +4,7 @@ package com.opossum.service.impl;
 import com.opossum.dto.messaging.CreateMessageRequest;
 import com.opossum.dto.messaging.MessageDto;
 import com.opossum.entity.messaging.Conversation;
+import com.opossum.entity.messaging.ConversationStatus;
 import com.opossum.entity.messaging.Message;
 import com.opossum.entity.User;
 import com.opossum.mapper.MessageMapper;
@@ -42,6 +43,14 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(
                         () -> new RuntimeException("Conversation not found with ID: " + request.getConversationId()));
 
+        // check the status of the conversation
+        if (conversation.getStatus() == ConversationStatus.ARCHIVED) {
+            throw new RuntimeException("This conversation has been archived and is no longer active");
+        }
+
+        if (conversation.getStatus() == ConversationStatus.BLOCKED) {
+            throw new RuntimeException("This conversation has been restricted by an administrator");
+        }
         // Check if user is participant
         if (!conversation.isParticipant(senderId)) {
             throw new RuntimeException("User not authorized to send messages in this conversation");

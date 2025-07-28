@@ -1,0 +1,345 @@
+<div class="conversation-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p class="loading-text">Loading conversation...</p>
+  </div>
+
+  <!-- Conversation Content -->
+  <div *ngIf="!loading && conversation" class="conversation-content">
+    <!-- Header Section -->
+    <mat-card class="header-card">
+      <mat-card-content class="header-content">
+        <div class="header-info">
+          <div class="breadcrumb">
+            <button mat-button class="back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon>
+              Back to Messages
+            </button>
+          </div>
+
+          <div class="conversation-header">
+            <h1 class="conversation-title">{{ getConversationTitle() }}</h1>
+            <div class="conversation-meta">
+              <mat-chip
+                [class]="
+                  'type-chip type-' +
+                  conversation.announcement.type.toLowerCase()
+                "
+                class="type-chip"
+              >
+                <mat-icon *ngIf="conversation.announcement.type === 'LOST'"
+                  >search</mat-icon
+                >
+                <mat-icon *ngIf="conversation.announcement.type === 'FOUND'"
+                  >place</mat-icon
+                >
+                {{ conversation.announcement.type }}
+              </mat-chip>
+
+              <mat-chip
+                [class]="
+                  'status-chip status-' + conversation.status.toLowerCase()
+                "
+                class="status-chip"
+              >
+                <div
+                  class="status-indicator"
+                  [class]="conversation.status.toLowerCase()"
+                ></div>
+                {{ conversation.status }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            class="refresh-button"
+            (click)="refreshData()"
+            [disabled]="loading || loadingMessages"
+          >
+            <mat-icon>refresh</mat-icon>
+            Refresh
+          </button>
+
+          <button
+            mat-raised-button
+            color="warn"
+            class="delete-conversation-button"
+            (click)="deleteConversation()"
+            [disabled]="deletingConversation"
+          >
+            <mat-icon *ngIf="!deletingConversation">delete</mat-icon>
+            <mat-spinner
+              *ngIf="deletingConversation"
+              diameter="18"
+            ></mat-spinner>
+            Delete Conversation
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Conversation Info Cards -->
+    <div class="info-grid">
+      <!-- Participants Card -->
+      <mat-card class="info-card participants-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>people</mat-icon>
+            Participants
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="participant-list">
+            <div class="participant-item">
+              <div class="participant-avatar starter">
+                <span class="avatar-text">{{
+                  getUserAvatarLetter(conversation.starterUser)
+                }}</span>
+              </div>
+              <div class="participant-info">
+                <div class="participant-name">
+                  {{ getUserDisplayName(conversation.starterUser) }}
+                </div>
+                <div class="participant-username">
+                  {{ conversation.starterUser.username }}
+                </div>
+                <div class="participant-email">
+                  {{ conversation.starterUser.email }}
+                </div>
+                <div class="participant-role">Conversation Starter</div>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="participant-item">
+              <div class="participant-avatar recipient">
+                <span class="avatar-text">{{
+                  getUserAvatarLetter(conversation.recipientUser)
+                }}</span>
+              </div>
+              <div class="participant-info">
+                <div class="participant-name">
+                  {{ getUserDisplayName(conversation.recipientUser) }}
+                </div>
+                <div class="participant-username">
+                  {{ conversation.recipientUser.username }}
+                </div>
+                <div class="participant-email">
+                  {{ conversation.recipientUser.email }}
+                </div>
+                <div class="participant-role">Announcement Owner</div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Conversation Stats Card -->
+      <mat-card class="info-card stats-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>analytics</mat-icon>
+            Conversation Stats
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-list">
+            <div class="stat-item">
+              <span class="stat-label">Total Messages:</span>
+              <span class="stat-value">{{ messages.length }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Started:</span>
+              <span class="stat-value">{{
+                getFullFormattedDate(conversation.createdAt)
+              }}</span>
+            </div>
+            <div class="stat-item" *ngIf="conversation.lastMessageAt">
+              <span class="stat-label">Last Activity:</span>
+              <span class="stat-value">{{
+                getFullFormattedDate(conversation.lastMessageAt)
+              }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Status:</span>
+              <span class="stat-value">{{ conversation.status }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Announcement Info Card -->
+      <mat-card class="info-card announcement-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>campaign</mat-icon>
+            Related Announcement
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="announcement-info">
+            <div class="announcement-title">
+              {{ conversation.announcement.title }}
+            </div>
+            <div class="announcement-meta">
+              <div class="meta-item">
+                <mat-icon>category</mat-icon>
+                <span>{{ conversation.announcement.type }}</span>
+              </div>
+              <div class="meta-item">
+                <mat-icon>visibility</mat-icon>
+                <span>{{ conversation.announcement.status }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Messages Section -->
+    <mat-card class="messages-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>forum</mat-icon>
+          Conversation Messages ({{ messages.length }})
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content class="messages-content">
+        <!-- Loading Messages -->
+        <div *ngIf="loadingMessages" class="messages-loading">
+          <mat-spinner diameter="30"></mat-spinner>
+          <p>Loading messages...</p>
+        </div>
+
+        <!-- Messages Container -->
+        <div *ngIf="!loadingMessages" class="messages-container">
+          <!-- No Messages State -->
+          <div *ngIf="messages.length === 0" class="no-messages">
+            <mat-icon>chat_bubble_outline</mat-icon>
+            <h3>No messages yet</h3>
+            <p>This conversation hasn't started yet.</p>
+          </div>
+
+          <!-- Messages List -->
+          <div *ngIf="messages.length > 0" class="messages-list">
+            <div
+              *ngFor="
+                let message of messages;
+                trackBy: trackByMessageId;
+                let i = index
+              "
+              class="message-wrapper"
+            >
+              <!-- Date Separator -->
+              <div *ngIf="shouldShowDateSeparator(i)" class="date-separator">
+                <span class="date-text">{{
+                  getDateSeparator(message.createdAt)
+                }}</span>
+              </div>
+
+              <!-- Message Item -->
+              <div
+                class="message-item"
+                [class.from-starter]="isFromStarter(message)"
+                [class.from-recipient]="!isFromStarter(message)"
+              >
+                <!-- Sender Avatar -->
+                <div class="message-avatar">
+                  <div
+                    class="avatar"
+                    [class.starter-avatar]="isFromStarter(message)"
+                    [class.recipient-avatar]="!isFromStarter(message)"
+                  >
+                    <span class="avatar-text">{{
+                      getUserAvatarLetter(getSenderInfo(message))
+                    }}</span>
+                  </div>
+                </div>
+
+                <!-- Message Content -->
+                <div class="message-content">
+                  <!-- Message Header -->
+                  <div class="message-header">
+                    <span class="sender-name">{{
+                      getUserDisplayName(getSenderInfo(message))
+                    }}</span>
+                    <span class="sender-username"
+                      >({{ getSenderInfo(message).username }})</span
+                    >
+                    <span class="message-time">{{
+                      getMessageTime(message.createdAt)
+                    }}</span>
+                  </div>
+
+                  <!-- Message Text -->
+                  <div class="message-text">
+                    {{ message.messageText }}
+                  </div>
+
+                  <!-- Message Footer -->
+                  <div class="message-footer">
+                    <span class="message-date">{{
+                      getFullFormattedDate(message.createdAt)
+                    }}</span>
+                    <span class="read-status" *ngIf="message.isRead">
+                      <mat-icon>done_all</mat-icon>
+                      Read{{
+                        message.readAt
+                          ? " at " + getFullFormattedDate(message.readAt)
+                          : ""
+                      }}
+                    </span>
+                    <span class="read-status unread" *ngIf="!message.isRead">
+                      <mat-icon>done</mat-icon>
+                      Unread
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Message Actions -->
+                <div class="message-actions">
+                  <button
+                    mat-icon-button
+                    class="delete-message-button"
+                    (click)="deleteMessage(message)"
+                    [disabled]="isDeletingMessage(message.id)"
+                    matTooltip="Delete Message"
+                  >
+                    <mat-icon *ngIf="!isDeletingMessage(message.id)"
+                      >delete</mat-icon
+                    >
+                    <mat-spinner
+                      *ngIf="isDeletingMessage(message.id)"
+                      diameter="18"
+                    ></mat-spinner>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !conversation" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Conversation Not Found</h3>
+    <p>
+      The requested conversation could not be found or you don't have permission
+      to view it.
+    </p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Messages
+    </button>
+  </div>
+</div>

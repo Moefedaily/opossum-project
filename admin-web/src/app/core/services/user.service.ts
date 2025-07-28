@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, tap, catchError, throwError } from 'rxjs';
 import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
+import { ToastService } from './toast.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -46,13 +48,70 @@ export interface UserStats {
   adminUsers: number;
 }
 
+export interface UpdateProfileDto {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private apiService: ApiService, private http: HttpClient) {}
+  constructor(
+    private apiService: ApiService,
+    private http: HttpClient,
+    private authService: AuthService,
+    private toastService: ToastService
+  ) {}
 
-  // Get all users (your existing endpoint)
+  /**
+   * Update current user profile (uses AuthService.getCurrentUser())
+   */
+  updateProfile(profileData: UpdateProfileDto): Observable<any> {
+    return this.authService.getCurrentUser().pipe(
+      switchMap((currentUser) =>
+        this.apiService.patch(
+          `/api/users/${currentUser.id}/profile`,
+          profileData
+        )
+      ),
+      tap(() => {
+        console.log('Profile updated successfully');
+        this.toastService.success('Profile updated successfully');
+      }),
+      catchError((error) => {
+        console.error('Error updating profile:', error);
+        this.toastService.error('Failed to update profile');
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Change password
+   */
+  changePassword(passwordData: ChangePasswordRequest): Observable<any> {
+    return this.apiService.post('/api/auth/change-password', passwordData).pipe(
+      tap(() => {
+        console.log('Password changed successfully');
+        this.toastService.success('Password changed successfully');
+      }),
+      catchError((error) => {
+        console.error('Error changing password:', error);
+        this.toastService.error('Failed to change password');
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Existing User Management Methods
   getUsers(): Observable<UserListItem[]> {
     return this.apiService.get('/api/users');
   }
@@ -80,6 +139,24 @@ export class UserService {
   // Get user statistics (your existing endpoint)
   getUserStats(): Observable<UserStats> {
     return this.apiService.get('/api/users/stats');
+  }
+
+  createUser(userData: any): Observable<UserListItem> {
+    return this.apiService.post<UserListItem>('/api/users', userData);
+  }
+
+  assignRole(userId: number, role: 'USER' | 'ADMIN'): Observable<UserListItem> {
+    return this.http.patch<UserListItem>(
+      `${environment.apiBaseUrl}/api/users/${userId}/role`,
+      `"${role}"`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  updateUser(userId: number, userData: any): Observable<UserListItem> {
+    return this.apiService.put<UserListItem>(`/api/users/${userId}`, userData);
   }
 
   // Helper methods for frontend search/filtering
@@ -112,23 +189,5 @@ export class UserService {
   ): UserListItem[] {
     if (isActive === undefined) return users;
     return users.filter((user) => user.isActive === isActive);
-  }
-  createUser(userData: any): Observable<UserListItem> {
-    return this.apiService.post<UserListItem>('/api/users', userData);
-  }
-
-  // Assign role to user
-  assignRole(userId: number, role: 'USER' | 'ADMIN'): Observable<UserListItem> {
-    return this.http.patch<UserListItem>(
-      `${environment.apiBaseUrl}/api/users/${userId}/role`,
-      `"${role}"`,
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  }
-
-  updateUser(userId: number, userData: any): Observable<UserListItem> {
-    return this.apiService.put<UserListItem>(`/api/users/${userId}`, userData);
   }
 }

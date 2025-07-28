@@ -11,6 +11,8 @@ export interface User {
   role: 'USER' | 'ADMIN';
   isActive: boolean;
   isVerified: boolean;
+  phone?: string;
+  createdAt: string;
 }
 
 export interface LoginRequest {

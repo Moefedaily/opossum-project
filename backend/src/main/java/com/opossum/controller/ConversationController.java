@@ -212,4 +212,23 @@ public class ConversationController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PatchMapping("/admin/{id}/status")
+    @Operation(summary = "Change conversation status (Admin)", description = "Admin change conversation status")
+    public ResponseEntity<?> changeConversationStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        try {
+            String newStatus = request.get("status");
+            if (newStatus == null || newStatus.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+            }
+
+            ConversationDto conversation = conversationService.changeConversationStatus(id, newStatus);
+            return ResponseEntity.ok(conversation);
+        } catch (Exception e) {
+            log.error("Error changing conversation status {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

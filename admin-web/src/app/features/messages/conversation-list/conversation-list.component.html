@@ -1,3 +1,4 @@
+<!-- src/app/features/messages/conversation-list/conversation-list.component.html -->
 <div class="conversation-management-container">
   <!-- Page Header with Stats -->
   <div class="page-header">
@@ -311,6 +312,60 @@
                   matTooltip="View Conversation"
                 >
                   <mat-icon>visibility</mat-icon>
+                </button>
+
+                <!-- Archive Button -->
+                <button
+                  *ngIf="canArchive(conversation)"
+                  mat-icon-button
+                  class="action-button archive-button"
+                  (click)="archiveConversation(conversation, $event)"
+                  [disabled]="isChangingStatus(conversation.id)"
+                  matTooltip="Archive Conversation"
+                >
+                  <mat-icon *ngIf="!isChangingStatus(conversation.id)"
+                    >archive</mat-icon
+                  >
+                  <mat-spinner
+                    *ngIf="isChangingStatus(conversation.id)"
+                    diameter="18"
+                  ></mat-spinner>
+                </button>
+
+                <!-- Block Button -->
+                <button
+                  *ngIf="canBlock(conversation)"
+                  mat-icon-button
+                  class="action-button block-button"
+                  (click)="blockConversation(conversation, $event)"
+                  [disabled]="isChangingStatus(conversation.id)"
+                  matTooltip="Block Conversation"
+                >
+                  <mat-icon *ngIf="!isChangingStatus(conversation.id)"
+                    >block</mat-icon
+                  >
+                  <mat-spinner
+                    *ngIf="isChangingStatus(conversation.id)"
+                    diameter="18"
+                  ></mat-spinner>
+                </button>
+
+                <!-- Activate Button -->
+                <button
+                  *ngIf="canActivate(conversation)"
+                  mat-icon-button
+                  class="action-button activate-button"
+                  (click)="activateConversation(conversation, $event)"
+                  [disabled]="isChangingStatus(conversation.id)"
+                  matTooltip="Activate Conversation"
+                >
+                  <mat-icon *ngIf="!isChangingStatus(conversation.id)"
+                    >play_arrow</mat-icon
+                  >
+                  <mat-spinner
+                    *ngIf="isChangingStatus(conversation.id)"
+                    diameter="18"
+                  ></mat-spinner>
                 </button>
 
                 <!-- Delete Conversation Button -->

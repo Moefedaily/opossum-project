@@ -1,3 +1,4 @@
+// src/app/features/messages/conversation-detail/conversation-detail.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,6 +48,7 @@ export class ConversationDetailComponent implements OnInit, OnDestroy {
   loading = true;
   loadingMessages = false;
   deletingConversation = false;
+  changingStatus = false;
   deletingMessage: { [key: number]: boolean } = {};
 
   constructor(
@@ -122,7 +124,7 @@ export class ConversationDetailComponent implements OnInit, OnDestroy {
           // Scroll to bottom after messages load
           setTimeout(() => this.scrollToBottom(), 100);
         },
-        error: (error: any) => {
+        error: (error) => {
           console.error('Error loading messages:', error);
           this.loadingMessages = false;
         },
@@ -153,7 +155,7 @@ export class ConversationDetailComponent implements OnInit, OnDestroy {
           // Navigate back to conversation list
           this.router.navigate(['/messages']);
         },
-        error: (error: any) => {
+        error: (error) => {
           console.error('Error deleting conversation:', error);
           this.deletingConversation = false;
         },
@@ -188,6 +190,58 @@ export class ConversationDetailComponent implements OnInit, OnDestroy {
           this.deletingMessage[message.id] = false;
         },
       });
+  }
+
+  /**
+   * Change conversation status
+   */
+  changeConversationStatus(newStatus: string): void {
+    if (!this.conversation) return;
+
+    if (
+      !confirm(
+        `Are you sure you want to change this conversation status to ${newStatus}?`
+      )
+    ) {
+      return;
+    }
+
+    this.changingStatus = true;
+
+    this.messageService
+      .changeConversationStatus(this.conversation.id, newStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedConversation) => {
+          this.conversation = updatedConversation;
+          this.changingStatus = false;
+        },
+        error: (error: any) => {
+          console.error('Error changing conversation status:', error);
+          this.changingStatus = false;
+        },
+      });
+  }
+
+  /**
+   * Archive conversation
+   */
+  archiveConversation(): void {
+    this.changeConversationStatus('ARCHIVED');
+  }
+
+  /**
+   * Block conversation
+   */
+  blockConversation(): void {
+    this.changeConversationStatus('BLOCKED');
+  }
+
+  /**
+   * Activate conversation
+   */
+  activateConversation(): void {
+    this.changeConversationStatus('ACTIVE');
   }
 
   /**
@@ -309,6 +363,27 @@ export class ConversationDetailComponent implements OnInit, OnDestroy {
    */
   getTypeColor(type: string): string {
     return this.messageService.getTypeColor(type);
+  }
+
+  /**
+   * Check if conversation can be archived
+   */
+  canArchive(): boolean {
+    return this.conversation?.status !== 'ARCHIVED';
+  }
+
+  /**
+   * Check if conversation can be blocked
+   */
+  canBlock(): boolean {
+    return this.conversation?.status !== 'BLOCKED';
+  }
+
+  /**
+   * Check if conversation can be activated
+   */
+  canActivate(): boolean {
+    return this.conversation?.status !== 'ACTIVE';
   }
 
   /**

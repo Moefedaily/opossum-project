@@ -191,6 +191,33 @@ export class MessageService {
       );
   }
 
+  /**
+   * Change conversation status as admin
+   */
+  changeConversationStatus(
+    conversationId: number,
+    status: string
+  ): Observable<ConversationDto> {
+    return this.apiService
+      .patch<ConversationDto>(
+        `/api/conversations/admin/${conversationId}/status`,
+        { status }
+      )
+      .pipe(
+        tap(() => {
+          console.log(
+            `Admin changed conversation ${conversationId} status to ${status}`
+          );
+          this.toastService.success(`Conversation ${status.toLowerCase()}`);
+        }),
+        catchError((error) => {
+          console.error(`Error changing conversation status:`, error);
+          this.toastService.error('Failed to change conversation status');
+          return throwError(() => error);
+        })
+      );
+  }
+
   // ===== SEARCH AND FILTER OPERATIONS =====
 
   /**
@@ -385,6 +412,18 @@ export class MessageService {
    */
   refreshStatistics(): Observable<MessageStatistics> {
     return this.getStatistics();
+  }
+
+  archiveConversation(conversationId: number): Observable<ConversationDto> {
+    return this.changeConversationStatus(conversationId, 'ARCHIVED');
+  }
+
+  blockConversation(conversationId: number): Observable<ConversationDto> {
+    return this.changeConversationStatus(conversationId, 'BLOCKED');
+  }
+
+  activateConversation(conversationId: number): Observable<ConversationDto> {
+    return this.changeConversationStatus(conversationId, 'ACTIVE');
   }
 
   /**

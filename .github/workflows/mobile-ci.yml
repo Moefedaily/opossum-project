@@ -1,0 +1,61 @@
+name: Mobile App CI
+
+on:
+  push:
+    branches: [main, dev]
+    paths: ["mobile/**"]
+  pull_request:
+    branches: [main]
+    paths: ["mobile/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./mobile
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./mobile
+        run: npm test
+
+      - name: Type check
+        working-directory: ./mobile
+        run: npx tsc --noEmit
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Setup Expo CLI
+        run: npm install -g @expo/cli
+
+      - name: Install dependencies
+        working-directory: ./mobile
+        run: npm ci
+
+      - name: Build for production
+        working-directory: ./mobile
+        run: npx expo export --platform web

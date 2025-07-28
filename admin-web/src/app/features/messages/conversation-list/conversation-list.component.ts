@@ -62,6 +62,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
   // Loading states
   loading = true;
   deleting: { [key: number]: boolean } = {};
+  changingStatus: { [key: number]: boolean } = {};
 
   // Filters
   searchTerm = '';
@@ -234,6 +235,119 @@ export class ConversationListComponent implements OnInit, OnDestroy {
           this.deleting[conversation.id] = false;
         },
       });
+  }
+
+  /**
+   * Change conversation status
+   */
+  changeConversationStatus(
+    conversation: ConversationDto,
+    newStatus: string
+  ): void {
+    if (
+      !confirm(
+        `Are you sure you want to change this conversation status to ${newStatus}?`
+      )
+    ) {
+      return;
+    }
+
+    this.changingStatus[conversation.id] = true;
+
+    this.messageService
+      .changeConversationStatus(conversation.id, newStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedConversation) => {
+          // Update local arrays
+          this.conversations = this.conversations.map((c) =>
+            c.id === conversation.id ? updatedConversation : c
+          );
+          this.applyFilters();
+
+          // Update statistics based on status change
+          if (conversation.status !== newStatus) {
+            this.updateStatisticsForStatusChange(
+              conversation.status,
+              newStatus
+            );
+          }
+
+          this.changingStatus[conversation.id] = false;
+        },
+        error: (error: any) => {
+          console.error('Error changing conversation status:', error);
+          this.changingStatus[conversation.id] = false;
+        },
+      });
+  }
+
+  /**
+   * Quick action methods
+   */
+  archiveConversation(conversation: ConversationDto, event: Event): void {
+    event.stopPropagation();
+    this.changeConversationStatus(conversation, 'ARCHIVED');
+  }
+
+  blockConversation(conversation: ConversationDto, event: Event): void {
+    event.stopPropagation();
+    this.changeConversationStatus(conversation, 'BLOCKED');
+  }
+
+  activateConversation(conversation: ConversationDto, event: Event): void {
+    event.stopPropagation();
+    this.changeConversationStatus(conversation, 'ACTIVE');
+  }
+
+  /**
+   * Update statistics when status changes
+   */
+  private updateStatisticsForStatusChange(
+    oldStatus: string,
+    newStatus: string
+  ): void {
+    // Decrease old status count
+    if (oldStatus === 'ACTIVE') {
+      this.statistics.activeConversations--;
+    } else if (oldStatus === 'ARCHIVED') {
+      this.statistics.archivedConversations--;
+    }
+
+    // Increase new status count
+    if (newStatus === 'ACTIVE') {
+      this.statistics.activeConversations++;
+    } else if (newStatus === 'ARCHIVED') {
+      this.statistics.archivedConversations++;
+    }
+  }
+
+  /**
+   * Check if conversation can be archived
+   */
+  canArchive(conversation: ConversationDto): boolean {
+    return conversation.status !== 'ARCHIVED';
+  }
+
+  /**
+   * Check if conversation can be blocked
+   */
+  canBlock(conversation: ConversationDto): boolean {
+    return conversation.status !== 'BLOCKED';
+  }
+
+  /**
+   * Check if conversation can be activated
+   */
+  canActivate(conversation: ConversationDto): boolean {
+    return conversation.status !== 'ACTIVE';
+  }
+
+  /**
+   * Check if changing status for specific conversation
+   */
+  isChangingStatus(conversationId: number): boolean {
+    return !!this.changingStatus[conversationId];
   }
 
   /**

@@ -1,3 +1,4 @@
+<!-- src/app/features/messages/conversation-detail/conversation-detail.component.html -->
 <div class="conversation-detail-container">
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
@@ -54,6 +55,48 @@
         </div>
 
         <div class="header-actions">
+          <!-- Status Controls -->
+          <div class="status-controls">
+            <button
+              *ngIf="canActivate()"
+              mat-raised-button
+              color="primary"
+              class="status-button"
+              (click)="activateConversation()"
+              [disabled]="changingStatus"
+            >
+              <mat-icon *ngIf="!changingStatus">play_arrow</mat-icon>
+              <mat-spinner *ngIf="changingStatus" diameter="18"></mat-spinner>
+              Activate
+            </button>
+
+            <button
+              *ngIf="canArchive()"
+              mat-raised-button
+              color="accent"
+              class="status-button"
+              (click)="archiveConversation()"
+              [disabled]="changingStatus"
+            >
+              <mat-icon *ngIf="!changingStatus">archive</mat-icon>
+              <mat-spinner *ngIf="changingStatus" diameter="18"></mat-spinner>
+              Archive
+            </button>
+
+            <button
+              *ngIf="canBlock()"
+              mat-raised-button
+              color="warn"
+              class="status-button"
+              (click)="blockConversation()"
+              [disabled]="changingStatus"
+            >
+              <mat-icon *ngIf="!changingStatus">block</mat-icon>
+              <mat-spinner *ngIf="changingStatus" diameter="18"></mat-spinner>
+              Block
+            </button>
+          </div>
+
           <button
             mat-raised-button
             color="primary"

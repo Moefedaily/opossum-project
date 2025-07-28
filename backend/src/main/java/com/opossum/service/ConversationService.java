@@ -34,4 +34,6 @@ public interface ConversationService {
     Map<String, Object> getConversationStatistics();
 
     void deleteConversationAsAdmin(Long conversationId);
+
+    ConversationDto changeConversationStatus(Long conversationId, String newStatus);
 }

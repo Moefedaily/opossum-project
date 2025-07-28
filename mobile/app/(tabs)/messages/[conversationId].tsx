@@ -16,7 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { messagingService } from "../../../services/messaging";
-import { MessageDto } from "../../../types/messaging";
+import { MessageDto, ConversationDto } from "../../../types/messaging";
 import { colors, fonts } from "../../../styles";
 import { userService } from "../../../services/user";
 
@@ -33,6 +33,9 @@ const formatMessageTime = (dateString: string): string => {
 export default function ChatScreen() {
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
   const [messages, setMessages] = useState<MessageDto[]>([]);
+  const [conversation, setConversation] = useState<ConversationDto | null>(
+    null
+  );
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
@@ -91,21 +94,45 @@ export default function ChatScreen() {
   };
 
   const loadMessages = async (showLoading = true) => {
+    if (!conversationId) return;
+
     try {
       if (showLoading) setIsLoading(true);
 
-      const messageList = await messagingService.getConversationMessages(
-        parseInt(conversationId!)
+      // Load both messages and conversation details
+      const [messageList, conversations] = await Promise.all([
+        messagingService.getConversationMessages(parseInt(conversationId)),
+        messagingService.getUserConversations(), // Get all conversations to find this one
+      ]);
+
+      // Find current conversation
+      const currentConversation = conversations.find(
+        (c) => c.id === parseInt(conversationId)
       );
+      setConversation(currentConversation || null);
 
       // Update messages
       setMessages(messageList);
 
-      // Set conversation details from first message if available
-      if (messageList.length > 0) {
+      // Set conversation details
+      if (currentConversation && currentUserId) {
+        const otherUser =
+          currentConversation.starterUser.id === currentUserId
+            ? currentConversation.recipientUser
+            : currentConversation.starterUser;
+
+        const otherUserDisplayName =
+          otherUser.firstName && otherUser.lastName
+            ? `${otherUser.firstName} ${otherUser.lastName}`
+            : otherUser.username;
+
+        setOtherUserName(otherUserDisplayName);
+        setAnnouncementTitle(currentConversation.announcement.title);
+      } else if (messageList.length > 0) {
+        // Fallback to message data if conversation details not available
         const firstMessage = messageList[0];
         setOtherUserName(firstMessage.senderUsername || "User");
-        setAnnouncementTitle("Discussion"); // Will be set from conversation details
+        setAnnouncementTitle("Discussion");
       }
 
       // Auto-scroll to bottom if new messages arrived
@@ -117,15 +144,48 @@ export default function ChatScreen() {
       lastMessageCountRef.current = messageList.length;
     } catch (error: any) {
       if (showLoading) {
-        Alert.alert("Error", "Failed to load messages. Please try again.");
+        Alert.alert("Error", "Failed to load conversation. Please try again.");
       }
     } finally {
       if (showLoading) setIsLoading(false);
     }
   };
 
+  // Helper function to check if messaging is allowed
+  const canSendMessages = () => {
+    return conversation?.status === "ACTIVE";
+  };
+
+  // Helper function to get status message
+  const getStatusMessage = () => {
+    if (!conversation) return "";
+
+    switch (conversation.status) {
+      case "ARCHIVED":
+        return "This conversation has been archived and is no longer active";
+      case "BLOCKED":
+        return "This conversation has been restricted by an administrator";
+      default:
+        return "";
+    }
+  };
+
+  // Helper function to get status icon
+  const getStatusIcon = () => {
+    if (!conversation) return "lock-closed-outline";
+
+    switch (conversation.status) {
+      case "ARCHIVED":
+        return "archive-outline";
+      case "BLOCKED":
+        return "lock-closed-outline";
+      default:
+        return "lock-closed-outline";
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending) return;
+    if (!newMessage.trim() || isSending || !canSendMessages()) return;
 
     const messageContent = newMessage.trim();
     setNewMessage("");
@@ -140,7 +200,10 @@ export default function ChatScreen() {
       // Immediately reload messages to show the new message
       await loadMessages(false);
     } catch (error: any) {
-      Alert.alert("Error", "Failed to send message. Please try again.");
+      Alert.alert(
+        "Error",
+        error.message || "Failed to send message. Please try again."
+      );
       // Restore message content on error
       setNewMessage(messageContent);
     } finally {
@@ -236,6 +299,17 @@ export default function ChatScreen() {
               </Text>
             </View>
           )}
+          {/* Show conversation status if not active */}
+          {conversation && conversation.status !== "ACTIVE" && (
+            <View style={styles.headerStatusContainer}>
+              <Ionicons
+                name={getStatusIcon()}
+                size={12}
+                color={colors.warning}
+              />
+              <Text style={styles.headerStatus}>{conversation.status}</Text>
+            </View>
+          )}
         </View>
 
         <TouchableOpacity style={styles.headerAction}>
@@ -267,39 +341,53 @@ export default function ChatScreen() {
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                Start the conversation about this item!
+                {canSendMessages()
+                  ? "Start the conversation about this item!"
+                  : "This conversation is no longer active."}
               </Text>
             </View>
           )}
         />
 
-        {/* Message Input */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            placeholder="Type your message here..."
-            placeholderTextColor={colors.text.secondary}
-            multiline
-            maxLength={500}
-            editable={!isSending}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!newMessage.trim() || isSending) && styles.sendButtonDisabled,
-            ]}
-            onPress={handleSendMessage}
-            disabled={!newMessage.trim() || isSending}
-          >
-            {isSending ? (
-              <ActivityIndicator size="small" color={colors.white} />
-            ) : (
-              <Ionicons name="send" size={20} color={colors.white} />
-            )}
-          </TouchableOpacity>
-        </View>
+        {/* Message Input or Status Message */}
+        {canSendMessages() ? (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="Type your message here..."
+              placeholderTextColor={colors.text.secondary}
+              multiline
+              maxLength={500}
+              editable={!isSending}
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                (!newMessage.trim() || isSending) && styles.sendButtonDisabled,
+              ]}
+              onPress={handleSendMessage}
+              disabled={!newMessage.trim() || isSending}
+            >
+              {isSending ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <Ionicons name="send" size={20} color={colors.white} />
+              )}
+            </TouchableOpacity>
+          </View>
+        ) : (
+          // Status message for non-active conversations
+          <View style={styles.statusContainer}>
+            <Ionicons
+              name={getStatusIcon()}
+              size={20}
+              color={colors.text.secondary}
+            />
+            <Text style={styles.statusText}>{getStatusMessage()}</Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -362,6 +450,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.secondary,
     marginLeft: 4,
     flex: 1,
+  },
+  headerStatusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  headerStatus: {
+    fontSize: 12,
+    color: colors.warning,
+    fontFamily: fonts.secondary,
+    marginLeft: 4,
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
   headerAction: {
     width: 44,
@@ -492,5 +593,25 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: colors.warmTaupe,
     opacity: 0.5,
+  },
+
+  // Status Message
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.background,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+    justifyContent: "center",
+  },
+  statusText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    fontFamily: fonts.secondary,
+    marginLeft: 8,
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });

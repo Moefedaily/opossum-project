@@ -209,4 +209,29 @@ public class ConversationServiceImpl implements ConversationService {
 
         log.info("Conversation and all messages deleted successfully by admin: {}", conversationId);
     }
+
+    @Override
+    @Transactional
+    public ConversationDto changeConversationStatus(Long conversationId, String newStatus) {
+        log.info("Admin changing conversation {} status to {}", conversationId, newStatus);
+
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found with ID: " + conversationId));
+
+        // Validate status
+        ConversationStatus status;
+        try {
+            status = ConversationStatus.valueOf(newStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(
+                    "Invalid status: " + newStatus + ". Valid statuses are: ACTIVE, ARCHIVED, BLOCKED");
+        }
+
+        ConversationStatus oldStatus = conversation.getStatus();
+        conversation.setStatus(status);
+        conversationRepository.save(conversation);
+
+        log.info("Conversation {} status changed from {} to {}", conversationId, oldStatus, status);
+        return conversationMapper.toDtoForAdmin(conversation);
+    }
 }

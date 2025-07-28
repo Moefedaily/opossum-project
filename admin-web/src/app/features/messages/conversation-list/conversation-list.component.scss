@@ -1,3 +1,4 @@
+// src/app/features/messages/conversation-list/conversation-list.component.scss
 @use "sass:color";
 @use "../../../../styles/variables.scss" as *;
 
@@ -489,6 +490,30 @@
       }
     }
 
+    &.archive-button {
+      color: $warning;
+
+      &:hover:not(:disabled) {
+        background: rgba($warning, 0.1);
+      }
+    }
+
+    &.block-button {
+      color: $danger;
+
+      &:hover:not(:disabled) {
+        background: rgba($danger, 0.1);
+      }
+    }
+
+    &.activate-button {
+      color: $success;
+
+      &:hover:not(:disabled) {
+        background: rgba($success, 0.1);
+      }
+    }
+
     &.delete-button {
       color: $danger;
 
@@ -619,6 +644,7 @@
     padding: 16px !important;
   }
 
+  // Simplify table for mobile
   .conversations-table {
     .mat-column-status,
     .mat-column-messages {
@@ -658,6 +684,7 @@
     padding: 12px;
   }
 
+  // Show only essential columns on very small screens
   .conversations-table {
     .mat-column-participants,
     .mat-column-lastActivity {

@@ -87,13 +87,9 @@
         </button>
 
         <mat-menu #userMenu="matMenu">
-          <button mat-menu-item disabled>
+          <button mat-menu-item (click)="goToProfile()">
             <mat-icon>person</mat-icon>
             <span>Profile Settings</span>
-          </button>
-          <button mat-menu-item disabled>
-            <mat-icon>settings</mat-icon>
-            <span>Admin Settings</span>
           </button>
           <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()" class="logout-item">

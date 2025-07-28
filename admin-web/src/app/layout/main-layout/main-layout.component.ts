@@ -76,7 +76,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       label: 'Messages',
       icon: 'message',
       route: '/messages',
-      badge: 3, // Example badge count
     },
   ];
 
@@ -172,6 +171,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       },
     });
+  }
+
+  goToProfile(): void {
+    this.router.navigate(['/profile']);
   }
 
   getUserInitials(user: any): string {

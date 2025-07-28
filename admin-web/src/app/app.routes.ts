@@ -9,7 +9,7 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
-  // Login route (standalone, no layout)
+  // Login route
   {
     path: 'login',
     loadComponent: () =>
@@ -50,7 +50,7 @@ export const routes: Routes = [
         data: { title: 'User Management' },
       },
       {
-        path: 'users/create', // Add this route
+        path: 'users/create',
         loadComponent: () =>
           import('./features/users/create-user/create-user.component').then(
             (m) => m.CreateUserComponent
@@ -88,16 +88,27 @@ export const routes: Routes = [
         data: { title: 'Announcement Details' },
       },
 
-      // // Messages route
-      // {
-      //   path: 'messages',
-      //   loadComponent: () =>
-      //     import('./features/messages/message-list.component').then(
-      //       (m) => m.MessageListComponent
-      //     ),
-      //   title: 'Messages - OPOSSUM Admin',
-      //   data: { title: 'Messages' },
-      // },
+      // Messages route
+      {
+        path: 'messages',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import(
+                './features/messages/conversation-list/conversation-list.component'
+              ).then((m) => m.ConversationListComponent),
+          },
+          {
+            path: 'conversation/:id',
+            loadComponent: () =>
+              import(
+                './features/messages/conversation-detail/conversation-detail.component'
+              ).then((m) => m.ConversationDetailComponent),
+          },
+        ],
+        canActivate: [authGuard],
+      },
     ],
   },
 

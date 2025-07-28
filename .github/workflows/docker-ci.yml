@@ -91,27 +91,27 @@ jobs:
       - name: Test Docker Compose
         run: |
           echo "Testing Docker Compose configuration..."
-          docker-compose config
+          docker compose config
           echo "Docker Compose configuration valid!"
 
       - name: Test Container Startup
         run: |
           echo "Testing container startup..."
           # Start only backend and postgres for quick test
-          docker-compose up -d backend postgres
+          docker compose up -d backend postgres
           sleep 30
 
           echo "Checking container health..."
-          docker-compose ps
+          docker compose ps
 
           echo "Backend logs:"
-          docker-compose logs backend | tail -20
+          docker compose logs backend | tail -20
 
           echo "Testing backend health..."
           curl -f http://localhost:8080/actuator/health || echo "Health check pending (normal during startup)"
 
           echo "Cleaning up test containers..."
-          docker-compose down
+          docker compose down
           echo "Container startup test completed!"
 
       - name: Docker Analysis

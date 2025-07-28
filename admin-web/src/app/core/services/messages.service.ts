@@ -262,32 +262,50 @@ export class MessageService {
     }
 
     const term = searchTerm.toLowerCase().trim();
-    return conversations.filter(
-      (conversation) =>
-        conversation.announcement.title.toLowerCase().includes(term) ||
-        conversation.starterUser.username.toLowerCase().includes(term) ||
-        conversation.starterUser.firstName.toLowerCase().includes(term) ||
-        conversation.starterUser.lastName.toLowerCase().includes(term) ||
-        conversation.recipientUser.username.toLowerCase().includes(term) ||
-        conversation.recipientUser.firstName.toLowerCase().includes(term) ||
-        conversation.recipientUser.lastName.toLowerCase().includes(term) ||
-        (
-          conversation.starterUser.firstName +
-          ' ' +
-          conversation.starterUser.lastName
-        )
-          .toLowerCase()
-          .includes(term) ||
-        (
-          conversation.recipientUser.firstName +
-          ' ' +
-          conversation.recipientUser.lastName
-        )
-          .toLowerCase()
-          .includes(term)
-    );
-  }
 
+    return conversations.filter((conversation) => {
+      // Safe access with null checks using optional chaining and nullish coalescing
+      const announcementTitle =
+        conversation.announcement?.title?.toLowerCase() || '';
+
+      const starterUsername =
+        conversation.starterUser?.username?.toLowerCase() || '';
+      const starterFirstName =
+        conversation.starterUser?.firstName?.toLowerCase() || '';
+      const starterLastName =
+        conversation.starterUser?.lastName?.toLowerCase() || '';
+      const starterFullName = `${conversation.starterUser?.firstName || ''} ${
+        conversation.starterUser?.lastName || ''
+      }`
+        .toLowerCase()
+        .trim();
+
+      const recipientUsername =
+        conversation.recipientUser?.username?.toLowerCase() || '';
+      const recipientFirstName =
+        conversation.recipientUser?.firstName?.toLowerCase() || '';
+      const recipientLastName =
+        conversation.recipientUser?.lastName?.toLowerCase() || '';
+      const recipientFullName = `${
+        conversation.recipientUser?.firstName || ''
+      } ${conversation.recipientUser?.lastName || ''}`
+        .toLowerCase()
+        .trim();
+
+      // Search across all safe fields
+      return (
+        announcementTitle.includes(term) ||
+        starterUsername.includes(term) ||
+        starterFirstName.includes(term) ||
+        starterLastName.includes(term) ||
+        starterFullName.includes(term) ||
+        recipientUsername.includes(term) ||
+        recipientFirstName.includes(term) ||
+        recipientLastName.includes(term) ||
+        recipientFullName.includes(term)
+      );
+    });
+  }
   /**
    * Combined filter method for convenience
    */
@@ -376,10 +394,18 @@ export class MessageService {
     lastName: string;
     username: string;
   }): string {
+    if (!user) return 'Unknown User';
+
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
-    return user.username;
+
+    if (user.firstName) return user.firstName;
+    if (user.lastName) return user.lastName;
+
+    if (user.username) return user.username;
+
+    return 'Unknown User';
   }
 
   /**

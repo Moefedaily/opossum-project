@@ -8,14 +8,28 @@ import {
 export const announcementService = {
   getAllAnnouncements: async (params?: {
     category?: string;
+    search?: string;
   }): Promise<AnnouncementDto[]> => {
     try {
       console.log("Fetching announcements with params:", params);
 
       let url = "/api/announcements";
+      const queryParams = [];
+
+      // Add category filter
       if (params?.category && params.category !== "ALL") {
-        url += `?category=${params.category}`;
+        queryParams.push(`category=${params.category}`);
       }
+
+      if (params?.search && params.search.trim()) {
+        queryParams.push(`search=${encodeURIComponent(params.search.trim())}`);
+      }
+
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join("&")}`;
+      }
+
+      console.log("API URL:", url);
 
       const response = await api.get(url);
       const announcements = response.data;
@@ -96,6 +110,7 @@ export const announcementService = {
       throw new Error(apiError.error);
     }
   },
+
   deleteAnnouncement: async (announcementId: number): Promise<void> => {
     try {
       await api.delete(`/api/announcements/${announcementId}`, {

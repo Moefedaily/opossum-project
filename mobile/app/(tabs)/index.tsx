@@ -32,15 +32,15 @@ export default function DashboardHomeScreen() {
     // router.push("/map-search");
   };
 
-  const handleSearch = () => {
-    // Open search functionality
-    console.log("Open search");
-  };
+  // const handleSearch = () => {
+  //   // Open search functionality
+  //   console.log("Open search");
+  // };
 
-  const handleMenu = () => {
-    // Open hamburger menu
-    console.log("Open menu");
-  };
+  // const handleMenu = () => {
+  //   // Open hamburger menu
+  //   console.log("Open menu");
+  // };
 
   return (
     <SafeAreaView style={globalStyles.dashboardContainer}>
@@ -51,7 +51,7 @@ export default function DashboardHomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={globalStyles.dashboardHeader}>
+        {/* <View style={globalStyles.dashboardHeader}>
           <TouchableOpacity
             style={globalStyles.headerButton}
             onPress={handleMenu}
@@ -67,7 +67,7 @@ export default function DashboardHomeScreen() {
           >
             <Ionicons name="search" size={24} color={colors.deepBurgundy} />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Greeting */}
         <View style={globalStyles.greetingSection}>

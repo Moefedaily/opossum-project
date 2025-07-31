@@ -13,6 +13,17 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  searchIndicator: {
+    backgroundColor: colors.background,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchIndicatorText: {
+    color: colors.text.primary,
+    fontSize: 16,
+    fontFamily: fonts.primary,
+  },
 
   safeContainer: {
     flex: 1,

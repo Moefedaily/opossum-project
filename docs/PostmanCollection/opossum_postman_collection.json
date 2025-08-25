@@ -1,0 +1,1964 @@
+{
+  "info": {
+    "name": "OPOSSUM API Collection",
+    "description": "API collection for OPOSSUM Lost & Found application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.environment.get('access_token')) {",
+          "    pm.request.headers.add({",
+          "        key: 'Authorization',",
+          "        value: 'Bearer ' + pm.environment.get('access_token')",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    console.log('Registration successful:', response.message);",
+                  "} else {",
+                  "    console.log('Registration failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"{{test_username}}\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\",\n    \"firstName\": \"{{test_first_name}}\",\n    \"lastName\": \"{{test_last_name}}\",\n    \"phone\": \"1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register new user account with email verification"
+          }
+        },
+        {
+          "name": "Login as User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('user_access_token', response.accessToken);",
+                  "    pm.environment.set('user_refresh_token', response.refreshToken);",
+                  "    pm.environment.set('access_token', response.accessToken);",
+                  "    pm.environment.set('user_id', response.user.id);",
+                  "    pm.environment.set('current_username', response.user.username);",
+                  "    pm.environment.set('current_email', response.user.email);",
+                  "    console.log('Login successful');",
+                  "    console.log('User ID:', response.user.id);",
+                  "    console.log('Role:', response.user.role);",
+                  "} else {",
+                  "    console.log('Login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"login\": \"{{test_username}}\",\n    \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with username or email and password"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('admin_access_token', response.accessToken);",
+                  "    pm.environment.set('admin_refresh_token', response.refreshToken);",
+                  "    pm.environment.set('access_token', response.accessToken);",
+                  "    pm.environment.set('admin_id', response.user.id);",
+                  "    pm.environment.set('current_username', response.user.username);",
+                  "    pm.environment.set('current_email', response.user.email);",
+                  "    console.log('Admin login successful');",
+                  "    console.log('Admin ID:', response.user.id);",
+                  "    console.log('Role:', response.user.role);",
+                  "} else {",
+                  "    console.log('Admin login failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"login\": \"{{admin_username}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as admin user"
+          }
+        },
+        {
+          "name": "Switch to User Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const userToken = pm.environment.get('user_access_token');",
+                  "if (userToken) {",
+                  "    pm.environment.set('access_token', userToken);",
+                  "    console.log('Switched to user token');",
+                  "} else {",
+                  "    console.log('User token not found');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Switch to user token for testing"
+          }
+        },
+        {
+          "name": "Switch to Admin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const adminToken = pm.environment.get('admin_access_token');",
+                  "if (adminToken) {",
+                  "    pm.environment.set('access_token', adminToken);",
+                  "    console.log('Switched to admin token');",
+                  "} else {",
+                  "    console.log('Admin token not found');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Switch to admin token for testing"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('access_token', response.accessToken);",
+                  "    console.log('Token refreshed successfully');",
+                  "} else {",
+                  "    console.log('Token refresh failed:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Refresh access token"
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-email?token={{verification_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify-email"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{verification_token}}"
+                }
+              ]
+            },
+            "description": "Verify user email using verification token"
+          }
+        },
+        {
+          "name": "Resend Verification Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/resend-verification",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "resend-verification"]
+            },
+            "description": "Resend verification email"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Send password reset email"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"newPassword\": \"newpassword123\",\n    \"confirmPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Reset password using token"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"currentPassword\": \"{{test_password}}\",\n    \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "description": "Change password for authenticated user"
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get current user information"
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/validate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "validate"]
+            },
+            "description": "Validate current JWT token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout current user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Security Tests",
+      "item": [
+        {
+          "name": "User tries Admin Endpoint",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const userToken = pm.environment.get('user_access_token');",
+                  "if (userToken) {",
+                  "    pm.environment.set('access_token', userToken);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 403) {",
+                  "    console.log('Test passed - User correctly denied admin access');",
+                  "} else if (pm.response.code === 200) {",
+                  "    console.log('Test failed - User should not access admin endpoints');",
+                  "} else {",
+                  "    console.log('Unexpected response:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Test user access to admin endpoint"
+          }
+        },
+        {
+          "name": "Admin accesses Admin Endpoint",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const adminToken = pm.environment.get('admin_access_token');",
+                  "if (adminToken) {",
+                  "    pm.environment.set('access_token', adminToken);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    console.log('Test passed - Admin correctly has admin access');",
+                  "    const users = pm.response.json();",
+                  "    console.log('Admin can see', users.length, 'users');",
+                  "} else {",
+                  "    console.log('Test failed - Admin should access admin endpoints');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Test admin access to admin endpoint"
+          }
+        },
+        {
+          "name": "No Token Access",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["pm.request.removeHeader('Authorization');"]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 401) {",
+                  "    console.log('Test passed - No token correctly denied access');",
+                  "} else {",
+                  "    console.log('Test failed - Protected endpoint should require auth');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Test protected endpoint without token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Get all users"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"New\",\n    \"lastName\": \"User\",\n    \"phone\": \"0987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Create new user"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            },
+            "description": "Get user by ID"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"firstName\": \"Updated\",\n    \"lastName\": \"User\",\n    \"phone\": \"1111111111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            },
+            "description": "Update user information"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            },
+            "description": "Delete user"
+          }
+        },
+        {
+          "name": "Get User Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "stats"]
+            },
+            "description": "Get user statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const categories = pm.response.json();",
+                  "    console.log('Available categories:', categories);",
+                  "    if (categories.length > 0) {",
+                  "        pm.environment.set('test_category', categories[0]);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Get all available categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Announcements",
+      "item": [
+        {
+          "name": "Create Lost Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('announcement_id', response.id);",
+                  "    console.log('Announcement created with ID:', response.id);",
+                  "} else {",
+                  "    console.log('Failed to create announcement');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Lost iPhone\",\n    \"description\": \"Lost my iPhone near the train station. Black case with blue cover.\",\n    \"type\": \"LOST\",\n    \"category\": \"ELECTRONICS\",\n    \"latitude\": 45.7640,\n    \"longitude\": 4.8357,\n    \"address\": \"Train Station Area\",\n    \"incidentDate\": \"2025-07-15T10:30:00\",\n    \"contactInfo\": \"Please contact if found\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Create lost item announcement"
+          }
+        },
+        {
+          "name": "Create Found Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Found Wallet\",\n    \"description\": \"Found a black leather wallet with cards and ID near the coffee shop.\",\n    \"type\": \"FOUND\",\n    \"category\": \"WALLET\",\n    \"latitude\": 45.7642,\n    \"longitude\": 4.8359,\n    \"address\": \"Coffee Shop Area\",\n    \"incidentDate\": \"2025-07-15T14:15:00\",\n    \"contactInfo\": \"Contact to claim\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Create found item announcement"
+          }
+        },
+        {
+          "name": "Get All Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"]
+            },
+            "description": "Get all announcements"
+          }
+        },
+        {
+          "name": "Get Announcements with Filters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?type=LOST&status=ACTIVE&category=ELECTRONICS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "LOST"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                },
+                {
+                  "key": "category",
+                  "value": "ELECTRONICS"
+                }
+              ]
+            },
+            "description": "Get filtered announcements"
+          }
+        },
+        {
+          "name": "Search Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements?search=iPhone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "iPhone"
+                }
+              ]
+            },
+            "description": "Search announcements"
+          }
+        },
+        {
+          "name": "Get Announcement by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}"]
+            },
+            "description": "Get announcement by ID"
+          }
+        },
+        {
+          "name": "Get My Announcements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/my",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "my"]
+            },
+            "description": "Get current user announcements"
+          }
+        },
+        {
+          "name": "Update Announcement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Lost iPhone - Updated\",\n    \"description\": \"Updated description for lost iPhone\",\n    \"category\": \"ELECTRONICS\",\n    \"contactInfo\": \"Updated contact info\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}"]
+            },
+            "description": "Update announcement"
+          }
+        },
+        {
+          "name": "Update Announcement Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"RESOLVED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}", "status"]
+            },
+            "description": "Update announcement status"
+          }
+        },
+        {
+          "name": "Delete Announcement",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/announcements/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "{{announcement_id}}"]
+            },
+            "description": "Delete announcement"
+          }
+        },
+        {
+          "name": "Get Recent Announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/recent?limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "recent"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Get recent announcements"
+          }
+        },
+        {
+          "name": "Get Announcement Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "stats"]
+            },
+            "description": "Get announcement statistics"
+          }
+        },
+        {
+          "name": "Nearby Announcements (with Filtering)",
+          "item": [
+            {
+              "name": "Find Nearby Announcements (All Items)",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670",
+                      "description": "Your current latitude"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340",
+                      "description": "Your current longitude"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0",
+                      "description": "Search radius in kilometers"
+                    }
+                  ]
+                },
+                "description": "Find all announcements within 50km radius (no filters)"
+              }
+            },
+            {
+              "name": "Find Nearby Lost Items",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=LOST",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "LOST",
+                      "description": "Filter by LOST items only"
+                    }
+                  ]
+                },
+                "description": "Find only LOST items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Found Items",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=FOUND",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "FOUND",
+                      "description": "Filter by FOUND items only"
+                    }
+                  ]
+                },
+                "description": "Find only FOUND items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Electronics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&category=ELECTRONICS",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "category",
+                      "value": "ELECTRONICS",
+                      "description": "Filter by Electronics category"
+                    }
+                  ]
+                },
+                "description": "Find Electronics items within 50km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Lost Electronics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=50.0&type=LOST&category=ELECTRONICS",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "50.0"
+                    },
+                    {
+                      "key": "type",
+                      "value": "LOST",
+                      "description": "Filter by LOST items"
+                    },
+                    {
+                      "key": "category",
+                      "value": "ELECTRONICS",
+                      "description": "Filter by Electronics category"
+                    }
+                  ]
+                },
+                "description": "Find LOST Electronics within 50km radius (combined filters)"
+              }
+            },
+            {
+              "name": "Find Nearby Found Wallets",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=20.0&type=FOUND&category=WALLET",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "20.0",
+                      "description": "Smaller radius for wallets"
+                    },
+                    {
+                      "key": "type",
+                      "value": "FOUND"
+                    },
+                    {
+                      "key": "category",
+                      "value": "WALLET"
+                    }
+                  ]
+                },
+                "description": "Find FOUND Wallets within 20km radius"
+              }
+            },
+            {
+              "name": "Find Nearby Clothing (All Types)",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/api/announcements/nearby?latitude=45.7670&longitude=4.8340&radiusKm=30.0&category=CLOTHING",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "announcements", "nearby"],
+                  "query": [
+                    {
+                      "key": "latitude",
+                      "value": "45.7670"
+                    },
+                    {
+                      "key": "longitude",
+                      "value": "4.8340"
+                    },
+                    {
+                      "key": "radiusKm",
+                      "value": "30.0"
+                    },
+                    {
+                      "key": "category",
+                      "value": "CLOTHING",
+                      "description": "All clothing items (both lost and found)"
+                    }
+                  ]
+                },
+                "description": "Find all Clothing items within 30km radius"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Announcements Sorted by Distance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/announcements/sorted-by-distance?latitude=45.7640&longitude=4.8357",
+              "host": ["{{base_url}}"],
+              "path": ["api", "announcements", "sorted-by-distance"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "45.7640"
+                },
+                {
+                  "key": "longitude",
+                  "value": "4.8357"
+                }
+              ]
+            },
+            "description": "Get all announcements sorted by distance from user location"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Files - Lost & Found Photos",
+      "item": [
+        {
+          "name": "Upload Single Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success) {",
+                  "        console.log('Upload successful!');",
+                  "        console.log('File ID:', response.id);",
+                  "        console.log('Original name:', response.originalFilename);",
+                  "        console.log('Size:', response.formattedFileSize);",
+                  "        console.log('Cloudinary URL:', response.url);",
+                  "        console.log('Thumbnail URL:', response.thumbnailUrl);",
+                  "        pm.environment.set('file_id', response.id);",
+                  "    } else {",
+                  "        console.log('Upload failed:', response.message);",
+                  "    }",
+                  "} else {",
+                  "    console.log('Upload failed with status:', pm.response.code);",
+                  "    console.log('Error:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "announcementId",
+                  "value": "{{announcement_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload"]
+            },
+            "description": "Upload a single photo to a lost/found announcement"
+          }
+        },
+        {
+          "name": "Upload Multiple Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responses = pm.response.json();",
+                  "    console.log(`Uploaded ${responses.length} files:`);",
+                  "    responses.forEach((response, index) => {",
+                  "        if (response.success) {",
+                  "            console.log(`File ${index + 1}: SUCCESS - ${response.originalFilename} (ID: ${response.id})`);",
+                  "            if (index === 0) {",
+                  "                pm.environment.set('file_id', response.id);",
+                  "            }",
+                  "        } else {",
+                  "            console.log(`File ${index + 1}: FAILED - ${response.message}`);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    console.log('Upload failed with status:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "announcementId",
+                  "value": "{{announcement_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload-multiple",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload-multiple"]
+            },
+            "description": "Upload multiple photos to a lost/found announcement"
+          }
+        },
+        {
+          "name": "Get Photo Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const file = pm.response.json();",
+                  "    console.log('Photo Details:');",
+                  "    console.log('ID:', file.id);",
+                  "    console.log('Original Name:', file.originalFilename);",
+                  "    console.log('Size:', file.formattedFileSize);",
+                  "    console.log('Type:', file.contentType);",
+                  "    console.log('Is Image:', file.isImage);",
+                  "    console.log('Cloudinary URL:', file.url);",
+                  "    console.log('Thumbnail URL:', file.thumbnailUrl);",
+                  "    console.log('Optimized URL:', file.optimizedUrl);",
+                  "    console.log('Uploaded by:', file.uploadedByUsername);",
+                  "    console.log('Announcement:', file.announcementTitle);",
+                  "} else {",
+                  "    console.log('Photo not found');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/files/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "{{file_id}}"]
+            },
+            "description": "Get photo metadata and URLs by ID"
+          }
+        },
+        {
+          "name": "Get Photos by Announcement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`Found ${files.length} photo(s) for this announcement:`);",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} - ${file.formattedFileSize}`);",
+                  "        console.log('   Thumbnail: ' + file.thumbnailUrl);",
+                  "        console.log('   Full size: ' + file.url);",
+                  "    });",
+                  "} else {",
+                  "    console.log('Error getting photos for announcement');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/files/announcement/{{announcement_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "announcement", "{{announcement_id}}"]
+            },
+            "description": "Get all photos for a specific lost/found announcement"
+          }
+        },
+        {
+          "name": "Get My Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`You have uploaded ${files.length} photo(s):`);",
+                  "    let totalSize = 0;",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} - ${file.formattedFileSize}`);",
+                  "        console.log('   For announcement: ' + file.announcementTitle);",
+                  "        console.log('   Upload date: ' + file.createdAt);",
+                  "        totalSize += file.fileSize || 0;",
+                  "    });",
+                  "    const totalMB = (totalSize / 1024 / 1024).toFixed(2);",
+                  "    console.log(`Total storage used: ${totalMB} MB`);",
+                  "} else {",
+                  "    console.log('Error getting your photos');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/my",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "my"]
+            },
+            "description": "Get all photos uploaded by current user"
+          }
+        },
+        {
+          "name": "Delete Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    console.log('Photo deleted successfully');",
+                  "    console.log('The photo has been removed from both Cloudinary and database');",
+                  "} else if (pm.response.code === 403) {",
+                  "    console.log('Permission denied - you can only delete your own photos');",
+                  "} else {",
+                  "    console.log('Error deleting photo:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "{{file_id}}"]
+            },
+            "description": "Delete a photo (owner only) - removes from both Cloudinary and database"
+          }
+        },
+        {
+          "name": "Admin - Get All Photos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const files = pm.response.json();",
+                  "    console.log(`Admin view: ${files.length} total photos in system`);",
+                  "    files.forEach((file, index) => {",
+                  "        console.log(`${index + 1}. ${file.originalFilename} by ${file.uploadedByUsername}`);",
+                  "        console.log('   Announcement: ' + file.announcementTitle);",
+                  "        console.log('   Status: ' + (file.isActive ? 'Active' : 'Inactive'));",
+                  "    });",
+                  "} else {",
+                  "    console.log('Error getting all photos (admin access required)');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "all"]
+            },
+            "description": "Get all photos in system (Admin only)"
+          }
+        },
+        {
+          "name": "Admin - Delete Any Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    console.log('Photo deleted by admin successfully');",
+                  "    console.log('Admin can delete any photo regardless of ownership');",
+                  "} else {",
+                  "    console.log('Error in admin deletion:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "{{file_id}}"]
+            },
+            "description": "Delete any photo regardless of ownership (Admin only)"
+          }
+        },
+        {
+          "name": "Admin - Get Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const stats = pm.response.json();",
+                  "    console.log('Photo Statistics:');",
+                  "    console.log('Total Active Photos:', stats.totalFiles);",
+                  "    console.log('Status:', stats.message);",
+                  "} else {",
+                  "    console.log('Error getting photo statistics (admin access required)');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "admin", "stats"]
+            },
+            "description": "Get basic photo statistics (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messaging",
+      "item": [
+        {
+          "name": "Start Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('conversation_id', response.id);",
+                  "    console.log('Conversation started with ID:', response.id);",
+                  "} else {",
+                  "    console.log('Failed to start conversation');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"announcementId\": {{announcement_id}},\n    \"initialMessage\": \"Hello, I think I found your lost item. When can we meet?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations/start",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "start"]
+            },
+            "description": "Start a new conversation about an announcement"
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"conversationId\": {{conversation_id}},\n    \"content\": \"Yes, I believe this is yours. Where would you like to meet?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages"]
+            },
+            "description": "Send a message in an existing conversation"
+          }
+        },
+        {
+          "name": "Get User Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations"]
+            },
+            "description": "Get all conversations for current user"
+          }
+        },
+        {
+          "name": "Get Active Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "active"]
+            },
+            "description": "Get only active conversations for current user"
+          }
+        },
+        {
+          "name": "Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "{{conversation_id}}"]
+            },
+            "description": "Get specific conversation details"
+          }
+        },
+        {
+          "name": "Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "conversation", "{{conversation_id}}"]
+            },
+            "description": "Get all messages in a conversation"
+          }
+        },
+        {
+          "name": "Get Message by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}"]
+            },
+            "description": "Get specific message details"
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}", "read"]
+            },
+            "description": "Mark a specific message as read"
+          }
+        },
+        {
+          "name": "Mark All Messages as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}/read-all",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "messages",
+                "conversation",
+                "{{conversation_id}}",
+                "read-all"
+              ]
+            },
+            "description": "Mark all messages in a conversation as read"
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "{{message_id}}"]
+            },
+            "description": "Delete a message (sender only)"
+          }
+        },
+        {
+          "name": "Get Unread Message Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", "unread-count"]
+            },
+            "description": "Get total count of unread messages for user"
+          }
+        },
+        {
+          "name": "Get Conversation Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/conversation/{{conversation_id}}/unread-count",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "messages",
+                "conversation",
+                "{{conversation_id}}",
+                "unread-count"
+              ]
+            },
+            "description": "Get count of unread messages in specific conversation"
+          }
+        },
+        {
+          "name": "Archive Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/archive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "{{conversation_id}}", "archive"]
+            },
+            "description": "Archive a conversation"
+          }
+        },
+        {
+          "name": "Reactivate Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/{{conversation_id}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "conversations",
+                "{{conversation_id}}",
+                "reactivate"
+              ]
+            },
+            "description": "Reactivate an archived conversation"
+          }
+        },
+        {
+          "name": "Get Unread Conversations Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/conversations/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", "unread-count"]
+            },
+            "description": "Get count of conversations with unread messages"
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Check application health"
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/swagger-ui/index.html",
+              "host": ["{{base_url}}"],
+              "path": ["swagger-ui", "index.html"]
+            },
+            "description": "Access API documentation"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

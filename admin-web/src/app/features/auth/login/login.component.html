@@ -1,0 +1,101 @@
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <mat-card-header class="login-header">
+        <div class="brand-section">
+          <div class="brand-logo">
+            <mat-icon class="logo-icon">admin_panel_settings</mat-icon>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">OPOSSUM</h1>
+            <p class="brand-subtitle">Admin Dashboard</p>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content class="login-content">
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+          class="login-form"
+        >
+          <!-- Login Field - Updated to accept email OR username -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email or Username</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="login"
+              placeholder="admin@opossum.com or username"
+              autocomplete="username"
+              [class.error]="login?.invalid && login?.touched"
+            />
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="login?.invalid && login?.touched">
+              {{ getLoginErrorMessage() }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              [class.error]="password?.invalid && password?.touched"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hidePassword"
+            >
+              <mat-icon>{{
+                hidePassword ? "visibility_off" : "visibility"
+              }}</mat-icon>
+            </button>
+            <mat-error *ngIf="password?.invalid && password?.touched">
+              {{ getPasswordErrorMessage() }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Login Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="login-button full-width"
+            [disabled]="loading"
+          >
+            <span *ngIf="!loading">Sign In to Admin Panel</span>
+            <span *ngIf="loading" class="loading-content">
+              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+              Signing In...
+            </span>
+          </button>
+        </form>
+      </mat-card-content>
+
+      <mat-card-footer class="login-footer">
+        <div class="security-notice">
+          <mat-icon class="security-icon">security</mat-icon>
+          <span class="security-text"
+            >Admin access only • Secure connection</span
+          >
+        </div>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+
+  <!-- Background Elements -->
+  <div class="background-pattern">
+    <div class="pattern-circle circle-1"></div>
+    <div class="pattern-circle circle-2"></div>
+    <div class="pattern-circle circle-3"></div>
+  </div>
+</div>

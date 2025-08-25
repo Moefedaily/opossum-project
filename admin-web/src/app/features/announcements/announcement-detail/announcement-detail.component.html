@@ -1,0 +1,345 @@
+<div class="announcement-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p class="loading-text">Loading announcement details...</p>
+  </div>
+
+  <!-- Announcement Detail Content -->
+  <div *ngIf="!loading && announcement" class="detail-content">
+    <!-- Header Section -->
+    <div class="detail-header">
+      <div class="header-navigation">
+        <button
+          mat-icon-button
+          class="back-button"
+          (click)="goBack()"
+          matTooltip="Back to Announcements"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-info">
+          <h1 class="announcement-title">{{ announcement.title }}</h1>
+          <div class="announcement-meta">
+            <mat-chip
+              [class]="'type-chip type-' + announcement.type.toLowerCase()"
+              class="type-chip"
+            >
+              <mat-icon *ngIf="announcement.type === 'LOST'">search</mat-icon>
+              <mat-icon *ngIf="announcement.type === 'FOUND'"
+                >find_in_page</mat-icon
+              >
+              {{ announcement.type }}
+            </mat-chip>
+            <mat-chip class="category-chip">
+              <mat-icon>{{ getCategoryIcon(announcement.category) }}</mat-icon>
+              {{ announcement.category }}
+            </mat-chip>
+            <mat-chip
+              [class]="
+                'status-chip status-' + announcement.status.toLowerCase()
+              "
+              class="status-chip"
+            >
+              <div
+                class="status-indicator"
+                [class]="announcement.status.toLowerCase()"
+              ></div>
+              {{ announcement.status }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button
+          mat-raised-button
+          color="warn"
+          class="delete-button"
+          (click)="deleteAnnouncement()"
+          matTooltip="Delete Announcement"
+        >
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Left Column - Images -->
+      <div class="images-section">
+        <mat-card class="images-card">
+          <mat-card-content class="images-content">
+            <!-- Main Image Display -->
+            <div class="main-image-container" *ngIf="hasImages()">
+              <img
+                [src]="getCurrentImage()"
+                [alt]="announcement.title"
+                class="main-image"
+              />
+
+              <!-- Image Navigation -->
+              <div
+                class="image-navigation"
+                *ngIf="announcement.files && announcement.files.length > 1"
+              >
+                <button
+                  mat-icon-button
+                  class="nav-button prev-button"
+                  (click)="previousImage()"
+                  matTooltip="Previous Image"
+                >
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+
+                <div class="image-counter">
+                  {{ currentImageIndex + 1 }} / {{ announcement.files.length }}
+                </div>
+
+                <button
+                  mat-icon-button
+                  class="nav-button next-button"
+                  (click)="nextImage()"
+                  matTooltip="Next Image"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- No Image Placeholder -->
+            <div class="no-image-container" *ngIf="!hasImages()">
+              <mat-icon class="no-image-icon">image</mat-icon>
+              <p class="no-image-text">No images available</p>
+            </div>
+
+            <!-- Image Thumbnails -->
+            <div
+              class="thumbnails-container"
+              *ngIf="announcement.files && announcement.files.length > 1"
+            >
+              <div class="thumbnails-scroll">
+                <button
+                  *ngFor="let file of announcement.files; let i = index"
+                  class="thumbnail-button"
+                  [class.active]="i === currentImageIndex"
+                  (click)="setCurrentImage(i)"
+                >
+                  <img
+                    [src]="file.url"
+                    [alt]="'Image ' + (i + 1)"
+                    class="thumbnail-image"
+                  />
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Right Column - Details -->
+      <div class="details-section">
+        <!-- Basic Information -->
+        <mat-card class="info-card">
+          <mat-card-header class="card-header">
+            <mat-card-title>Announcement Details</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="info-content">
+            <div class="info-row">
+              <div class="info-label">
+                <mat-icon>title</mat-icon>
+                <span>Title</span>
+              </div>
+              <div class="info-value">{{ announcement.title }}</div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">
+                <mat-icon>description</mat-icon>
+                <span>Description</span>
+              </div>
+              <div class="info-value description-text">
+                {{ announcement.description }}
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">
+                <mat-icon>schedule</mat-icon>
+                <span>Posted</span>
+              </div>
+              <div class="info-value">
+                <span class="date-primary">{{
+                  formatDate(announcement.createdAt)
+                }}</span>
+                <span class="date-secondary"
+                  >({{ getTimeAgo(announcement.createdAt) }})</span
+                >
+              </div>
+            </div>
+
+            <div class="info-row" *ngIf="announcement.incidentDate">
+              <div class="info-label">
+                <mat-icon>event</mat-icon>
+                <span>Incident Date</span>
+              </div>
+              <div class="info-value">
+                {{ formatDate(announcement.incidentDate) }}
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-label">
+                <mat-icon>update</mat-icon>
+                <span>Last Updated</span>
+              </div>
+              <div class="info-value">
+                {{ formatDate(announcement.updatedAt) }}
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Location Information -->
+        <mat-card class="location-card">
+          <mat-card-header class="card-header">
+            <mat-card-title>
+              <mat-icon>place</mat-icon>
+              Location
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="location-content">
+            <div class="location-info">
+              <div class="location-display">
+                <mat-icon class="location-icon">location_on</mat-icon>
+                <span class="location-text">{{ getLocationDisplay() }}</span>
+              </div>
+
+              <div
+                class="coordinates"
+                *ngIf="announcement.latitude && announcement.longitude"
+              >
+                <span class="coordinates-label">Coordinates:</span>
+                <span class="coordinates-value">
+                  {{ announcement.latitude.toFixed(6) }},
+                  {{ announcement.longitude.toFixed(6) }}
+                </span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- User Information -->
+        <mat-card class="user-card">
+          <mat-card-header class="card-header">
+            <mat-card-title>
+              <mat-icon>person</mat-icon>
+              Posted By
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="user-content">
+            <div class="user-info">
+              <div class="user-avatar">
+                <span class="avatar-text">{{
+                  announcement.username.charAt(0).toUpperCase() || "U"
+                }}</span>
+              </div>
+              <div class="user-details">
+                <div class="user-name">{{ getUserDisplayName() }}</div>
+                <div class="username">{{ announcement.username }}</div>
+                <div
+                  class="user-email"
+                  *ngIf="announcement.userEmail && !isDeletedUser()"
+                >
+                  {{ announcement.userEmail }}
+                </div>
+                <div class="deleted-notice" *ngIf="isDeletedUser()">
+                  <mat-icon class="deleted-icon">info</mat-icon>
+                  <span>User account has been deleted</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Contact Information -->
+        <mat-card class="contact-card" *ngIf="announcement.contactInfo">
+          <mat-card-header class="card-header">
+            <mat-card-title>
+              <mat-icon>contact_phone</mat-icon>
+              Contact Information
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="contact-content">
+            <div class="contact-info">
+              <div class="contact-text">{{ announcement.contactInfo }}</div>
+              <div class="contact-notice" *ngIf="isDeletedUser()">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                <span
+                  >Contact information may be unavailable due to deleted user
+                  account</span
+                >
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Admin Information -->
+        <mat-card class="admin-card">
+          <mat-card-header class="card-header">
+            <mat-card-title>
+              <mat-icon>admin_panel_settings</mat-icon>
+              Admin Information
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="admin-content">
+            <div class="admin-info">
+              <div class="admin-row">
+                <span class="admin-label">ID:</span>
+                <span class="admin-value">#{{ announcement.id }}</span>
+              </div>
+              <div class="admin-row">
+                <span class="admin-label">User ID:</span>
+                <span class="admin-value">#{{ announcement.userId }}</span>
+              </div>
+              <div class="admin-row">
+                <span class="admin-label">Active:</span>
+                <span class="admin-value">{{
+                  announcement.isActive ? "Yes" : "No"
+                }}</span>
+              </div>
+              <div
+                class="admin-row"
+                *ngIf="announcement.files && announcement.files.length > 0"
+              >
+                <span class="admin-label">Images:</span>
+                <span class="admin-value"
+                  >{{ announcement.files.length }} file(s)</span
+                >
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !announcement" class="error-container">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3 class="error-title">Announcement Not Found</h3>
+    <p class="error-message">
+      The requested announcement could not be found or has been removed.
+    </p>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="goBack()"
+      class="back-to-list-button"
+    >
+      <mat-icon>arrow_back</mat-icon>
+      Back to Announcements
+    </button>
+  </div>
+</div>

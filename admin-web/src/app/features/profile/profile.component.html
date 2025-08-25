@@ -1,0 +1,330 @@
+<div class="profile-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="page-info">
+        <h1 class="page-title">Profile Settings</h1>
+        <p class="page-subtitle">Manage your admin account and security</p>
+      </div>
+
+      <div class="header-actions">
+        <button
+          mat-raised-button
+          color="primary"
+          class="refresh-button"
+          (click)="loadCurrentUser()"
+          [disabled]="isLoadingProfile"
+        >
+          <mat-icon>refresh</mat-icon>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Info Cards -->
+    <div class="stats-grid">
+      <div class="stat-card profile-info" *ngIf="currentUser">
+        <div class="stat-icon">
+          <div class="user-avatar">
+            <span class="avatar-text">{{ getUserInitials() }}</span>
+          </div>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ getDisplayName() }}</div>
+          <div class="stat-label">{{ currentUser.username }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card role-info" *ngIf="currentUser">
+        <div class="stat-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ currentUser.role }}</div>
+          <div class="stat-label">Account Role</div>
+        </div>
+      </div>
+
+      <div class="stat-card status-info" *ngIf="currentUser">
+        <div class="stat-icon">
+          <mat-icon>{{
+            currentUser.isActive ? "check_circle" : "cancel"
+          }}</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">
+            {{ currentUser.isActive ? "Active" : "Inactive" }}
+          </div>
+          <div class="stat-label">Account Status</div>
+        </div>
+      </div>
+
+      <div class="stat-card joined-info" *ngIf="currentUser">
+        <div class="stat-icon">
+          <mat-icon>calendar_today</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ formatDate(currentUser.createdAt) }}</div>
+          <div class="stat-label">Member Since</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingProfile" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p class="loading-text">Loading profile...</p>
+  </div>
+
+  <!-- Profile Forms -->
+  <div *ngIf="!isLoadingProfile && currentUser" class="forms-container">
+    <!-- Profile Information Form -->
+    <mat-card class="form-card">
+      <mat-card-header class="form-header">
+        <mat-card-title class="form-title">
+          <mat-icon>person</mat-icon>
+          Profile Information
+        </mat-card-title>
+        <mat-card-subtitle class="form-subtitle">
+          Update your personal information and contact details
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="form-content">
+        <form
+          [formGroup]="profileForm"
+          (ngSubmit)="updateProfile()"
+          class="profile-form"
+        >
+          <div class="form-grid">
+            <!-- First Name -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>First Name</mat-label>
+              <input
+                matInput
+                formControlName="firstName"
+                placeholder="Enter your first name"
+                maxlength="50"
+              />
+              <mat-error
+                *ngIf="profileForm.get('firstName')?.hasError('maxlength')"
+              >
+                First name cannot exceed 50 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Last Name -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input
+                matInput
+                formControlName="lastName"
+                placeholder="Enter your last name"
+                maxlength="50"
+              />
+              <mat-error
+                *ngIf="profileForm.get('lastName')?.hasError('maxlength')"
+              >
+                Last name cannot exceed 50 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Phone Number -->
+            <mat-form-field appearance="outline" class="form-field full-width">
+              <mat-label>Phone Number</mat-label>
+              <input
+                matInput
+                formControlName="phone"
+                placeholder="Enter your phone number"
+                type="tel"
+              />
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
+                Please enter a valid phone number
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Read-only fields -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Username</mat-label>
+              <input
+                matInput
+                [value]="currentUser.username"
+                readonly
+                class="readonly-field"
+              />
+              <mat-icon matSuffix>lock</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Email Address</mat-label>
+              <input
+                matInput
+                [value]="currentUser.email"
+                readonly
+                class="readonly-field"
+              />
+              <mat-icon matSuffix>lock</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="submit-button"
+              [disabled]="profileForm.invalid || isUpdatingProfile"
+            >
+              <mat-spinner
+                diameter="20"
+                *ngIf="isUpdatingProfile"
+              ></mat-spinner>
+              <mat-icon *ngIf="!isUpdatingProfile">save</mat-icon>
+              {{ isUpdatingProfile ? "Updating..." : "Update Profile" }}
+            </button>
+
+            <button
+              mat-stroked-button
+              type="button"
+              class="cancel-button"
+              (click)="populateProfileForm()"
+              [disabled]="isUpdatingProfile"
+            >
+              <mat-icon>refresh</mat-icon>
+              Reset Changes
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Change Password Form -->
+    <mat-card class="form-card">
+      <mat-card-header class="form-header">
+        <mat-card-title class="form-title">
+          <mat-icon>lock</mat-icon>
+          Change Password
+        </mat-card-title>
+        <mat-card-subtitle class="form-subtitle">
+          Update your account password for enhanced security
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="form-content">
+        <form
+          [formGroup]="passwordForm"
+          (ngSubmit)="changePassword()"
+          class="password-form"
+        >
+          <div class="form-grid">
+            <!-- Current Password -->
+            <mat-form-field appearance="outline" class="form-field full-width">
+              <mat-label>Current Password</mat-label>
+              <input
+                matInput
+                formControlName="currentPassword"
+                type="password"
+                placeholder="Enter your current password"
+              />
+              <mat-icon matSuffix>key</mat-icon>
+              <mat-error
+                *ngIf="
+                  passwordForm.get('currentPassword')?.hasError('required')
+                "
+              >
+                Current password is required
+              </mat-error>
+              <mat-error
+                *ngIf="
+                  passwordForm.get('currentPassword')?.hasError('minlength')
+                "
+              >
+                Password must be at least 6 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- New Password -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>New Password</mat-label>
+              <input
+                matInput
+                formControlName="newPassword"
+                type="password"
+                placeholder="Enter new password"
+              />
+              <mat-icon matSuffix>vpn_key</mat-icon>
+              <mat-error
+                *ngIf="passwordForm.get('newPassword')?.hasError('required')"
+              >
+                New password is required
+              </mat-error>
+              <mat-error
+                *ngIf="passwordForm.get('newPassword')?.hasError('minlength')"
+              >
+                Password must be at least 6 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Confirm Password -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Confirm New Password</mat-label>
+              <input
+                matInput
+                formControlName="confirmPassword"
+                type="password"
+                placeholder="Confirm new password"
+              />
+              <mat-icon matSuffix>check</mat-icon>
+              <mat-error
+                *ngIf="
+                  passwordForm.get('confirmPassword')?.hasError('required')
+                "
+              >
+                Please confirm your new password
+              </mat-error>
+              <mat-error
+                *ngIf="
+                  passwordForm
+                    .get('confirmPassword')
+                    ?.hasError('passwordMismatch')
+                "
+              >
+                Passwords do not match
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="submit-button"
+              [disabled]="passwordForm.invalid || isChangingPassword"
+            >
+              <mat-spinner
+                diameter="20"
+                *ngIf="isChangingPassword"
+              ></mat-spinner>
+              <mat-icon *ngIf="!isChangingPassword">security</mat-icon>
+              {{ isChangingPassword ? "Changing..." : "Change Password" }}
+            </button>
+
+            <button
+              mat-stroked-button
+              type="button"
+              class="cancel-button"
+              (click)="passwordForm.reset()"
+              [disabled]="isChangingPassword"
+            >
+              <mat-icon>clear</mat-icon>
+              Clear Form
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

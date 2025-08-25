@@ -1,0 +1,491 @@
+@use "sass:color";
+@use "../../../styles/variables.scss" as *;
+
+// Container and Layout
+.sidenav-container {
+  height: 100vh;
+  background: $background;
+}
+
+.sidenav {
+  width: $sidebar-width;
+  background: linear-gradient(
+    180deg,
+    $surface 0%,
+    color.adjust($surface, $lightness: 2%) 100%
+  );
+  border-right: 1px solid rgba($primary, 0.08);
+  box-shadow: 4px 0 15px rgba($primary, 0.05);
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+
+  &.mat-drawer-opened {
+    width: $sidebar-width;
+  }
+
+  // Collapsed state
+  &:not(.mat-drawer-opened) {
+    width: 64px;
+
+    .sidenav-header .brand-text,
+    .sidenav-footer,
+    .nav-label,
+    .nav-badge {
+      display: none;
+    }
+  }
+}
+
+.main-content {
+  background: $background;
+  min-height: 100vh;
+}
+
+// Sidebar Header
+.sidenav-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba($primary, 0.08);
+  background: linear-gradient(
+    135deg,
+    rgba($primary, 0.02) 0%,
+    rgba($secondary, 0.01) 100%
+  );
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  .logo-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: $primary;
+    // Fixed: Using modern color.adjust instead of lighten
+    background: linear-gradient(
+      135deg,
+      $primary,
+      color.adjust($primary, $lightness: 15%)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.brand-text {
+  .brand-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $primary;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-subtitle {
+    font-size: 11px;
+    color: $text-secondary;
+    margin: 2px 0 0 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+}
+
+// Navigation List
+.navigation-list {
+  padding: 16px 0;
+
+  .mat-mdc-list-item {
+    margin: 0 12px 4px 12px;
+    border-radius: $border-radius;
+    min-height: 48px !important;
+    transition: $transition;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      background: rgba($primary, 0.04);
+      transform: translateX(2px);
+    }
+
+    &.active {
+      background: linear-gradient(
+        135deg,
+        rgba($primary, 0.08) 0%,
+        rgba($primary, 0.12) 100%
+      );
+      border-left: 3px solid $primary;
+
+      .nav-icon {
+        color: $primary;
+      }
+
+      .nav-label {
+        color: $primary;
+        font-weight: 600;
+      }
+    }
+
+    &.child-nav-item {
+      margin-left: 24px;
+      margin-right: 12px;
+      background: rgba($primary, 0.02);
+      border-left: 2px solid rgba($primary, 0.1);
+
+      &:hover {
+        background: rgba($primary, 0.06);
+      }
+
+      &.active {
+        background: rgba($primary, 0.08);
+        border-left-color: $primary;
+      }
+
+      .child-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-left: 8px;
+      }
+    }
+  }
+}
+
+.nav-icon {
+  color: $text-secondary;
+  transition: $transition;
+  margin-right: 16px;
+}
+
+.nav-label {
+  color: $text-primary;
+  font-weight: 500;
+  font-size: 14px;
+  transition: $transition;
+}
+
+.nav-badge {
+  .mat-badge {
+    background: $accent !important;
+    color: $text-white !important;
+    font-size: 10px;
+    font-weight: 600;
+  }
+}
+
+// Tooltip for collapsed state
+.tooltip-target {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+// Sidebar Footer
+.sidenav-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  border-top: 1px solid rgba($primary, 0.08);
+  background: linear-gradient(
+    135deg,
+    rgba($primary, 0.02) 0%,
+    rgba($secondary, 0.01) 100%
+  );
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: $border-radius;
+  transition: $transition;
+
+  &:hover {
+    background: rgba($primary, 0.04);
+  }
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  // Fixed: Using modern color.adjust instead of lighten
+  background: linear-gradient(
+    135deg,
+    $primary,
+    color.adjust($primary, $lightness: 10%)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .avatar-text {
+    color: $text-white;
+    font-weight: 600;
+    font-size: 14px;
+  }
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+
+  .user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-role {
+    font-size: 11px;
+    color: $text-secondary;
+    margin: 2px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+}
+
+.user-menu-trigger {
+  color: $text-secondary;
+  transition: $transition;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+// Top Toolbar
+.toolbar {
+  background: $surface !important;
+  color: $text-primary !important;
+  border-bottom: 1px solid rgba($primary, 0.08);
+  box-shadow: 0 2px 8px rgba($primary, 0.04);
+  height: $header-height;
+  padding: 0 24px;
+  z-index: 10;
+  position: relative;
+}
+
+.menu-toggle {
+  color: $primary;
+  margin-right: 16px;
+
+  &:hover {
+    background: rgba($primary, 0.08);
+  }
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-primary;
+  letter-spacing: -0.2px;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-button {
+  color: $text-secondary;
+  transition: $transition;
+
+  &:hover {
+    color: $primary;
+    background: rgba($primary, 0.08);
+  }
+
+  .mat-badge {
+    background: $accent !important;
+    color: $text-white !important;
+    font-size: 10px;
+    font-weight: 600;
+  }
+}
+
+// Mobile User Avatar
+.mobile-user-avatar {
+  margin-left: 8px;
+}
+
+.mobile-avatar-button {
+  padding: 0;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background: rgba($primary, 0.08);
+  }
+}
+
+.mobile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  // Fixed: Using modern color.adjust instead of lighten
+  background: linear-gradient(
+    135deg,
+    $primary,
+    color.adjust($primary, $lightness: 10%)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .mobile-avatar-text {
+    color: $text-white;
+    font-weight: 600;
+    font-size: 12px;
+  }
+}
+
+// Mobile User Menu
+.mobile-user-info {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba($primary, 0.08);
+
+  .mobile-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 4px 0;
+  }
+
+  .mobile-user-role {
+    font-size: 11px;
+    color: $text-secondary;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+}
+
+// Menu Items
+.mat-mdc-menu-item {
+  &.logout-item {
+    color: $danger;
+
+    .mat-icon {
+      color: $danger;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+// Page Content
+.page-content {
+  padding: 24px;
+  min-height: calc(100vh - #{$header-height});
+  background: $background;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .sidenav {
+    width: 280px;
+  }
+
+  .toolbar {
+    padding: 0 16px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .quick-actions {
+    gap: 4px;
+  }
+
+  .page-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-content {
+    padding: 12px;
+  }
+
+  .toolbar {
+    padding: 0 12px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+}
+
+// Smooth Animations
+.mat-drawer-transition .mat-drawer-content {
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.mat-drawer-transition .mat-drawer {
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// Focus States for Accessibility
+.nav-item:focus,
+.action-button:focus,
+.user-menu-trigger:focus {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
+// Loading States
+.mat-mdc-progress-spinner {
+  ::ng-deep circle {
+    stroke: $primary;
+  }
+}
+
+// Custom Scrollbar for Sidebar
+.sidenav {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($primary, 0.2);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba($primary, 0.4);
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import {
   getTimeAgo,
 } from "../../services/announcement";
 import { AnnouncementDto } from "../../types/announcement";
+import SearchModal from "../../components/searchComponent";
 
 type CategoryTab = "ALL" | "ELECTRONICS" | "CLOTHING" | "DOCUMENTS";
 
@@ -29,8 +30,11 @@ export default function AnnouncementsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryTab>("ALL");
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [previousCategory, setPreviousCategory] = useState<CategoryTab>("ALL");
 
-  // Category tabs configuration
   const categoryTabs: { key: CategoryTab; label: string; param?: string }[] = [
     { key: "ALL", label: "All" },
     { key: "ELECTRONICS", label: "Mobile", param: "ELECTRONICS" },
@@ -38,57 +42,97 @@ export default function AnnouncementsScreen() {
     { key: "DOCUMENTS", label: "Documents", param: "DOCUMENTS" },
   ];
 
-  // Fetch announcements using the service
-  const fetchAnnouncements = async (category?: string) => {
+  const fetchAnnouncements = async (category?: string, search?: string) => {
     try {
       setError(null);
-      const params = category && category !== "ALL" ? { category } : undefined;
-      const data = await announcementService.getAllAnnouncements(params);
+
+      const params: { category?: string; search?: string } = {};
+
+      if (category && category !== "ALL") {
+        params.category = category;
+      }
+
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+
+      const data = await announcementService.getAllAnnouncements(
+        Object.keys(params).length > 0 ? params : undefined
+      );
+
       setAnnouncements(data);
     } catch (err: any) {
       setError(err.message);
-      console.error("Error fetching announcements:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  // Initial load
   useEffect(() => {
     const categoryParam =
       selectedCategory === "ALL" ? undefined : selectedCategory;
     fetchAnnouncements(categoryParam);
-  }, [selectedCategory]);
+  }, []);
 
-  // Handle pull to refresh
   const onRefresh = () => {
     setRefreshing(true);
     const categoryParam =
       selectedCategory === "ALL" ? undefined : selectedCategory;
+
+    if (isSearchMode) {
+      fetchAnnouncements(undefined, searchQuery);
+    } else {
+      fetchAnnouncements(categoryParam);
+    }
+  };
+
+  const handleCategoryChange = (category: CategoryTab) => {
+    if (isSearchMode) {
+      setSearchQuery("");
+      setIsSearchMode(false);
+    }
+
+    setSelectedCategory(category);
+    setLoading(true);
+
+    const categoryParam = category === "ALL" ? undefined : category;
     fetchAnnouncements(categoryParam);
   };
 
-  // Handle category tab change
-  const handleCategoryChange = (category: CategoryTab) => {
-    setSelectedCategory(category);
-    setLoading(true);
-  };
-
-  // Handle item press - Navigate to detail screen
   const handleItemPress = (announcement: AnnouncementDto) => {
-    console.log("Navigate to item detail:", announcement.id);
     router.push(`/announcements/${announcement.id}`);
   };
 
-  // Render announcement card using global styles
+  const handleSearch = (query: string) => {
+    const normalizedQuery = query?.trim() || "";
+
+    if (normalizedQuery.length > 0) {
+      setPreviousCategory(selectedCategory);
+      setSelectedCategory("ALL");
+      setSearchQuery(normalizedQuery);
+      setIsSearchMode(true);
+      setLoading(true);
+
+      fetchAnnouncements(undefined, normalizedQuery);
+    } else {
+      setSearchQuery("");
+      setIsSearchMode(false);
+      setLoading(true);
+      setSelectedCategory(previousCategory);
+
+      const categoryParam =
+        previousCategory === "ALL" ? undefined : previousCategory;
+      fetchAnnouncements(categoryParam);
+    }
+  };
+
   const renderAnnouncementCard = ({ item }: { item: AnnouncementDto }) => (
     <TouchableOpacity
       style={globalStyles.announcementCard}
       onPress={() => handleItemPress(item)}
       activeOpacity={0.8}
     >
-      {/* Image or placeholder */}
       <View style={globalStyles.announcementImageContainer}>
         {item.files && item.files.length > 0 ? (
           <Image
@@ -107,7 +151,6 @@ export default function AnnouncementsScreen() {
         )}
       </View>
 
-      {/* Content */}
       <View style={globalStyles.announcementCardContent}>
         <Text style={globalStyles.announcementCardTitle} numberOfLines={2}>
           {item.title}
@@ -132,7 +175,6 @@ export default function AnnouncementsScreen() {
     </TouchableOpacity>
   );
 
-  // Handle back navigation
   const handleBack = () => {
     router.back();
   };
@@ -141,7 +183,13 @@ export default function AnnouncementsScreen() {
     <SafeAreaView style={globalStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      {/* Header */}
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+        currentCategory={selectedCategory}
+      />
+
       <View style={globalStyles.announcementsHeader}>
         <TouchableOpacity
           style={globalStyles.headerButton}
@@ -155,14 +203,32 @@ export default function AnnouncementsScreen() {
 
         <TouchableOpacity
           style={globalStyles.headerButton}
-          onPress={() => console.log("Search")}
+          onPress={() => setShowSearchModal(true)}
           activeOpacity={0.7}
         >
           <Ionicons name="search" size={24} color={colors.deepBurgundy} />
         </TouchableOpacity>
       </View>
 
-      {/* Category Tabs */}
+      {isSearchMode && (
+        <View style={globalStyles.searchIndicator}>
+          <Ionicons name="search" size={16} color={colors.richOxblood} />
+          <Text style={globalStyles.searchIndicatorText}>
+            Searching for "{searchQuery}"
+          </Text>
+          <TouchableOpacity
+            onPress={() => handleSearch("")}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.richOxblood}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={globalStyles.categoryContainer}>
         <ScrollView
           horizontal
@@ -193,7 +259,6 @@ export default function AnnouncementsScreen() {
         </ScrollView>
       </View>
 
-      {/* Content */}
       {loading ? (
         <View style={globalStyles.announcementsLoadingContainer}>
           <ActivityIndicator size="large" color={colors.richOxblood} />
@@ -209,9 +274,13 @@ export default function AnnouncementsScreen() {
             style={globalStyles.announcementsRetryButton}
             onPress={() => {
               setLoading(true);
-              const categoryParam =
-                selectedCategory === "ALL" ? undefined : selectedCategory;
-              fetchAnnouncements(categoryParam);
+              if (isSearchMode && searchQuery) {
+                fetchAnnouncements(undefined, searchQuery);
+              } else {
+                const categoryParam =
+                  selectedCategory === "ALL" ? undefined : selectedCategory;
+                fetchAnnouncements(categoryParam);
+              }
             }}
             activeOpacity={0.7}
           >
